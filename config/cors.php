@@ -19,7 +19,15 @@ return [
 
     'allowed_methods' => ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
 
-    'allowed_origins' => ['*'],
+    // Configure allowed origins via env (comma-separated). Keep '*' as the default
+    // to preserve current behavior for non-cookie/token-based API usage.
+    'allowed_origins' => (function () {
+        $value = env('CORS_ALLOWED_ORIGINS', '*');
+        if ($value === '*' || $value === null) {
+            return ['*'];
+        }
+        return array_values(array_filter(array_map('trim', explode(',', $value))));
+    })(),
 
     'allowed_origins_patterns' => [],
 
