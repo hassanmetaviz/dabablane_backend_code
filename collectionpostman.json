@@ -1,0 +1,175 @@
+{
+    "info": {
+      "name": "Dabablane Tests",
+      "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "item": [
+      {
+        "name": "Back",
+        "item": [
+          {
+            "name": "Category Testing",
+            "item": [
+              {
+                "name": "Get All Categories",
+                "request": {
+                  "method": "GET",
+                  "header": [],
+                  "url": {
+                    "raw": "http://your-api-url/api/back/v1/categories?include=subcategories&paginationSize=10&sort_by=name&sort_order=asc&search=example",
+                    "protocol": "http",
+                    "host": ["your-api-url"],
+                    "path": ["api", "back", "v1", "categories"],
+                    "query": [
+                      { "key": "include", "value": "subcategories" },
+                      { "key": "paginationSize", "value": "10" },
+                      { "key": "sort_by", "value": "name" },
+                      { "key": "sort_order", "value": "asc" },
+                      { "key": "search", "value": "example" }
+                    ]
+                  }
+                },
+                "response": [
+                  {
+                    "name": "Example Response",
+                    "originalRequest": {
+                      "method": "GET",
+                      "url": "http://your-api-url/api/back/v1/categories"
+                    },
+                    "status": "OK",
+                    "code": 200,
+                    "body": "{\n  \"data\": [\n    {\n      \"id\": 1,\n      \"name\": \"Electronics\",\n      \"icon_url\": \"https://example.com/electronics-icon.png\",\n      \"subcategories\": [\n        {\n          \"id\": 1,\n          \"name\": \"Mobile Phones\",\n          \"description\": \"All kinds of mobile phones.\"\n        }\n      ]\n    }\n  ]\n}"
+                  }
+                ]
+              },
+              {
+                "name": "Get Category by ID",
+                "request": {
+                  "method": "GET",
+                  "header": [],
+                  "url": {
+                    "raw": "http://your-api-url/api/back/v1/categories/:id?include=subcategories",
+                    "protocol": "http",
+                    "host": ["your-api-url"],
+                    "path": ["api", "back", "v1", "categories", ":id"],
+                    "query": [
+                      { "key": "include", "value": "subcategories" }
+                    ],
+                    "variable": [
+                      { "key": "id", "value": "1" }
+                    ]
+                  }
+                },
+                "response": [
+                  {
+                    "name": "Example Response",
+                    "originalRequest": {
+                      "method": "GET",
+                      "url": "http://your-api-url/api/back/v1/categories/1"
+                    },
+                    "status": "OK",
+                    "code": 200,
+                    "body": "{\n  \"data\": {\n    \"id\": 1,\n    \"name\": \"Electronics\",\n    \"icon_url\": \"https://example.com/electronics-icon.png\",\n    \"subcategories\": [\n      {\n        \"id\": 1,\n        \"name\": \"Mobile Phones\",\n        \"description\": \"All kinds of mobile phones.\"\n      }\n    ]\n  }\n}"
+                  }
+                ]
+              },
+              {
+                "name": "Create Category",
+                "request": {
+                  "method": "POST",
+                  "header": [
+                    { "key": "Content-Type", "value": "application/json" }
+                  ],
+                  "body": {
+                    "mode": "raw",
+                    "raw": "{\n  \"icon_url\": \"https://example.com/icon.png\",\n  \"name\": \"New Category\",\n  \"description\": \"This is a new category.\",\n  \"subcategories\": [\n    {\n      \"name\": \"Subcategory A\",\n      \"description\": \"This is a subcategory.\"\n    }\n  ]\n}"
+                  },
+                  "url": {
+                    "raw": "http://your-api-url/api/back/v1/categories",
+                    "protocol": "http",
+                    "host": ["your-api-url"],
+                    "path": ["api", "back", "v1", "categories"]
+                  }
+                },
+                "response": [
+                  {
+                    "name": "Example Response",
+                    "originalRequest": {
+                      "method": "POST",
+                      "url": "http://your-api-url/api/back/v1/categories"
+                    },
+                    "status": "Created",
+                    "code": 201,
+                    "body": "{\n  \"data\": {\n    \"id\": 1,\n    \"name\": \"New Category\",\n    \"icon_url\": \"https://example.com/icon.png\",\n    \"description\": \"This is a new category.\",\n    \"subcategories\": [\n      {\n        \"id\": 1,\n        \"name\": \"Subcategory A\",\n        \"description\": \"This is a subcategory.\"\n      }\n    ]\n  }\n}"
+                  }
+                ]
+              },
+              {
+                "name": "Update Category",
+                "request": {
+                  "method": "PUT",
+                  "header": [
+                    { "key": "Content-Type", "value": "application/json" }
+                  ],
+                  "body": {
+                    "mode": "raw",
+                    "raw": "{\n  \"icon_url\": \"https://example.com/updated-icon.png\",\n  \"name\": \"Updated Category\",\n  \"description\": \"Updated description.\",\n  \"subcategories\": [\n    {\n      \"id\": 1,\n      \"name\": \"Updated Subcategory\",\n      \"description\": \"Updated description.\"\n    }\n  ]\n}"
+                  },
+                  "url": {
+                    "raw": "http://your-api-url/api/back/v1/categories/:id",
+                    "protocol": "http",
+                    "host": ["your-api-url"],
+                    "path": ["api", "back", "v1", "categories", ":id"],
+                    "variable": [
+                      { "key": "id", "value": "1" }
+                    ]
+                  }
+                },
+                "response": [
+                  {
+                    "name": "Example Response",
+                    "originalRequest": {
+                      "method": "PUT",
+                      "url": "http://your-api-url/api/back/v1/categories/1"
+                    },
+                    "status": "OK",
+                    "code": 200,
+                    "body": "{\n  \"data\": {\n    \"id\": 1,\n    \"name\": \"Updated Category\",\n    \"icon_url\": \"https://example.com/updated-icon.png\",\n    \"description\": \"Updated description.\",\n    \"subcategories\": [\n      {\n        \"id\": 1,\n        \"name\": \"Updated Subcategory\",\n        \"description\": \"Updated description.\"\n      }\n    ]\n  }\n}"
+                  }
+                ]
+              },
+              {
+                "name": "Delete Category",
+                "request": {
+                  "method": "DELETE",
+                  "header": [],
+                  "url": {
+                    "raw": "http://your-api-url/api/back/v1/categories/:id",
+                    "protocol": "http",
+                    "host": ["your-api-url"],
+                    "path": ["api", "back", "v1", "categories", ":id"],
+                    "variable": [
+                      { "key": "id", "value": "1" }
+                    ]
+                  }
+                },
+                "response": [
+                  {
+                    "name": "Example Response",
+                    "originalRequest": {
+                      "method": "DELETE",
+                      "url": "http://your-api-url/api/back/v1/categories/1"
+                    },
+                    "status": "No Content",
+                    "code": 204,
+                    "body": ""
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+  

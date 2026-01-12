@@ -1,0 +1,2568 @@
+{
+    "info": {
+      "name": "Dabablane Tests",
+      "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "item": [
+      {
+        "name": "Back",
+        "item": [
+          {
+            "name": "Category Testing",
+            "item": [
+              {
+                "name": "Get All Categories",
+                "request": {
+                  "method": "GET",
+                  "header": [],
+                  "url": {
+                    "raw": "http://your-api-url/api/back/v1/categories?include=subcategories&paginationSize=10&sort_by=name&sort_order=asc&search=example",
+                    "protocol": "http",
+                    "host": ["your-api-url"],
+                    "path": ["api", "back", "v1", "categories"],
+                    "query": [
+                      { "key": "include", "value": "subcategories" },
+                      { "key": "paginationSize", "value": "10" },
+                      { "key": "sort_by", "value": "name" },
+                      { "key": "sort_order", "value": "asc" },
+                      { "key": "search", "value": "example" }
+                    ]
+                  }
+                },
+                "response": [
+                  {
+                    "name": "Example Response",
+                    "originalRequest": {
+                      "method": "GET",
+                      "url": "http://your-api-url/api/back/v1/categories"
+                    },
+                    "status": "OK",
+                    "code": 200,
+                    "body": "{\n  \"data\": [\n    {\n      \"id\": 1,\n      \"name\": \"Electronics\",\n      \"icon_url\": \"https://example.com/electronics-icon.png\",\n      \"subcategories\": [\n        {\n          \"id\": 1,\n          \"name\": \"Mobile Phones\",\n          \"description\": \"All kinds of mobile phones.\"\n        }\n      ]\n    }\n  ]\n}"
+                  }
+                ]
+              },
+              {
+                "name": "Get Category by ID",
+                "request": {
+                  "method": "GET",
+                  "header": [],
+                  "url": {
+                    "raw": "http://your-api-url/api/back/v1/categories/:id?include=subcategories",
+                    "protocol": "http",
+                    "host": ["your-api-url"],
+                    "path": ["api", "back", "v1", "categories", ":id"],
+                    "query": [
+                      { "key": "include", "value": "subcategories" }
+                    ],
+                    "variable": [
+                      { "key": "id", "value": "1" }
+                    ]
+                  }
+                },
+                "response": [
+                  {
+                    "name": "Example Response",
+                    "originalRequest": {
+                      "method": "GET",
+                      "url": "http://your-api-url/api/back/v1/categories/1"
+                    },
+                    "status": "OK",
+                    "code": 200,
+                    "body": "{\n  \"data\": {\n    \"id\": 1,\n    \"name\": \"Electronics\",\n    \"icon_url\": \"https://example.com/electronics-icon.png\",\n    \"subcategories\": [\n      {\n        \"id\": 1,\n        \"name\": \"Mobile Phones\",\n        \"description\": \"All kinds of mobile phones.\"\n      }\n    ]\n  }\n}"
+                  }
+                ]
+              },
+              {
+                "name": "Create Category",
+                "request": {
+                  "method": "POST",
+                  "header": [
+                    { "key": "Content-Type", "value": "application/json" }
+                  ],
+                  "body": {
+                    "mode": "raw",
+                    "raw": "{\n  \"icon_url\": \"https://example.com/icon.png\",\n  \"name\": \"New Category\",\n  \"description\": \"This is a new category.\",\n  \"subcategories\": [\n    {\n      \"name\": \"Subcategory A\",\n      \"description\": \"This is a subcategory.\"\n    }\n  ]\n}"
+                  },
+                  "url": {
+                    "raw": "http://your-api-url/api/back/v1/categories",
+                    "protocol": "http",
+                    "host": ["your-api-url"],
+                    "path": ["api", "back", "v1", "categories"]
+                  }
+                },
+                "response": [
+                  {
+                    "name": "Example Response",
+                    "originalRequest": {
+                      "method": "POST",
+                      "url": "http://your-api-url/api/back/v1/categories"
+                    },
+                    "status": "Created",
+                    "code": 201,
+                    "body": "{\n  \"data\": {\n    \"id\": 1,\n    \"name\": \"New Category\",\n    \"icon_url\": \"https://example.com/icon.png\",\n    \"description\": \"This is a new category.\",\n    \"subcategories\": [\n      {\n        \"id\": 1,\n        \"name\": \"Subcategory A\",\n        \"description\": \"This is a subcategory.\"\n      }\n    ]\n  }\n}"
+                  }
+                ]
+              },
+              {
+                "name": "Update Category",
+                "request": {
+                  "method": "PUT",
+                  "header": [
+                    { "key": "Content-Type", "value": "application/json" }
+                  ],
+                  "body": {
+                    "mode": "raw",
+                    "raw": "{\n  \"icon_url\": \"https://example.com/updated-icon.png\",\n  \"name\": \"Updated Category\",\n  \"description\": \"Updated description.\",\n  \"subcategories\": [\n    {\n      \"id\": 1,\n      \"name\": \"Updated Subcategory\",\n      \"description\": \"Updated description.\"\n    }\n  ]\n}"
+                  },
+                  "url": {
+                    "raw": "http://your-api-url/api/back/v1/categories/:id",
+                    "protocol": "http",
+                    "host": ["your-api-url"],
+                    "path": ["api", "back", "v1", "categories", ":id"],
+                    "variable": [
+                      { "key": "id", "value": "1" }
+                    ]
+                  }
+                },
+                "response": [
+                  {
+                    "name": "Example Response",
+                    "originalRequest": {
+                      "method": "PUT",
+                      "url": "http://your-api-url/api/back/v1/categories/1"
+                    },
+                    "status": "OK",
+                    "code": 200,
+                    "body": "{\n  \"data\": {\n    \"id\": 1,\n    \"name\": \"Updated Category\",\n    \"icon_url\": \"https://example.com/updated-icon.png\",\n    \"description\": \"Updated description.\",\n    \"subcategories\": [\n      {\n        \"id\": 1,\n        \"name\": \"Updated Subcategory\",\n        \"description\": \"Updated description.\"\n      }\n    ]\n  }\n}"
+                  }
+                ]
+              },
+              {
+                "name": "Delete Category",
+                "request": {
+                  "method": "DELETE",
+                  "header": [],
+                  "url": {
+                    "raw": "http://your-api-url/api/back/v1/categories/:id",
+                    "protocol": "http",
+                    "host": ["your-api-url"],
+                    "path": ["api", "back", "v1", "categories", ":id"],
+                    "variable": [
+                      { "key": "id", "value": "1" }
+                    ]
+                  }
+                },
+                "response": [
+                  {
+                    "name": "Example Response",
+                    "originalRequest": {
+                      "method": "DELETE",
+                      "url": "http://your-api-url/api/back/v1/categories/1"
+                    },
+                    "status": "No Content",
+                    "code": 204,
+                    "body": ""
+                  }
+                ]
+              }
+            ]
+          },{
+            "name": "Blan Testing",
+            "item": [
+              {
+                "name": "Get All Blanes",
+                "request": {
+                  "method": "GET",
+                  "header": [],
+                  "url": {
+                    "raw": "http://your-api-url/api/back/v1/blanes?include=subcategories,categories&paginationSize=10&sort_by=created_at&sort_order=desc&search=example&status=active&city=New+York",
+                    "protocol": "http",
+                    "host": ["your-api-url"],
+                    "path": ["api", "back", "v1", "blanes"],
+                    "query": [
+                      { "key": "include", "value": "subcategories,categories" },
+                      { "key": "paginationSize", "value": "10" },
+                      { "key": "sort_by", "value": "created_at" },
+                      { "key": "sort_order", "value": "desc" },
+                      { "key": "search", "value": "example" },
+                      { "key": "status", "value": "active" },
+                      { "key": "city", "value": "New York" }
+                    ]
+                  }
+                },
+                "response": [
+                  {
+                    "name": "Example Response",
+                    "originalRequest": {
+                      "method": "GET",
+                      "url": "http://your-api-url/api/back/v1/blanes"
+                    },
+                    "status": "OK",
+                    "code": 200,
+                    "body": "{\n  \"data\": [\n    {\n      \"id\": 1,\n      \"name\": \"Blan Example\",\n      \"description\": \"This is a blan example.\",\n      \"price_current\": 100.00,\n      \"price_old\": 120.00,\n      \"city\": \"New York\",\n      \"status\": \"active\",\n      \"subcategories\": [],\n      \"categories\": []\n    }\n  ]\n}"
+                  }
+                ]
+              },
+              {
+                "name": "Get Blan by ID",
+                "request": {
+                  "method": "GET",
+                  "header": [],
+                  "url": {
+                    "raw": "http://your-api-url/api/back/v1/blanes/:id?include=subcategories,categories",
+                    "protocol": "http",
+                    "host": ["your-api-url"],
+                    "path": ["api", "back", "v1", "blanes", ":id"],
+                    "query": [
+                      { "key": "include", "value": "subcategories,categories" }
+                    ],
+                    "variable": [
+                      { "key": "id", "value": "1" }
+                    ]
+                  }
+                },
+                "response": [
+                  {
+                    "name": "Example Response",
+                    "originalRequest": {
+                      "method": "GET",
+                      "url": "http://your-api-url/api/back/v1/blanes/1"
+                    },
+                    "status": "OK",
+                    "code": 200,
+                    "body": "{\n  \"data\": {\n    \"id\": 1,\n    \"name\": \"Blan Example\",\n    \"description\": \"This is a blan example.\",\n    \"price_current\": 100.00,\n    \"price_old\": 120.00,\n    \"city\": \"New York\",\n    \"status\": \"active\",\n    \"subcategories\": [],\n    \"categories\": []\n  }\n}"
+                  }
+                ]
+              },
+              {
+                "name": "Create Blan",
+                "request": {
+                  "method": "POST",
+                  "header": [
+                    { "key": "Content-Type", "value": "application/json" }
+                  ],
+                  "body": {
+                    "mode": "raw",
+                    "raw": "{\n  \"subcategories_id\": 1,\n  \"categories_id\": 1,\n  \"name\": \"New Blan\",\n  \"description\": \"This is a new blan.\",\n  \"price_current\": 100.00,\n  \"price_old\": 120.00,\n  \"advantages\": \"Great value\",\n  \"conditions\": \"No conditions\",\n  \"city\": \"New York\",\n  \"type\": \"Type A\",\n  \"status\": \"active\",\n  \"stock\": 10,\n  \"start_date\": \"2023-10-01\",\n  \"expiration_date\": \"2023-12-31\"\n}"
+                  },
+                  "url": {
+                    "raw": "http://your-api-url/api/back/v1/blanes",
+                    "protocol": "http",
+                    "host": ["your-api-url"],
+                    "path": ["api", "back", "v1", "blanes"]
+                  }
+                },
+                "response": [
+                  {
+                    "name": "Example Response",
+                    "originalRequest": {
+                      "method": "POST",
+                      "url": "http://your-api-url/api/back/v1/blanes"
+                    },
+                    "status": "Created",
+                    "code": 201,
+                    "body": "{\n  \"message\": \"Blane created successfully\",\n  \"data\": {\n    \"id\": 2,\n    \"name\": \"New Blan\",\n    \"description\": \"This is a new blan.\",\n    \"price_current\": 100.00,\n    \"price_old\": 120.00,\n    \"city\": \"New York\",\n    \"status\": \"active\"\n  }\n}"
+                  }
+                ]
+              },
+              {
+                "name": "Update Blan",
+                "request": {
+                  "method": "PUT",
+                  "header": [
+                    { "key": "Content-Type", "value": "application/json" }
+                  ],
+                  "body": {
+                    "mode": "raw",
+                    "raw": "{\n  \"subcategories_id\": 1,\n  \"categories_id\": 1,\n  \"name\": \"Updated Blan\",\n  \"description\": \"Updated description.\",\n  \"price_current\": 90.00,\n  \"price_old\": 120.00,\n  \"advantages\": \"Updated value\",\n  \"conditions\": \"Updated conditions\",\n  \"city\": \"Los Angeles\",\n  \"type\": \"Type B\",\n  \"status\": \"inactive\",\n  \"stock\": 5,\n  \"start_date\": \"2023-10-01\",\n  \"expiration_date\": \"2023-12-31\"\n}"
+                  },
+                  "url": {
+                    "raw": "http://your-api-url/api/back/v1/blanes/:id",
+                    "protocol": "http",
+                    "host": ["your-api-url"],
+                    "path": ["api", "back", "v1", "blanes", ":id"],
+                    "variable": [
+                      { "key": "id", "value": "1" }
+                    ]
+                  }
+                },
+                "response": [
+                  {
+                    "name": "Example Response",
+                    "originalRequest": {
+                      "method": "PUT",
+                      "url": "http://your-api-url/api/back/v1/blanes/1"
+                    },
+                    "status": "OK",
+                    "code": 200,
+                    "body": "{\n  \"message\": \"Blane updated successfully\",\n  \"data\": {\n    \"id\": 1,\n    \"name\": \"Updated Blan\",\n    \"description\": \"Updated description.\",\n    \"price_current\": 90.00,\n    \"price_old\": 120.00,\n    \"city\": \"Los Angeles\",\n    \"status\": \"inactive\"\n  }\n}"
+                  }
+                ]
+              },
+              {
+                "name": "Delete Blan",
+                "request": {
+                  "method": "DELETE",
+                  "header": [],
+                  "url": {
+                    "raw": "http://your-api-url/api/back/v1/blanes/:id",
+                    "protocol": "http",
+                    "host": ["your-api-url"],
+                    "path": ["api", "back", "v1", "blanes", ":id"],
+                    "variable": [
+                      { "key": "id", "value": "1" }
+                    ]
+                  }
+                },
+                "response": [
+                  {
+                    "name": "Example Response",
+                    "originalRequest": {
+                      "method": "DELETE",
+                      "url": "http://your-api-url/api/back/v1/blanes/1"
+                    },
+                    "status": "No Content",
+                    "code": 204,
+                    "body": ""
+                  }
+                ]
+              }
+            ]
+          },{
+            "name": "Subcategory Testing",
+            "item": [
+              {
+                "name": "Get All Subcategories",
+                "request": {
+                  "method": "GET",
+                  "header": [],
+                  "url": {
+                    "raw": "http://your-api-url/api/back/v1/subcategories?paginationSize=10&sort_by=name&sort_order=asc&search=example&is_active=true",
+                    "protocol": "http",
+                    "host": ["your-api-url"],
+                    "path": ["api", "back", "v1", "subcategories"],
+                    "query": [
+                      { "key": "paginationSize", "value": "10" },
+                      { "key": "sort_by", "value": "name" },
+                      { "key": "sort_order", "value": "asc" },
+                      { "key": "search", "value": "example" },
+                      { "key": "is_active", "value": "true" }
+                    ]
+                  }
+                },
+                "response": [
+                  {
+                    "name": "Example Response",
+                    "originalRequest": {
+                      "method": "GET",
+                      "url": "http://your-api-url/api/back/v1/subcategories"
+                    },
+                    "status": "OK",
+                    "code": 200,
+                    "body": "{\n  \"data\": [\n    {\n      \"id\": 1,\n      \"name\": \"Mobile Phones\",\n      \"description\": \"All kinds of mobile phones.\",\n      \"is_active\": true\n    }\n  ]\n}"
+                  }
+                ]
+              },
+              {
+                "name": "Get Subcategory by ID",
+                "request": {
+                  "method": "GET",
+                  "header": [],
+                  "url": {
+                    "raw": "http://your-api-url/api/back/v1/subcategories/:id",
+                    "protocol": "http",
+                    "host": ["your-api-url"],
+                    "path": ["api", "back", "v1", "subcategories", ":id"],
+                    "variable": [
+                      { "key": "id", "value": "1" }
+                    ]
+                  }
+                },
+                "response": [
+                  {
+                    "name": "Example Response",
+                    "originalRequest": {
+                      "method": "GET",
+                      "url": "http://your-api-url/api/back/v1/subcategories/1"
+                    },
+                    "status": "OK",
+                    "code": 200,
+                    "body": "{\n  \"data\": {\n    \"id\": 1,\n    \"name\": \"Mobile Phones\",\n    \"description\": \"All kinds of mobile phones.\",\n    \"is_active\": true\n  }\n}"
+                  }
+                ]
+              },
+              {
+                "name": "Create Subcategory",
+                "request": {
+                  "method": "POST",
+                  "header": [
+                    { "key": "Content-Type", "value": "application/json" }
+                  ],
+                  "body": {
+                    "mode": "raw",
+                    "raw": "{\n  \"name\": \"New Subcategory\",\n  \"description\": \"This is a new subcategory.\",\n  \"is_active\": true\n}"
+                  },
+                  "url": {
+                    "raw": "http://your-api-url/api/back/v1/subcategories",
+                    "protocol": "http",
+                    "host": ["your-api-url"],
+                    "path": ["api", "back", "v1", "subcategories"]
+                  }
+                },
+                "response": [
+                  {
+                    "name": "Example Response",
+                    "originalRequest": {
+                      "method": "POST",
+                      "url": "http://your-api-url/api/back/v1/subcategories"
+                    },
+                    "status": "Created",
+                    "code": 201,
+                    "body": "{\n  \"data\": {\n    \"id\": 2,\n    \"name\": \"New Subcategory\",\n    \"description\": \"This is a new subcategory.\",\n    \"is_active\": true\n  }\n}"
+                  }
+                ]
+              },
+              {
+                "name": "Update Subcategory",
+                "request": {
+                  "method": "PUT",
+                  "header": [
+                    { "key": "Content-Type", "value": "application/json" }
+                  ],
+                  "body": {
+                    "mode": "raw",
+                    "raw": "{\n  \"name\": \"Updated Subcategory\",\n  \"description\": \"Updated description.\",\n  \"is_active\": false\n}"
+                  },
+                  "url": {
+                    "raw": "http://your-api-url/api/back/v1/subcategories/:id",
+                    "protocol": "http",
+                    "host": ["your-api-url"],
+                    "path": ["api", "back", "v1", "subcategories", ":id"],
+                    "variable": [
+                      { "key": "id", "value": "1" }
+                    ]
+                  }
+                },
+                "response": [
+                  {
+                    "name": "Example Response",
+                    "originalRequest": {
+                      "method": "PUT",
+                      "url": "http://your-api-url/api/back/v1/subcategories/1"
+                    },
+                    "status": "OK",
+                    "code": 200,
+                    "body": "{\n  \"data\": {\n    \"id\": 1,\n    \"name\": \"Updated Subcategory\",\n    \"description\": \"Updated description.\",\n    \"is_active\": false\n  }\n}"
+                  }
+                ]
+              },
+              {
+                "name": "Delete Subcategory",
+                "request": {
+                  "method": "DELETE",
+                  "header": [],
+                  "url": {
+                    "raw": "http://your-api-url/api/back/v1/subcategories/:id",
+                    "protocol": "http",
+                    "host": ["your-api-url"],
+                    "path": ["api", "back", "v1", "subcategories", ":id"],
+                    "variable": [
+                      { "key": "id", "value": "1" }
+                    ]
+                  }
+                },
+                "response": [
+                  {
+                    "name": "Example Response",
+                    "originalRequest": {
+                      "method": "DELETE",
+                      "url": "http://your-api-url/api/back/v1/subcategories/1"
+                    },
+                    "status": "No Content",
+                    "code": 204,
+                    "body": ""
+                  }
+                ]
+              }
+            ]
+          },{
+            "name": "Menu Items Testing",
+            "item": [
+              {
+                "name": "Get All Menu Items",
+                "request": {
+                  "method": "GET",
+                  "header": [],
+                  "url": {
+                    "raw": "http://your-api-url/api/back/v1/menu-items?paginationSize=10&sort_by=label&sort_order=asc&search=example&is_active=true",
+                    "protocol": "http",
+                    "host": ["your-api-url"],
+                    "path": ["api", "back", "v1", "menu-items"],
+                    "query": [
+                      { "key": "paginationSize", "value": "10" },
+                      { "key": "sort_by", "value": "label" },
+                      { "key": "sort_order", "value": "asc" },
+                      { "key": "search", "value": "example" },
+                      { "key": "is_active", "value": "true" }
+                    ]
+                  }
+                },
+                "response": [
+                  {
+                    "name": "Example Response",
+                    "originalRequest": {
+                      "method": "GET",
+                      "url": "http://your-api-url/api/back/v1/menu-items"
+                    },
+                    "status": "OK",
+                    "code": 200,
+                    "body": "{\n  \"data\": [\n    {\n      \"id\": 1,\n      \"label\": \"Home\",\n      \"url\": \"/home\",\n      \"position\": 1,\n      \"is_active\": true\n    }\n  ]\n}"
+                  }
+                ]
+              },
+              {
+                "name": "Get Menu Item by ID",
+                "request": {
+                  "method": "GET",
+                  "header": [],
+                  "url": {
+                    "raw": "http://your-api-url/api/back/v1/menu-items/:id",
+                    "protocol": "http",
+                    "host": ["your-api-url"],
+                    "path": ["api", "back", "v1", "menu-items", ":id"],
+                    "variable": [
+                      { "key": "id", "value": "1" }
+                    ]
+                  }
+                },
+                "response": [
+                  {
+                    "name": "Example Response",
+                    "originalRequest": {
+                      "method": "GET",
+                      "url": "http://your-api-url/api/back/v1/menu-items/1"
+                    },
+                    "status": "OK",
+                    "code": 200,
+                    "body": "{\n  \"data\": {\n    \"id\": 1,\n    \"label\": \"Home\",\n    \"url\": \"/home\",\n    \"position\": 1,\n    \"is_active\": true\n  }\n}"
+                  }
+                ]
+              },
+              {
+                "name": "Create Menu Item",
+                "request": {
+                  "method": "POST",
+                  "header": [
+                    { "key": "Content-Type", "value": "application/json" }
+                  ],
+                  "body": {
+                    "mode": "raw",
+                    "raw": "{\n  \"label\": \"New Menu Item\",\n  \"url\": \"/new-item\",\n  \"position\": 2,\n  \"is_active\": true\n}"
+                  },
+                  "url": {
+                    "raw": "http://your-api-url/api/back/v1/menu-items",
+                    "protocol": "http",
+                    "host": ["your-api-url"],
+                    "path": ["api", "back", "v1", "menu-items"]
+                  }
+                },
+                "response": [
+                  {
+                    "name": "Example Response",
+                    "originalRequest": {
+                      "method": "POST",
+                      "url": "http://your-api-url/api/back/v1/menu-items"
+                    },
+                    "status": "Created",
+                    "code": 201,
+                    "body": "{\n  \"data\": {\n    \"id\": 2,\n    \"label\": \"New Menu Item\",\n    \"url\": \"/new-item\",\n    \"position\": 2,\n    \"is_active\": true\n  }\n}"
+                  }
+                ]
+              },
+              {
+                "name": "Update Menu Item",
+                "request": {
+                  "method": "PUT",
+                  "header": [
+                    { "key": "Content-Type", "value": "application/json" }
+                  ],
+                  "body": {
+                    "mode": "raw",
+                    "raw": "{\n  \"label\": \"Updated Menu Item\",\n  \"url\": \"/updated-item\",\n  \"position\": 3,\n  \"is_active\": false\n}"
+                  },
+                  "url": {
+                    "raw": "http://your-api-url/api/back/v1/menu-items/:id",
+                    "protocol": "http",
+                    "host": ["your-api-url"],
+                    "path": ["api", "back", "v1", "menu-items", ":id"],
+                    "variable": [
+                      { "key": "id", "value": "1" }
+                    ]
+                  }
+                },
+                "response": [
+                  {
+                    "name": "Example Response",
+                    "originalRequest": {
+                      "method": "PUT",
+                      "url": "http://your-api-url/api/back/v1/menu-items/1"
+                    },
+                    "status": "OK",
+                    "code": 200,
+                    "body": "{\n  \"data\": {\n    \"id\": 1,\n    \"label\": \"Updated Menu Item\",\n    \"url\": \"/updated-item\",\n    \"position\": 3,\n    \"is_active\": false\n  }\n}"
+                  }
+                ]
+              },
+              {
+                "name": "Delete Menu Item",
+                "request": {
+                  "method": "DELETE",
+                  "header": [],
+                  "url": {
+                    "raw": "http://your-api-url/api/back/v1/menu-items/:id",
+                    "protocol": "http",
+                    "host": ["your-api-url"],
+                    "path": ["api", "back", "v1", "menu-items", ":id"],
+                    "variable": [
+                      { "key": "id", "value": "1" }
+                    ]
+                  }
+                },
+                "response": [
+                  {
+                    "name": "Example Response",
+                    "originalRequest": {
+                      "method": "DELETE",
+                      "url": "http://your-api-url/api/back/v1/menu-items/1"
+                    },
+                    "status": "No Content",
+                    "code": 204,
+                    "body": ""
+                  }
+                ]
+              }
+            ]
+          }, {
+            "name": "Blan Image Testing",
+            "item": [
+              {
+                "name": "Get All Blan Images",
+                "request": {
+                  "method": "GET",
+                  "header": [],
+                  "url": {
+                    "raw": "http://your-api-url/api/back/v1/blan-images?paginationSize=10&sort_by=created_at&sort_order=asc&search=example&is_active=true",
+                    "protocol": "http",
+                    "host": ["your-api-url"],
+                    "path": ["api", "back", "v1", "blan-images"],
+                    "query": [
+                      { "key": "paginationSize", "value": "10" },
+                      { "key": "sort_by", "value": "created_at" },
+                      { "key": "sort_order", "value": "asc" },
+                      { "key": "search", "value": "example" },
+                      { "key": "is_active", "value": "true" }
+                    ]
+                  }
+                },
+                "response": [
+                  {
+                    "name": "Example Response",
+                    "originalRequest": {
+                      "method": "GET",
+                      "url": "http://your-api-url/api/back/v1/blan-images"
+                    },
+                    "status": "OK",
+                    "code": 200,
+                    "body": "{\n  \"data\": [\n    {\n      \"id\": 1,\n      \"image_url\": \"https://example.com/image.png\",\n      \"is_active\": true\n    }\n  ]\n}"
+                  }
+                ]
+              },
+              {
+                "name": "Get Blan Image by ID",
+                "request": {
+                  "method": "GET",
+                  "header": [],
+                  "url": {
+                    "raw": "http://your-api-url/api/back/v1/blan-images/:id",
+                    "protocol": "http",
+                    "host": ["your-api-url"],
+                    "path": ["api", "back", "v1", "blan-images", ":id"],
+                    "variable": [
+                      { "key": "id", "value": "1" }
+                    ]
+                  }
+                },
+                "response": [
+                  {
+                    "name": "Example Response",
+                    "originalRequest": {
+                      "method": "GET",
+                      "url": "http://your-api-url/api/back/v1/blan-images/1"
+                    },
+                    "status": "OK",
+                    "code": 200,
+                    "body": "{\n  \"data\": {\n    \"id\": 1,\n    \"image_url\": \"https://example.com/image.png\",\n    \"is_active\": true\n  }\n}"
+                  }
+                ]
+              },
+              {
+                "name": "Create Blan Image",
+                "request": {
+                  "method": "POST",
+                  "header": [
+                    { "key": "Content-Type", "value": "application/json" }
+                  ],
+                  "body": {
+                    "mode": "raw",
+                    "raw": "{\n  \"image_url\": \"https://example.com/new-image.png\",\n  \"is_active\": true\n}"
+                  },
+                  "url": {
+                    "raw": "http://your-api-url/api/back/v1/blan-images",
+                    "protocol": "http",
+                    "host": ["your-api-url"],
+                    "path": ["api", "back", "v1", "blan-images"]
+                  }
+                },
+                "response": [
+                  {
+                    "name": "Example Response",
+                    "originalRequest": {
+                      "method": "POST",
+                      "url": "http://your-api-url/api/back/v1/blan-images"
+                    },
+                    "status": "Created",
+                    "code": 201,
+                    "body": "{\n  \"data\": {\n    \"id\": 2,\n    \"image_url\": \"https://example.com/new-image.png\",\n    \"is_active\": true\n  }\n}"
+                  }
+                ]
+              },
+              {
+                "name": "Update Blan Image",
+                "request": {
+                  "method": "PUT",
+                  "header": [
+                    { "key": "Content-Type", "value": "application/json" }
+                  ],
+                  "body": {
+                    "mode": "raw",
+                    "raw": "{\n  \"image_url\": \"https://example.com/updated-image.png\",\n  \"is_active\": false\n}"
+                  },
+                  "url": {
+                    "raw": "http://your-api-url/api/back/v1/blan-images/:id",
+                    "protocol": "http",
+                    "host": ["your-api-url"],
+                    "path": ["api", "back", "v1", "blan-images", ":id"],
+                    "variable": [
+                      { "key": "id", "value": "1" }
+                    ]
+                  }
+                },
+                "response": [
+                  {
+                    "name": "Example Response",
+                    "originalRequest": {
+                      "method": "PUT",
+                      "url": "http://your-api-url/api/back/v1/blan-images/1"
+                    },
+                    "status": "OK",
+                    "code": 200,
+                    "body": "{\n  \"data\": {\n    \"id\": 1,\n    \"image_url\": \"https://example.com/updated-image.png\",\n    \"is_active\": false\n  }\n}"
+                  }
+                ]
+              },
+              {
+                "name": "Delete Blan Image",
+                "request": {
+                  "method": "DELETE",
+                  "header": [],
+                  "url": {
+                    "raw": "http://your-api-url/api/back/v1/blan-images/:id",
+                    "protocol": "http",
+                    "host": ["your-api-url"],
+                    "path": ["api", "back", "v1", "blan-images", ":id"],
+                    "variable": [
+                      { "key": "id", "value": "1" }
+                    ]
+                  }
+                },
+                "response": [
+                  {
+                    "name": "Example Response",
+                    "originalRequest": {
+                      "method": "DELETE",
+                      "url": "http://your-api-url/api/back/v1/blan-images/1"
+                    },
+                    "status": "No Content",
+                    "code": 204,
+                    "body": ""
+                  }
+                ]
+              }
+            ]
+          }, {
+            "name": "Address Testing",
+            "item": [
+              {
+                "name": "Get All Addresses",
+                "request": {
+                  "method": "GET",
+                  "header": [],
+                  "url": {
+                    "raw": "http://your-api-url/api/back/v1/addresses?paginationSize=10&sort_by=created_at&sort_order=asc&search=example&is_active=true",
+                    "protocol": "http",
+                    "host": ["your-api-url"],
+                    "path": ["api", "back", "v1", "addresses"],
+                    "query": [
+                      { "key": "paginationSize", "value": "10" },
+                      { "key": "sort_by", "value": "created_at" },
+                      { "key": "sort_order", "value": "asc" },
+                      { "key": "search", "value": "example" },
+                      { "key": "is_active", "value": "true" }
+                    ]
+                  }
+                },
+                "response": [
+                  {
+                    "name": "Example Response",
+                    "originalRequest": {
+                      "method": "GET",
+                      "url": "http://your-api-url/api/back/v1/addresses"
+                    },
+                    "status": "OK",
+                    "code": 200,
+                    "body": "{\n  \"data\": [\n    {\n      \"id\": 1,\n      \"street\": \"123 Main St\",\n      \"city\": \"New York\",\n      \"state\": \"NY\",\n      \"zip_code\": \"10001\",\n      \"is_active\": true\n    }\n  ]\n}"
+                  }
+                ]
+              },
+              {
+                "name": "Get Address by ID",
+                "request": {
+                  "method": "GET",
+                  "header": [],
+                  "url": {
+                    "raw": "http://your-api-url/api/back/v1/addresses/:id",
+                    "protocol": "http",
+                    "host": ["your-api-url"],
+                    "path": ["api", "back", "v1", "addresses", ":id"],
+                    "variable": [
+                      { "key": "id", "value": "1" }
+                    ]
+                  }
+                },
+                "response": [
+                  {
+                    "name": "Example Response",
+                    "originalRequest": {
+                      "method": "GET",
+                      "url": "http://your-api-url/api/back/v1/addresses/1"
+                    },
+                    "status": "OK",
+                    "code": 200,
+                    "body": "{\n  \"data\": {\n    \"id\": 1,\n    \"street\": \"123 Main St\",\n    \"city\": \"New York\",\n    \"state\": \"NY\",\n    \"zip_code\": \"10001\",\n    \"is_active\": true\n  }\n}"
+                  }
+                ]
+              },
+              {
+                "name": "Create Address",
+                "request": {
+                  "method": "POST",
+                  "header": [
+                    { "key": "Content-Type", "value": "application/json" }
+                  ],
+                  "body": {
+                    "mode": "raw",
+                    "raw": "{\n  \"street\": \"456 Elm St\",\n  \"city\": \"Los Angeles\",\n  \"state\": \"CA\",\n  \"zip_code\": \"90001\",\n  \"is_active\": true\n}"
+                  },
+                  "url": {
+                    "raw": "http://your-api-url/api/back/v1/addresses",
+                    "protocol": "http",
+                    "host": ["your-api-url"],
+                    "path": ["api", "back", "v1", "addresses"]
+                  }
+                },
+                "response": [
+                  {
+                    "name": "Example Response",
+                    "originalRequest": {
+                      "method": "POST",
+                      "url": "http://your-api-url/api/back/v1/addresses"
+                    },
+                    "status": "Created",
+                    "code": 201,
+                    "body": "{\n  \"data\": {\n    \"id\": 2,\n    \"street\": \"456 Elm St\",\n    \"city\": \"Los Angeles\",\n    \"state\": \"CA\",\n    \"zip_code\": \"90001\",\n    \"is_active\": true\n  }\n}"
+                  }
+                ]
+              },
+              {
+                "name": "Update Address",
+                "request": {
+                  "method": "PUT",
+                  "header": [
+                    { "key": "Content-Type", "value": "application/json" }
+                  ],
+                  "body": {
+                    "mode": "raw",
+                    "raw": "{\n  \"street\": \"789 Oak St\",\n  \"city\": \"Chicago\",\n  \"state\": \"IL\",\n  \"zip_code\": \"60601\",\n  \"is_active\": false\n}"
+                  },
+                  "url": {
+                    "raw": "http://your-api-url/api/back/v1/addresses/:id",
+                    "protocol": "http",
+                    "host": ["your-api-url"],
+                    "path": ["api", "back", "v1", "addresses", ":id"],
+                    "variable": [
+                      { "key": "id", "value": "1" }
+                    ]
+                  }
+                },
+                "response": [
+                  {
+                    "name": "Example Response",
+                    "originalRequest": {
+                      "method": "PUT",
+                      "url": "http://your-api-url/api/back/v1/addresses/1"
+                    },
+                    "status": "OK",
+                    "code": 200,
+                    "body": "{\n  \"data\": {\n    \"id\": 1,\n    \"street\": \"789 Oak St\",\n    \"city\": \"Chicago\",\n    \"state\": \"IL\",\n    \"zip_code\": \"60601\",\n    \"is_active\": false\n  }\n}"
+                  }
+                ]
+              },
+              {
+                "name": "Delete Address",
+                "request": {
+                  "method": "DELETE",
+                  "header": [],
+                  "url": {
+                    "raw": "http://your-api-url/api/back/v1/addresses/:id",
+                    "protocol": "http",
+                    "host": ["your-api-url"],
+                    "path": ["api", "back", "v1", "addresses", ":id"],
+                    "variable": [
+                      { "key": "id", "value": "1" }
+                    ]
+                  }
+                },
+                "response": [
+                  {
+                    "name": "Example Response",
+                    "originalRequest": {
+                      "method": "DELETE",
+                      "url": "http://your-api-url/api/back/v1/addresses/1"
+                    },
+                    "status": "No Content",
+                    "code": 204,
+                    "body": ""
+                  }
+                ]
+              }
+            ]
+          },{
+            "name": "City Testing",
+            "item": [
+              {
+                "name": "Get All Cities",
+                "request": {
+                  "method": "GET",
+                  "header": [],
+                  "url": {
+                    "raw": "http://your-api-url/api/back/v1/cities?paginationSize=10&sort_by=name&sort_order=asc&search=example&is_active=true",
+                    "protocol": "http",
+                    "host": ["your-api-url"],
+                    "path": ["api", "back", "v1", "cities"],
+                    "query": [
+                      { "key": "paginationSize", "value": "10" },
+                      { "key": "sort_by", "value": "name" },
+                      { "key": "sort_order", "value": "asc" },
+                      { "key": "search", "value": "example" },
+                      { "key": "is_active", "value": "true" }
+                    ]
+                  }
+                },
+                "response": [
+                  {
+                    "name": "Example Response",
+                    "originalRequest": {
+                      "method": "GET",
+                      "url": "http://your-api-url/api/back/v1/cities"
+                    },
+                    "status": "OK",
+                    "code": 200,
+                    "body": "{\n  \"data\": [\n    {\n      \"id\": 1,\n      \"name\": \"New York\",\n      \"state\": \"NY\",\n      \"is_active\": true\n    }\n  ]\n}"
+                  }
+                ]
+              },
+              {
+                "name": "Get City by ID",
+                "request": {
+                  "method": "GET",
+                  "header": [],
+                  "url": {
+                    "raw": "http://your-api-url/api/back/v1/cities/:id",
+                    "protocol": "http",
+                    "host": ["your-api-url"],
+                    "path": ["api", "back", "v1", "cities", ":id"],
+                    "variable": [
+                      { "key": "id", "value": "1" }
+                    ]
+                  }
+                },
+                "response": [
+                  {
+                    "name": "Example Response",
+                    "originalRequest": {
+                      "method": "GET",
+                      "url": "http://your-api-url/api/back/v1/cities/1"
+                    },
+                    "status": "OK",
+                    "code": 200,
+                    "body": "{\n  \"data\": {\n    \"id\": 1,\n    \"name\": \"New York\",\n    \"state\": \"NY\",\n    \"is_active\": true\n  }\n}"
+                  }
+                ]
+              },
+              {
+                "name": "Create City",
+                "request": {
+                  "method": "POST",
+                  "header": [
+                    { "key": "Content-Type", "value": "application/json" }
+                  ],
+                  "body": {
+                    "mode": "raw",
+                    "raw": "{\n  \"name\": \"Los Angeles\",\n  \"state\": \"CA\",\n  \"is_active\": true\n}"
+                  },
+                  "url": {
+                    "raw": "http://your-api-url/api/back/v1/cities",
+                    "protocol": "http",
+                    "host": ["your-api-url"],
+                    "path": ["api", "back", "v1", "cities"]
+                  }
+                },
+                "response": [
+                  {
+                    "name": "Example Response",
+                    "originalRequest": {
+                      "method": "POST",
+                      "url": "http://your-api-url/api/back/v1/cities"
+                    },
+                    "status": "Created",
+                    "code": 201,
+                    "body": "{\n  \"data\": {\n    \"id\": 2,\n    \"name\": \"Los Angeles\",\n    \"state\": \"CA\",\n    \"is_active\": true\n  }\n}"
+                  }
+                ]
+              },
+              {
+                "name": "Update City",
+                "request": {
+                  "method": "PUT",
+                  "header": [
+                    { "key": "Content-Type", "value": "application/json" }
+                  ],
+                  "body": {
+                    "mode": "raw",
+                    "raw": "{\n  \"name\": \"Chicago\",\n  \"state\": \"IL\",\n  \"is_active\": false\n}"
+                  },
+                  "url": {
+                    "raw": "http://your-api-url/api/back/v1/cities/:id",
+                    "protocol": "http",
+                    "host": ["your-api-url"],
+                    "path": ["api", "back", "v1", "cities", ":id"],
+                    "variable": [
+                      { "key": "id", "value": "1" }
+                    ]
+                  }
+                },
+                "response": [
+                  {
+                    "name": "Example Response",
+                    "originalRequest": {
+                      "method": "PUT",
+                      "url": "http://your-api-url/api/back/v1/cities/1"
+                    },
+                    "status": "OK",
+                    "code": 200,
+                    "body": "{\n  \"data\": {\n    \"id\": 1,\n    \"name\": \"Chicago\",\n    \"state\": \"IL\",\n    \"is_active\": false\n  }\n}"
+                  }
+                ]
+              },
+              {
+                "name": "Delete City",
+                "request": {
+                  "method": "DELETE",
+                  "header": [],
+                  "url": {
+                    "raw": "http://your-api-url/api/back/v1/cities/:id",
+                    "protocol": "http",
+                    "host": ["your-api-url"],
+                    "path": ["api", "back", "v1", "cities", ":id"],
+                    "variable": [
+                      { "key": "id", "value": "1" }
+                    ]
+                  }
+                },
+                "response": [
+                  {
+                    "name": "Example Response",
+                    "originalRequest": {
+                      "method": "DELETE",
+                      "url": "http://your-api-url/api/back/v1/cities/1"
+                    },
+                    "status": "No Content",
+                    "code": 204,
+                    "body": ""
+                  }
+                ]
+              }
+            ]
+          }, {
+            "name": "Coupon Testing",
+            "item": [
+              {
+                "name": "Get All Coupons",
+                "request": {
+                  "method": "GET",
+                  "header": [],
+                  "url": {
+                    "raw": "http://your-api-url/api/back/v1/coupons?paginationSize=10&sort_by=code&sort_order=asc&search=example&is_active=true",
+                    "protocol": "http",
+                    "host": ["your-api-url"],
+                    "path": ["api", "back", "v1", "coupons"],
+                    "query": [
+                      { "key": "paginationSize", "value": "10" },
+                      { "key": "sort_by", "value": "code" },
+                      { "key": "sort_order", "value": "asc" },
+                      { "key": "search", "value": "example" },
+                      { "key": "is_active", "value": "true" }
+                    ]
+                  }
+                },
+                "response": [
+                  {
+                    "name": "Example Response",
+                    "originalRequest": {
+                      "method": "GET",
+                      "url": "http://your-api-url/api/back/v1/coupons"
+                    },
+                    "status": "OK",
+                    "code": 200,
+                    "body": "{\n  \"data\": [\n    {\n      \"id\": 1,\n      \"code\": \"SUMMER2023\",\n      \"discount\": 20,\n      \"is_active\": true\n    }\n  ]\n}"
+                  }
+                ]
+              },
+              {
+                "name": "Get Coupon by ID",
+                "request": {
+                  "method": "GET",
+                  "header": [],
+                  "url": {
+                    "raw": "http://your-api-url/api/back/v1/coupons/:id",
+                    "protocol": "http",
+                    "host": ["your-api-url"],
+                    "path": ["api", "back", "v1", "coupons", ":id"],
+                    "variable": [
+                      { "key": "id", "value": "1" }
+                    ]
+                  }
+                },
+                "response": [
+                  {
+                    "name": "Example Response",
+                    "originalRequest": {
+                      "method": "GET",
+                      "url": "http://your-api-url/api/back/v1/coupons/1"
+                    },
+                    "status": "OK",
+                    "code": 200,
+                    "body": "{\n  \"data\": {\n    \"id\": 1,\n    \"code\": \"SUMMER2023\",\n    \"discount\": 20,\n    \"is_active\": true\n  }\n}"
+                  }
+                ]
+              },
+              {
+                "name": "Create Coupon",
+                "request": {
+                  "method": "POST",
+                  "header": [
+                    { "key": "Content-Type", "value": "application/json" }
+                  ],
+                  "body": {
+                    "mode": "raw",
+                    "raw": "{\n  \"code\": \"WINTER2023\",\n  \"discount\": 15,\n  \"is_active\": true\n}"
+                  },
+                  "url": {
+                    "raw": "http://your-api-url/api/back/v1/coupons",
+                    "protocol": "http",
+                    "host": ["your-api-url"],
+                    "path": ["api", "back", "v1", "coupons"]
+                  }
+                },
+                "response": [
+                  {
+                    "name": "Example Response",
+                    "originalRequest": {
+                      "method": "POST",
+                      "url": "http://your-api-url/api/back/v1/coupons"
+                    },
+                    "status": "Created",
+                    "code": 201,
+                    "body": "{\n  \"data\": {\n    \"id\": 2,\n    \"code\": \"WINTER2023\",\n    \"discount\": 15,\n    \"is_active\": true\n  }\n}"
+                  }
+                ]
+              },
+              {
+                "name": "Update Coupon",
+                "request": {
+                  "method": "PUT",
+                  "header": [
+                    { "key": "Content-Type", "value": "application/json" }
+                  ],
+                  "body": {
+                    "mode": "raw",
+                    "raw": "{\n  \"code\": \"SPRING2023\",\n  \"discount\": 25,\n  \"is_active\": false\n}"
+                  },
+                  "url": {
+                    "raw": "http://your-api-url/api/back/v1/coupons/:id",
+                    "protocol": "http",
+                    "host": ["your-api-url"],
+                    "path": ["api", "back", "v1", "coupons", ":id"],
+                    "variable": [
+                      { "key": "id", "value": "1" }
+                    ]
+                  }
+                },
+                "response": [
+                  {
+                    "name": "Example Response",
+                    "originalRequest": {
+                      "method": "PUT",
+                      "url": "http://your-api-url/api/back/v1/coupons/1"
+                    },
+                    "status": "OK",
+                    "code": 200,
+                    "body": "{\n  \"data\": {\n    \"id\": 1,\n    \"code\": \"SPRING2023\",\n    \"discount\": 25,\n    \"is_active\": false\n  }\n}"
+                  }
+                ]
+              },
+              {
+                "name": "Delete Coupon",
+                "request": {
+                  "method": "DELETE",
+                  "header": [],
+                  "url": {
+                    "raw": "http://your-api-url/api/back/v1/coupons/:id",
+                    "protocol": "http",
+                    "host": ["your-api-url"],
+                    "path": ["api", "back", "v1", "coupons", ":id"],
+                    "variable": [
+                      { "key": "id", "value": "1" }
+                    ]
+                  }
+                },
+                "response": [
+                  {
+                    "name": "Example Response",
+                    "originalRequest": {
+                      "method": "DELETE",
+                      "url": "http://your-api-url/api/back/v1/coupons/1"
+                    },
+                    "status": "No Content",
+                    "code": 204,
+                    "body": ""
+                  }
+                ]
+              }
+            ]
+          },{
+            "name": "FAQ Testing",
+            "item": [
+              {
+                "name": "Get All FAQs",
+                "request": {
+                  "method": "GET",
+                  "header": [],
+                  "url": {
+                    "raw": "http://your-api-url/api/back/v1/faqs?paginationSize=10&sort_by=question&sort_order=asc&search=example&is_active=true",
+                    "protocol": "http",
+                    "host": ["your-api-url"],
+                    "path": ["api", "back", "v1", "faqs"],
+                    "query": [
+                      { "key": "paginationSize", "value": "10" },
+                      { "key": "sort_by", "value": "question" },
+                      { "key": "sort_order", "value": "asc" },
+                      { "key": "search", "value": "example" },
+                      { "key": "is_active", "value": "true" }
+                    ]
+                  }
+                },
+                "response": [
+                  {
+                    "name": "Example Response",
+                    "originalRequest": {
+                      "method": "GET",
+                      "url": "http://your-api-url/api/back/v1/faqs"
+                    },
+                    "status": "OK",
+                    "code": 200,
+                    "body": "{\n  \"data\": [\n    {\n      \"id\": 1,\n      \"question\": \"How do I reset my password?\",\n      \"answer\": \"You can reset your password by clicking the 'Forgot Password' link.\",\n      \"is_active\": true\n    }\n  ]\n}"
+                  }
+                ]
+              },
+              {
+                "name": "Get FAQ by ID",
+                "request": {
+                  "method": "GET",
+                  "header": [],
+                  "url": {
+                    "raw": "http://your-api-url/api/back/v1/faqs/:id",
+                    "protocol": "http",
+                    "host": ["your-api-url"],
+                    "path": ["api", "back", "v1", "faqs", ":id"],
+                    "variable": [
+                      { "key": "id", "value": "1" }
+                    ]
+                  }
+                },
+                "response": [
+                  {
+                    "name": "Example Response",
+                    "originalRequest": {
+                      "method": "GET",
+                      "url": "http://your-api-url/api/back/v1/faqs/1"
+                    },
+                    "status": "OK",
+                    "code": 200,
+                    "body": "{\n  \"data\": {\n    \"id\": 1,\n    \"question\": \"How do I reset my password?\",\n    \"answer\": \"You can reset your password by clicking the 'Forgot Password' link.\",\n    \"is_active\": true\n  }\n}"
+                  }
+                ]
+              },
+              {
+                "name": "Create FAQ",
+                "request": {
+                  "method": "POST",
+                  "header": [
+                    { "key": "Content-Type", "value": "application/json" }
+                  ],
+                  "body": {
+                    "mode": "raw",
+                    "raw": "{\n  \"question\": \"How do I contact support?\",\n  \"answer\": \"You can contact support via email at support@example.com.\",\n  \"is_active\": true\n}"
+                  },
+                  "url": {
+                    "raw": "http://your-api-url/api/back/v1/faqs",
+                    "protocol": "http",
+                    "host": ["your-api-url"],
+                    "path": ["api", "back", "v1", "faqs"]
+                  }
+                },
+                "response": [
+                  {
+                    "name": "Example Response",
+                    "originalRequest": {
+                      "method": "POST",
+                      "url": "http://your-api-url/api/back/v1/faqs"
+                    },
+                    "status": "Created",
+                    "code": 201,
+                    "body": "{\n  \"data\": {\n    \"id\": 2,\n    \"question\": \"How do I contact support?\",\n    \"answer\": \"You can contact support via email at support@example.com.\",\n    \"is_active\": true\n  }\n}"
+                  }
+                ]
+              },
+              {
+                "name": "Update FAQ",
+                "request": {
+                  "method": "PUT",
+                  "header": [
+                    { "key": "Content-Type", "value": "application/json" }
+                  ],
+                  "body": {
+                    "mode": "raw",
+                    "raw": "{\n  \"question\": \"How do I update my profile?\",\n  \"answer\": \"You can update your profile in the 'Settings' section.\",\n  \"is_active\": false\n}"
+                  },
+                  "url": {
+                    "raw": "http://your-api-url/api/back/v1/faqs/:id",
+                    "protocol": "http",
+                    "host": ["your-api-url"],
+                    "path": ["api", "back", "v1", "faqs", ":id"],
+                    "variable": [
+                      { "key": "id", "value": "1" }
+                    ]
+                  }
+                },
+                "response": [
+                  {
+                    "name": "Example Response",
+                    "originalRequest": {
+                      "method": "PUT",
+                      "url": "http://your-api-url/api/back/v1/faqs/1"
+                    },
+                    "status": "OK",
+                    "code": 200,
+                    "body": "{\n  \"data\": {\n    \"id\": 1,\n    \"question\": \"How do I update my profile?\",\n    \"answer\": \"You can update your profile in the 'Settings' section.\",\n    \"is_active\": false\n  }\n}"
+                  }
+                ]
+              },
+              {
+                "name": "Delete FAQ",
+                "request": {
+                  "method": "DELETE",
+                  "header": [],
+                  "url": {
+                    "raw": "http://your-api-url/api/back/v1/faqs/:id",
+                    "protocol": "http",
+                    "host": ["your-api-url"],
+                    "path": ["api", "back", "v1", "faqs", ":id"],
+                    "variable": [
+                      { "key": "id", "value": "1" }
+                    ]
+                  }
+                },
+                "response": [
+                  {
+                    "name": "Example Response",
+                    "originalRequest": {
+                      "method": "DELETE",
+                      "url": "http://your-api-url/api/back/v1/faqs/1"
+                    },
+                    "status": "No Content",
+                    "code": 204,
+                    "body": ""
+                  }
+                ]
+              }
+            ]
+          },{
+            "name": "Merchant Testing",
+            "item": [
+              {
+                "name": "Get All Merchants",
+                "request": {
+                  "method": "GET",
+                  "header": [],
+                  "url": {
+                    "raw": "http://your-api-url/api/back/v1/merchants?paginationSize=10&sort_by=name&sort_order=asc&search=example&is_active=true",
+                    "protocol": "http",
+                    "host": ["your-api-url"],
+                    "path": ["api", "back", "v1", "merchants"],
+                    "query": [
+                      { "key": "paginationSize", "value": "10" },
+                      { "key": "sort_by", "value": "name" },
+                      { "key": "sort_order", "value": "asc" },
+                      { "key": "search", "value": "example" },
+                      { "key": "is_active", "value": "true" }
+                    ]
+                  }
+                },
+                "response": [
+                  {
+                    "name": "Example Response",
+                    "originalRequest": {
+                      "method": "GET",
+                      "url": "http://your-api-url/api/back/v1/merchants"
+                    },
+                    "status": "OK",
+                    "code": 200,
+                    "body": "{\n  \"data\": [\n    {\n      \"id\": 1,\n      \"name\": \"Merchant A\",\n      \"email\": \"merchantA@example.com\",\n      \"is_active\": true\n    }\n  ]\n}"
+                  }
+                ]
+              },
+              {
+                "name": "Get Merchant by ID",
+                "request": {
+                  "method": "GET",
+                  "header": [],
+                  "url": {
+                    "raw": "http://your-api-url/api/back/v1/merchants/:id",
+                    "protocol": "http",
+                    "host": ["your-api-url"],
+                    "path": ["api", "back", "v1", "merchants", ":id"],
+                    "variable": [
+                      { "key": "id", "value": "1" }
+                    ]
+                  }
+                },
+                "response": [
+                  {
+                    "name": "Example Response",
+                    "originalRequest": {
+                      "method": "GET",
+                      "url": "http://your-api-url/api/back/v1/merchants/1"
+                    },
+                    "status": "OK",
+                    "code": 200,
+                    "body": "{\n  \"data\": {\n    \"id\": 1,\n    \"name\": \"Merchant A\",\n    \"email\": \"merchantA@example.com\",\n    \"is_active\": true\n  }\n}"
+                  }
+                ]
+              },
+              {
+                "name": "Create Merchant",
+                "request": {
+                  "method": "POST",
+                  "header": [
+                    { "key": "Content-Type", "value": "application/json" }
+                  ],
+                  "body": {
+                    "mode": "raw",
+                    "raw": "{\n  \"name\": \"Merchant B\",\n  \"email\": \"merchantB@example.com\",\n  \"is_active\": true\n}"
+                  },
+                  "url": {
+                    "raw": "http://your-api-url/api/back/v1/merchants",
+                    "protocol": "http",
+                    "host": ["your-api-url"],
+                    "path": ["api", "back", "v1", "merchants"]
+                  }
+                },
+                "response": [
+                  {
+                    "name": "Example Response",
+                    "originalRequest": {
+                      "method": "POST",
+                      "url": "http://your-api-url/api/back/v1/merchants"
+                    },
+                    "status": "Created",
+                    "code": 201,
+                    "body": "{\n  \"data\": {\n    \"id\": 2,\n    \"name\": \"Merchant B\",\n    \"email\": \"merchantB@example.com\",\n    \"is_active\": true\n  }\n}"
+                  }
+                ]
+              },
+              {
+                "name": "Update Merchant",
+                "request": {
+                  "method": "PUT",
+                  "header": [
+                    { "key": "Content-Type", "value": "application/json" }
+                  ],
+                  "body": {
+                    "mode": "raw",
+                    "raw": "{\n  \"name\": \"Updated Merchant\",\n  \"email\": \"updatedMerchant@example.com\",\n  \"is_active\": false\n}"
+                  },
+                  "url": {
+                    "raw": "http://your-api-url/api/back/v1/merchants/:id",
+                    "protocol": "http",
+                    "host": ["your-api-url"],
+                    "path": ["api", "back", "v1", "merchants", ":id"],
+                    "variable": [
+                      { "key": "id", "value": "1" }
+                    ]
+                  }
+                },
+                "response": [
+                  {
+                    "name": "Example Response",
+                    "originalRequest": {
+                      "method": "PUT",
+                      "url": "http://your-api-url/api/back/v1/merchants/1"
+                    },
+                    "status": "OK",
+                    "code": 200,
+                    "body": "{\n  \"data\": {\n    \"id\": 1,\n    \"name\": \"Updated Merchant\",\n    \"email\": \"updatedMerchant@example.com\",\n    \"is_active\": false\n  }\n}"
+                  }
+                ]
+              },
+              {
+                "name": "Delete Merchant",
+                "request": {
+                  "method": "DELETE",
+                  "header": [],
+                  "url": {
+                    "raw": "http://your-api-url/api/back/v1/merchants/:id",
+                    "protocol": "http",
+                    "host": ["your-api-url"],
+                    "path": ["api", "back", "v1", "merchants", ":id"],
+                    "variable": [
+                      { "key": "id", "value": "1" }
+                    ]
+                  }
+                },
+                "response": [
+                  {
+                    "name": "Example Response",
+                    "originalRequest": {
+                      "method": "DELETE",
+                      "url": "http://your-api-url/api/back/v1/merchants/1"
+                    },
+                    "status": "No Content",
+                    "code": 204,
+                    "body": ""
+                  }
+                ]
+              }
+            ]
+          }, {
+            "name": "Order Testing",
+            "item": [
+              {
+                "name": "Get All Orders",
+                "request": {
+                  "method": "GET",
+                  "header": [],
+                  "url": {
+                    "raw": "http://your-api-url/api/back/v1/orders?paginationSize=10&sort_by=created_at&sort_order=asc&search=example&status=pending",
+                    "protocol": "http",
+                    "host": ["your-api-url"],
+                    "path": ["api", "back", "v1", "orders"],
+                    "query": [
+                      { "key": "paginationSize", "value": "10" },
+                      { "key": "sort_by", "value": "created_at" },
+                      { "key": "sort_order", "value": "asc" },
+                      { "key": "search", "value": "example" },
+                      { "key": "status", "value": "pending" }
+                    ]
+                  }
+                },
+                "response": [
+                  {
+                    "name": "Example Response",
+                    "originalRequest": {
+                      "method": "GET",
+                      "url": "http://your-api-url/api/back/v1/orders"
+                    },
+                    "status": "OK",
+                    "code": 200,
+                    "body": "{\n  \"data\": [\n    {\n      \"id\": 1,\n      \"user_id\": 1,\n      \"total_amount\": 29.99,\n      \"status\": \"pending\"\n    }\n  ]\n}"
+                  }
+                ]
+              },
+              {
+                "name": "Get Order by ID",
+                "request": {
+                  "method": "GET",
+                  "header": [],
+                  "url": {
+                    "raw": "http://your-api-url/api/back/v1/orders/:id",
+                    "protocol": "http",
+                    "host": ["your-api-url"],
+                    "path": ["api", "back", "v1", "orders", ":id"],
+                    "variable": [
+                      { "key": "id", "value": "1" }
+                    ]
+                  }
+                },
+                "response": [
+                  {
+                    "name": "Example Response",
+                    "originalRequest": {
+                      "method": "GET",
+                      "url": "http://your-api-url/api/back/v1/orders/1"
+                    },
+                    "status": "OK",
+                    "code": 200,
+                    "body": "{\n  \"data\": {\n    \"id\": 1,\n    \"user_id\": 1,\n    \"total_amount\": 29.99,\n    \"status\": \"pending\"\n  }\n}"
+                  }
+                ]
+              },
+              {
+                "name": "Create Order",
+                "request": {
+                  "method": "POST",
+                  "header": [
+                    { "key": "Content-Type", "value": "application/json" }
+                  ],
+                  "body": {
+                    "mode": "raw",
+                    "raw": "{\n  \"user_id\": 2,\n  \"total_amount\": 49.99,\n  \"status\": \"pending\"\n}"
+                  },
+                  "url": {
+                    "raw": "http://your-api-url/api/back/v1/orders",
+                    "protocol": "http",
+                    "host": ["your-api-url"],
+                    "path": ["api", "back", "v1", "orders"]
+                  }
+                },
+                "response": [
+                  {
+                    "name": "Example Response",
+                    "originalRequest": {
+                      "method": "POST",
+                      "url": "http://your-api-url/api/back/v1/orders"
+                    },
+                    "status": "Created",
+                    "code": 201,
+                    "body": "{\n  \"data\": {\n    \"id\": 2,\n    \"user_id\": 2,\n    \"total_amount\": 49.99,\n    \"status\": \"pending\"\n  }\n}"
+                  }
+                ]
+              },
+              {
+                "name": "Update Order",
+                "request": {
+                  "method": "PUT",
+                  "header": [
+                    { "key": "Content-Type", "value": "application/json" }
+                  ],
+                  "body": {
+                    "mode": "raw",
+                    "raw": "{\n  \"user_id\": 2,\n  \"total_amount\": 59.99,\n  \"status\": \"completed\"\n}"
+                  },
+                  "url": {
+                    "raw": "http://your-api-url/api/back/v1/orders/:id",
+                    "protocol": "http",
+                    "host": ["your-api-url"],
+                    "path": ["api", "back", "v1", "orders", ":id"],
+                    "variable": [
+                      { "key": "id", "value": "1" }
+                    ]
+                  }
+                },
+                "response": [
+                  {
+                    "name": "Example Response",
+                    "originalRequest": {
+                      "method": "PUT",
+                      "url": "http://your-api-url/api/back/v1/orders/1"
+                    },
+                    "status": "OK",
+                    "code": 200,
+                    "body": "{\n  \"data\": {\n    \"id\": 1,\n    \"user_id\": 2,\n    \"total_amount\": 59.99,\n    \"status\": \"completed\"\n  }\n}"
+                  }
+                ]
+              },
+              {
+                "name": "Delete Order",
+                "request": {
+                  "method": "DELETE",
+                  "header": [],
+                  "url": {
+                    "raw": "http://your-api-url/api/back/v1/orders/:id",
+                    "protocol": "http",
+                    "host": ["your-api-url"],
+                    "path": ["api", "back", "v1", "orders", ":id"],
+                    "variable": [
+                      { "key": "id", "value": "1" }
+                    ]
+                  }
+                },
+                "response": [
+                  {
+                    "name": "Example Response",
+                    "originalRequest": {
+                      "method": "DELETE",
+                      "url": "http://your-api-url/api/back/v1/orders/1"
+                    },
+                    "status": "No Content",
+                    "code": 204,
+                    "body": ""
+                  }
+                ]
+              }
+            ]
+          }, {
+            "name": "Reservation Testing",
+            "item": [
+              {
+                "name": "Get All Reservations",
+                "request": {
+                  "method": "GET",
+                  "header": [],
+                  "url": {
+                    "raw": "http://your-api-url/api/back/v1/reservations?paginationSize=10&sort_by=created_at&sort_order=asc&search=example&status=pending",
+                    "protocol": "http",
+                    "host": ["your-api-url"],
+                    "path": ["api", "back", "v1", "reservations"],
+                    "query": [
+                      { "key": "paginationSize", "value": "10" },
+                      { "key": "sort_by", "value": "created_at" },
+                      { "key": "sort_order", "value": "asc" },
+                      { "key": "search", "value": "example" },
+                      { "key": "status", "value": "pending" }
+                    ]
+                  }
+                },
+                "response": [
+                  {
+                    "name": "Example Response",
+                    "originalRequest": {
+                      "method": "GET",
+                      "url": "http://your-api-url/api/back/v1/reservations"
+                    },
+                    "status": "OK",
+                    "code": 200,
+                    "body": "{\n  \"data\": [\n    {\n      \"id\": 1,\n      \"user_id\": 1,\n      \"reservation_date\": \"2023-10-01\",\n      \"status\": \"pending\"\n    }\n  ]\n}"
+                  }
+                ]
+              },
+              {
+                "name": "Get Reservation by ID",
+                "request": {
+                  "method": "GET",
+                  "header": [],
+                  "url": {
+                    "raw": "http://your-api-url/api/back/v1/reservations/:id",
+                    "protocol": "http",
+                    "host": ["your-api-url"],
+                    "path": ["api", "back", "v1", "reservations", ":id"],
+                    "variable": [
+                      { "key": "id", "value": "1" }
+                    ]
+                  }
+                },
+                "response": [
+                  {
+                    "name": "Example Response",
+                    "originalRequest": {
+                      "method": "GET",
+                      "url": "http://your-api-url/api/back/v1/reservations/1"
+                    },
+                    "status": "OK",
+                    "code": 200,
+                    "body": "{\n  \"data\": {\n    \"id\": 1,\n    \"user_id\": 1,\n    \"reservation_date\": \"2023-10-01\",\n    \"status\": \"pending\"\n  }\n}"
+                  }
+                ]
+              },
+              {
+                "name": "Create Reservation",
+                "request": {
+                  "method": "POST",
+                  "header": [
+                    { "key": "Content-Type", "value": "application/json" }
+                  ],
+                  "body": {
+                    "mode": "raw",
+                    "raw": "{\n  \"user_id\": 2,\n  \"reservation_date\": \"2023-10-02\",\n  \"status\": \"pending\"\n}"
+                  },
+                  "url": {
+                    "raw": "http://your-api-url/api/back/v1/reservations",
+                    "protocol": "http",
+                    "host": ["your-api-url"],
+                    "path": ["api", "back", "v1", "reservations"]
+                  }
+                },
+                "response": [
+                  {
+                    "name": "Example Response",
+                    "originalRequest": {
+                      "method": "POST",
+                      "url": "http://your-api-url/api/back/v1/reservations"
+                    },
+                    "status": "Created",
+                    "code": 201,
+                    "body": "{\n  \"data\": {\n    \"id\": 2,\n    \"user_id\": 2,\n    \"reservation_date\": \"2023-10-02\",\n    \"status\": \"pending\"\n  }\n}"
+                  }
+                ]
+              },
+              {
+                "name": "Update Reservation",
+                "request": {
+                  "method": "PUT",
+                  "header": [
+                    { "key": "Content-Type", "value": "application/json" }
+                  ],
+                  "body": {
+                    "mode": "raw",
+                    "raw": "{\n  \"user_id\": 2,\n  \"reservation_date\": \"2023-10-03\",\n  \"status\": \"confirmed\"\n}"
+                  },
+                  "url": {
+                    "raw": "http://your-api-url/api/back/v1/reservations/:id",
+                    "protocol": "http",
+                    "host": ["your-api-url"],
+                    "path": ["api", "back", "v1", "reservations", ":id"],
+                    "variable": [
+                      { "key": "id", "value": "1" }
+                    ]
+                  }
+                },
+                "response": [
+                  {
+                    "name": "Example Response",
+                    "originalRequest": {
+                      "method": "PUT",
+                      "url": "http://your-api-url/api/back/v1/reservations/1"
+                    },
+                    "status": "OK",
+                    "code": 200,
+                    "body": "{\n  \"data\": {\n    \"id\": 1,\n    \"user_id\": 2,\n    \"reservation_date\": \"2023-10-03\",\n    \"status\": \"confirmed\"\n  }\n}"
+                  }
+                ]
+              },
+              {
+                "name": "Delete Reservation",
+                "request": {
+                  "method": "DELETE",
+                  "header": [],
+                  "url": {
+                    "raw": "http://your-api-url/api/back/v1/reservations/:id",
+                    "protocol": "http",
+                    "host": ["your-api-url"],
+                    "path": ["api", "back", "v1", "reservations", ":id"],
+                    "variable": [
+                      { "key": "id", "value": "1" }
+                    ]
+                  }
+                },
+                "response": [
+                  {
+                    "name": "Example Response",
+                    "originalRequest": {
+                      "method": "DELETE",
+                      "url": "http://your-api-url/api/back/v1/reservations/1"
+                    },
+                    "status": "No Content",
+                    "code": 204,
+                    "body": ""
+                  }
+                ]
+              }
+            ]
+          },{
+            "name": "Shipping Detail Testing",
+            "item": [
+              {
+                "name": "Get All Shipping Details",
+                "request": {
+                  "method": "GET",
+                  "header": [],
+                  "url": {
+                    "raw": "http://your-api-url/api/back/v1/shipping-details?paginationSize=10&sort_by=created_at&sort_order=asc&search=example",
+                    "protocol": "http",
+                    "host": ["your-api-url"],
+                    "path": ["api", "back", "v1", "shipping-details"],
+                    "query": [
+                      { "key": "paginationSize", "value": "10" },
+                      { "key": "sort_by", "value": "created_at" },
+                      { "key": "sort_order", "value": "asc" },
+                      { "key": "search", "value": "example" }
+                    ]
+                  }
+                },
+                "response": [
+                  {
+                    "name": "Example Response",
+                    "originalRequest": {
+                      "method": "GET",
+                      "url": "http://your-api-url/api/back/v1/shipping-details"
+                    },
+                    "status": "OK",
+                    "code": 200,
+                    "body": "{\n  \"data\": [\n    {\n      \"id\": 1,\n      \"order_id\": 1,\n      \"address\": \"123 Main St\",\n      \"shipping_method\": \"standard\"\n    }\n  ]\n}"
+                  }
+                ]
+              },
+              {
+                "name": "Get Shipping Detail by ID",
+                "request": {
+                  "method": "GET",
+                  "header": [],
+                  "url": {
+                    "raw": "http://your-api-url/api/back/v1/shipping-details/:id",
+                    "protocol": "http",
+                    "host": ["your-api-url"],
+                    "path": ["api", "back", "v1", "shipping-details", ":id"],
+                    "variable": [
+                      { "key": "id", "value": "1" }
+                    ]
+                  }
+                },
+                "response": [
+                  {
+                    "name": "Example Response",
+                    "originalRequest": {
+                      "method": "GET",
+                      "url": "http://your-api-url/api/back/v1/shipping-details/1"
+                    },
+                    "status": "OK",
+                    "code": 200,
+                    "body": "{\n  \"data\": {\n    \"id\": 1,\n    \"order_id\": 1,\n    \"address\": \"123 Main St\",\n    \"shipping_method\": \"standard\"\n  }\n}"
+                  }
+                ]
+              },
+              {
+                "name": "Create Shipping Detail",
+                "request": {
+                  "method": "POST",
+                  "header": [
+                    { "key": "Content-Type", "value": "application/json" }
+                  ],
+                  "body": {
+                    "mode": "raw",
+                    "raw": "{\n  \"order_id\": 2,\n  \"address\": \"456 Elm St\",\n  \"shipping_method\": \"express\"\n}"
+                  },
+                  "url": {
+                    "raw": "http://your-api-url/api/back/v1/shipping-details",
+                    "protocol": "http",
+                    "host": ["your-api-url"],
+                    "path": ["api", "back", "v1", "shipping-details"]
+                  }
+                },
+                "response": [
+                  {
+                    "name": "Example Response",
+                    "originalRequest": {
+                      "method": "POST",
+                      "url": "http://your-api-url/api/back/v1/shipping-details"
+                    },
+                    "status": "Created",
+                    "code": 201,
+                    "body": "{\n  \"data\": {\n    \"id\": 2,\n    \"order_id\": 2,\n    \"address\": \"456 Elm St\",\n    \"shipping_method\": \"express\"\n  }\n}"
+                  }
+                ]
+              },
+              {
+                "name": "Update Shipping Detail",
+                "request": {
+                  "method": "PUT",
+                  "header": [
+                    { "key": "Content-Type", "value": "application/json" }
+                  ],
+                  "body": {
+                    "mode": "raw",
+                    "raw": "{\n  \"order_id\": 2,\n  \"address\": \"789 Oak St\",\n  \"shipping_method\": \"standard\"\n}"
+                  },
+                  "url": {
+                    "raw": "http://your-api-url/api/back/v1/shipping-details/:id",
+                    "protocol": "http",
+                    "host": ["your-api-url"],
+                    "path": ["api", "back", "v1", "shipping-details", ":id"],
+                    "variable": [
+                      { "key": "id", "value": "1" }
+                    ]
+                  }
+                },
+                "response": [
+                  {
+                    "name": "Example Response",
+                    "originalRequest": {
+                      "method": "PUT",
+                      "url": "http://your-api-url/api/back/v1/shipping-details/1"
+                    },
+                    "status": "OK",
+                    "code": 200,
+                    "body": "{\n  \"data\": {\n    \"id\": 1,\n    \"order_id\": 2,\n    \"address\": \"789 Oak St\",\n    \"shipping_method\": \"standard\"\n  }\n}"
+                  }
+                ]
+              },
+              {
+                "name": "Delete Shipping Detail",
+                "request": {
+                  "method": "DELETE",
+                  "header": [],
+                  "url": {
+                    "raw": "http://your-api-url/api/back/v1/shipping-details/:id",
+                    "protocol": "http",
+                    "host": ["your-api-url"],
+                    "path": ["api", "back", "v1", "shipping-details", ":id"],
+                    "variable": [
+                      { "key": "id", "value": "1" }
+                    ]
+                  }
+                },
+                "response": [
+                  {
+                    "name": "Example Response",
+                    "originalRequest": {
+                      "method": "DELETE",
+                      "url": "http://your-api-url/api/back/v1/shipping-details/1"
+                    },
+                    "status": "No Content",
+                    "code": 204,
+                    "body": ""
+                  }
+                ]
+              }
+            ]
+          },{
+            "name": "Site Feedback Testing",
+            "item": [
+              {
+                "name": "Get All Site Feedbacks",
+                "request": {
+                  "method": "GET",
+                  "header": [],
+                  "url": {
+                    "raw": "http://your-api-url/api/back/v1/site-feedbacks?paginationSize=10&sort_by=created_at&sort_order=asc&search=example",
+                    "protocol": "http",
+                    "host": ["your-api-url"],
+                    "path": ["api", "back", "v1", "site-feedbacks"],
+                    "query": [
+                      { "key": "paginationSize", "value": "10" },
+                      { "key": "sort_by", "value": "created_at" },
+                      { "key": "sort_order", "value": "asc" },
+                      { "key": "search", "value": "example" }
+                    ]
+                  }
+                },
+                "response": [
+                  {
+                    "name": "Example Response",
+                    "originalRequest": {
+                      "method": "GET",
+                      "url": "http://your-api-url/api/back/v1/site-feedbacks"
+                    },
+                    "status": "OK",
+                    "code": 200,
+                    "body": "{\n  \"data\": [\n    {\n      \"id\": 1,\n      \"user_id\": 1,\n      \"feedback\": \"Great service!\",\n      \"rating\": 5\n    }\n  ]\n}"
+                  }
+                ]
+              },
+              {
+                "name": "Get Site Feedback by ID",
+                "request": {
+                  "method": "GET",
+                  "header": [],
+                  "url": {
+                    "raw": "http://your-api-url/api/back/v1/site-feedbacks/:id",
+                    "protocol": "http",
+                    "host": ["your-api-url"],
+                    "path": ["api", "back", "v1", "site-feedbacks", ":id"],
+                    "variable": [
+                      { "key": "id", "value": "1" }
+                    ]
+                  }
+                },
+                "response": [
+                  {
+                    "name": "Example Response",
+                    "originalRequest": {
+                      "method": "GET",
+                      "url": "http://your-api-url/api/back/v1/site-feedbacks/1"
+                    },
+                    "status": "OK",
+                    "code": 200,
+                    "body": "{\n  \"data\": {\n    \"id\": 1,\n    \"user_id\": 1,\n    \"feedback\": \"Great service!\",\n    \"rating\": 5\n  }\n}"
+                  }
+                ]
+              },
+              {
+                "name": "Create Site Feedback",
+                "request": {
+                  "method": "POST",
+                  "header": [
+                    { "key": "Content-Type", "value": "application/json" }
+                  ],
+                  "body": {
+                    "mode": "raw",
+                    "raw": "{\n  \"user_id\": 2,\n  \"feedback\": \"Excellent experience!\",\n  \"rating\": 5\n}"
+                  },
+                  "url": {
+                    "raw": "http://your-api-url/api/back/v1/site-feedbacks",
+                    "protocol": "http",
+                    "host": ["your-api-url"],
+                    "path": ["api", "back", "v1", "site-feedbacks"]
+                  }
+                },
+                "response": [
+                  {
+                    "name": "Example Response",
+                    "originalRequest": {
+                      "method": "POST",
+                      "url": "http://your-api-url/api/back/v1/site-feedbacks"
+                    },
+                    "status": "Created",
+                    "code": 201,
+                    "body": "{\n  \"data\": {\n    \"id\": 2,\n    \"user_id\": 2,\n    \"feedback\": \"Excellent experience!\",\n    \"rating\": 5\n  }\n}"
+                  }
+                ]
+              },
+              {
+                "name": "Update Site Feedback",
+                "request": {
+                  "method": "PUT",
+                  "header": [
+                    { "key": "Content-Type", "value": "application/json" }
+                  ],
+                  "body": {
+                    "mode": "raw",
+                    "raw": "{\n  \"user_id\": 2,\n  \"feedback\": \"Updated feedback.\",\n  \"rating\": 4\n}"
+                  },
+                  "url": {
+                    "raw": "http://your-api-url/api/back/v1/site-feedbacks/:id",
+                    "protocol": "http",
+                    "host": ["your-api-url"],
+                    "path": ["api", "back", "v1", "site-feedbacks", ":id"],
+                    "variable": [
+                      { "key": "id", "value": "1" }
+                    ]
+                  }
+                },
+                "response": [
+                  {
+                    "name": "Example Response",
+                    "originalRequest": {
+                      "method": "PUT",
+                      "url": "http://your-api-url/api/back/v1/site-feedbacks/1"
+                    },
+                    "status": "OK",
+                    "code": 200,
+                    "body": "{\n  \"data\": {\n    \"id\": 1,\n    \"user_id\": 2,\n    \"feedback\": \"Updated feedback.\",\n    \"rating\": 4\n  }\n}"
+                  }
+                ]
+              },
+              {
+                "name": "Delete Site Feedback",
+                "request": {
+                  "method": "DELETE",
+                  "header": [],
+                  "url": {
+                    "raw": "http://your-api-url/api/back/v1/site-feedbacks/:id",
+                    "protocol": "http",
+                    "host": ["your-api-url"],
+                    "path": ["api", "back", "v1", "site-feedbacks", ":id"],
+                    "variable": [
+                      { "key": "id", "value": "1" }
+                    ]
+                  }
+                },
+                "response": [
+                  {
+                    "name": "Example Response",
+                    "originalRequest": {
+                      "method": "DELETE",
+                      "url": "http://your-api-url/api/back/v1/site-feedbacks/1"
+                    },
+                    "status": "No Content",
+                    "code": 204,
+                    "body": ""
+                  }
+                ]
+              }
+            ]
+          },{
+            "name": "Reservation Testing",
+            "item": [
+              {
+                "name": "Get All Reservations",
+                "request": {
+                  "method": "GET",
+                  "header": [],
+                  "url": {
+                    "raw": "http://your-api-url/api/back/v1/reservations?paginationSize=10&sort_by=created_at&sort_order=asc&search=example&status=pending",
+                    "protocol": "http",
+                    "host": ["your-api-url"],
+                    "path": ["api", "back", "v1", "reservations"],
+                    "query": [
+                      { "key": "paginationSize", "value": "10" },
+                      { "key": "sort_by", "value": "created_at" },
+                      { "key": "sort_order", "value": "asc" },
+                      { "key": "search", "value": "example" },
+                      { "key": "status", "value": "pending" }
+                    ]
+                  }
+                },
+                "response": [
+                  {
+                    "name": "Example Response",
+                    "originalRequest": {
+                      "method": "GET",
+                      "url": "http://your-api-url/api/back/v1/reservations"
+                    },
+                    "status": "OK",
+                    "code": 200,
+                    "body": "{\n  \"data\": [\n    {\n      \"id\": 1,\n      \"user_id\": 1,\n      \"reservation_date\": \"2023-10-01\",\n      \"status\": \"pending\"\n    }\n  ]\n}"
+                  }
+                ]
+              },
+              {
+                "name": "Get Reservation by ID",
+                "request": {
+                  "method": "GET",
+                  "header": [],
+                  "url": {
+                    "raw": "http://your-api-url/api/back/v1/reservations/:id",
+                    "protocol": "http",
+                    "host": ["your-api-url"],
+                    "path": ["api", "back", "v1", "reservations", ":id"],
+                    "variable": [
+                      { "key": "id", "value": "1" }
+                    ]
+                  }
+                },
+                "response": [
+                  {
+                    "name": "Example Response",
+                    "originalRequest": {
+                      "method": "GET",
+                      "url": "http://your-api-url/api/back/v1/reservations/1"
+                    },
+                    "status": "OK",
+                    "code": 200,
+                    "body": "{\n  \"data\": {\n    \"id\": 1,\n    \"user_id\": 1,\n    \"reservation_date\": \"2023-10-01\",\n    \"status\": \"pending\"\n  }\n}"
+                  }
+                ]
+              },
+              {
+                "name": "Create Reservation",
+                "request": {
+                  "method": "POST",
+                  "header": [
+                    { "key": "Content-Type", "value": "application/json" }
+                  ],
+                  "body": {
+                    "mode": "raw",
+                    "raw": "{\n  \"user_id\": 2,\n  \"reservation_date\": \"2023-10-02\",\n  \"status\": \"pending\"\n}"
+                  },
+                  "url": {
+                    "raw": "http://your-api-url/api/back/v1/reservations",
+                    "protocol": "http",
+                    "host": ["your-api-url"],
+                    "path": ["api", "back", "v1", "reservations"]
+                  }
+                },
+                "response": [
+                  {
+                    "name": "Example Response",
+                    "originalRequest": {
+                      "method": "POST",
+                      "url": "http://your-api-url/api/back/v1/reservations"
+                    },
+                    "status": "Created",
+                    "code": 201,
+                    "body": "{\n  \"data\": {\n    \"id\": 2,\n    \"user_id\": 2,\n    \"reservation_date\": \"2023-10-02\",\n    \"status\": \"pending\"\n  }\n}"
+                  }
+                ]
+              },
+              {
+                "name": "Update Reservation",
+                "request": {
+                  "method": "PUT",
+                  "header": [
+                    { "key": "Content-Type", "value": "application/json" }
+                  ],
+                  "body": {
+                    "mode": "raw",
+                    "raw": "{\n  \"user_id\": 2,\n  \"reservation_date\": \"2023-10-03\",\n  \"status\": \"confirmed\"\n}"
+                  },
+                  "url": {
+                    "raw": "http://your-api-url/api/back/v1/reservations/:id",
+                    "protocol": "http",
+                    "host": ["your-api-url"],
+                    "path": ["api", "back", "v1", "reservations", ":id"],
+                    "variable": [
+                      { "key": "id", "value": "1" }
+                    ]
+                  }
+                },
+                "response": [
+                  {
+                    "name": "Example Response",
+                    "originalRequest": {
+                      "method": "PUT",
+                      "url": "http://your-api-url/api/back/v1/reservations/1"
+                    },
+                    "status": "OK",
+                    "code": 200,
+                    "body": "{\n  \"data\": {\n    \"id\": 1,\n    \"user_id\": 2,\n    \"reservation_date\": \"2023-10-03\",\n    \"status\": \"confirmed\"\n  }\n}"
+                  }
+                ]
+              },
+              {
+                "name": "Delete Reservation",
+                "request": {
+                  "method": "DELETE",
+                  "header": [],
+                  "url": {
+                    "raw": "http://your-api-url/api/back/v1/reservations/:id",
+                    "protocol": "http",
+                    "host": ["your-api-url"],
+                    "path": ["api", "back", "v1", "reservations", ":id"],
+                    "variable": [
+                      { "key": "id", "value": "1" }
+                    ]
+                  }
+                },
+                "response": [
+                  {
+                    "name": "Example Response",
+                    "originalRequest": {
+                      "method": "DELETE",
+                      "url": "http://your-api-url/api/back/v1/reservations/1"
+                    },
+                    "status": "No Content",
+                    "code": 204,
+                    "body": ""
+                  }
+                ]
+              }
+            ]
+          },     {
+            "name": "User Testing",
+            "item": [
+              {
+                "name": "Get All Users",
+                "request": {
+                  "method": "GET",
+                  "header": [],
+                  "url": {
+                    "raw": "http://your-api-url/api/back/v1/users?paginationSize=10&sort_by=created_at&sort_order=desc&search=example&role=admin",
+                    "protocol": "http",
+                    "host": ["your-api-url"],
+                    "path": ["api", "back", "v1", "users"],
+                    "query": [
+                      { "key": "paginationSize", "value": "10" },
+                      { "key": "sort_by", "value": "created_at" },
+                      { "key": "sort_order", "value": "desc" },
+                      { "key": "search", "value": "example" },
+                      { "key": "role", "value": "admin" }
+                    ]
+                  }
+                },
+                "response": [
+                  {
+                    "name": "Example Response",
+                    "originalRequest": {
+                      "method": "GET",
+                      "url": "http://your-api-url/api/back/v1/users"
+                    },
+                    "status": "OK",
+                    "code": 200,
+                    "body": "{\n  \"data\": [\n    {\n      \"id\": 1,\n      \"name\": \"John Doe\",\n      \"email\": \"john@example.com\",\n      \"roles\": [\"admin\"]\n    }\n  ]\n}"
+                  }
+                ]
+              },
+              {
+                "name": "Get User by ID",
+                "request": {
+                  "method": "GET",
+                  "header": [],
+                  "url": {
+                    "raw": "http://your-api-url/api/back/v1/users/:id",
+                    "protocol": "http",
+                    "host": ["your-api-url"],
+                    "path": ["api", "back", "v1", "users", ":id"],
+                    "variable": [
+                      { "key": "id", "value": "1" }
+                    ]
+                  }
+                },
+                "response": [
+                  {
+                    "name": "Example Response",
+                    "originalRequest": {
+                      "method": "GET",
+                      "url": "http://your-api-url/api/back/v1/users/1"
+                    },
+                    "status": "OK",
+                    "code": 200,
+                    "body": "{\n  \"message\": \"User retrieved successfully\",\n  \"data\": {\n    \"id\": 1,\n    \"name\": \"John Doe\",\n    \"email\": \"john@example.com\",\n    \"roles\": [\"admin\"]\n  }\n}"
+                  }
+                ]
+              },
+              {
+                "name": "Create User",
+                "request": {
+                  "method": "POST",
+                  "header": [
+                    { "key": "Content-Type", "value": "application/json" }
+                  ],
+                  "body": {
+                    "mode": "raw",
+                    "raw": "{\n  \"name\": \"Jane Doe\",\n  \"email\": \"jane@example.com\",\n  \"password\": \"password123\",\n  \"password_confirmation\": \"password123\",\n  \"roles\": [\"admin\"]\n}"
+                  },
+                  "url": {
+                    "raw": "http://your-api-url/api/back/v1/users",
+                    "protocol": "http",
+                    "host": ["your-api-url"],
+                    "path": ["api", "back", "v1", "users"]
+                  }
+                },
+                "response": [
+                  {
+                    "name": "Example Response",
+                    "originalRequest": {
+                      "method": "POST",
+                      "url": "http://your-api-url/api/back/v1/users"
+                    },
+                    "status": "Created",
+                    "code": 201,
+                    "body": "{\n  \"message\": \"User created successfully\",\n  \"data\": {\n    \"id\": 2,\n    \"name\": \"Jane Doe\",\n    \"email\": \"jane@example.com\",\n    \"roles\": [\"admin\"]\n  }\n}"
+                  }
+                ]
+              },
+              {
+                "name": "Update User",
+                "request": {
+                  "method": "PUT",
+                  "header": [
+                    { "key": "Content-Type", "value": "application/json" }
+                  ],
+                  "body": {
+                    "mode": "raw",
+                    "raw": "{\n  \"name\": \"Updated Name\",\n  \"email\": \"updated@example.com\",\n  \"password\": \"newpassword123\",\n  \"password_confirmation\": \"newpassword123\",\n  \"roles\": [\"editor\"]\n}"
+                  },
+                  "url": {
+                    "raw": "http://your-api-url/api/back/v1/users/:id",
+                    "protocol": "http",
+                    "host": ["your-api-url"],
+                    "path": ["api", "back", "v1", "users", ":id"],
+                    "variable": [
+                      { "key": "id", "value": "1" }
+                    ]
+                  }
+                },
+                "response": [
+                  {
+                    "name": "Example Response",
+                    "originalRequest": {
+                      "method": "PUT",
+                      "url": "http://your-api-url/api/back/v1/users/1"
+                    },
+                    "status": "OK",
+                    "code": 200,
+                    "body": "{\n  \"message\": \"User updated successfully\",\n  \"data\": {\n    \"id\": 1,\n    \"name\": \"Updated Name\",\n    \"email\": \"updated@example.com\",\n    \"roles\": [\"editor\"]\n  }\n}"
+                  }
+                ]
+              },
+              {
+                "name": "Delete User",
+                "request": {
+                  "method": "DELETE",
+                  "header": [],
+                  "url": {
+                    "raw": "http://your-api-url/api/back/v1/users/:id",
+                    "protocol": "http",
+                    "host": ["your-api-url"],
+                    "path": ["api", "back", "v1", "users", ":id"],
+                    "variable": [
+                      { "key": "id", "value": "1" }
+                    ]
+                  }
+                },
+                "response": [
+                  {
+                    "name": "Example Response",
+                    "originalRequest": {
+                      "method": "DELETE",
+                      "url": "http://your-api-url/api/back/v1/users/1"
+                    },
+                    "status": "No Content",
+                    "code": 204,
+                    "body": ""
+                  }
+                ]
+              },
+              {
+                "name": "Assign Roles to User",
+                "request": {
+                  "method": "POST",
+                  "header": [
+                    { "key": "Content-Type", "value": "application/json" }
+                  ],
+                  "body": {
+                    "mode": "raw",
+                    "raw": "{\n  \"roles\": [\"admin\", \"editor\"]\n}"
+                  },
+                  "url": {
+                    "raw": "http://your-api-url/api/back/v1/users/:id/assign-roles",
+                    "protocol": "http",
+                    "host": ["your-api-url"],
+                    "path": ["api", "back", "v1", "users", ":id", "assign-roles"],
+                    "variable": [
+                      { "key": "id", "value": "1" }
+                    ]
+                  }
+                },
+                "response": [
+                  {
+                    "name": "Example Response",
+                    "originalRequest": {
+                      "method": "POST",
+                      "url": "http://your-api-url/api/back/v1/users/1/assign-roles"
+                    },
+                    "status": "OK",
+                    "code": 200,
+                    "body": "{\n  \"message\": \"Roles assigned successfully\",\n  \"data\": {\n    \"id\": 1,\n    \"name\": \"John Doe\",\n    \"email\": \"john@example.com\",\n    \"roles\": [\"admin\", \"editor\"]\n  }\n}"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }      
+      
+    ]
+  }
+  

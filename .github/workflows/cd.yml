@@ -1,0 +1,52 @@
+name: CD Pipeline
+
+on:
+  push:
+    branches:
+      - prod
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      SERVER_USER: ${{ secrets.SERVER_USER }}
+      SERVER_IP: ${{ secrets.SERVER_IP }}
+      DEPLOY_PATH: /home/sites/39b/d/df3aa0b4e9/dabablane_backend
+      SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+
+    steps:
+      - uses: actions/checkout@v2
+      
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.8.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Add SSH Host Key
+        run: |
+          echo "${{ secrets.SSH_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+      
+      - name: Install dependencies
+        run: |
+          composer install --no-interaction --prefer-dist --optimize-autoloader
+
+      - name: Deploy Application
+        run: |
+          rsync -avz --delete --exclude="storage/" --exclude=".env" --exclude=".htaccess" ./ ${{ env.SERVER_USER }}@${{ env.SERVER_IP }}:${{ env.DEPLOY_PATH }}
+
+      - name: Run Migrations
+        run: |
+          ssh ${{ env.SERVER_USER }}@${{ env.SERVER_IP }} "cd ${{ env.DEPLOY_PATH }} && /usr/php82/usr/bin/php artisan migrate --force"
+
+      - name: Clear Cache
+        run: |
+          ssh ${{ env.SERVER_USER }}@${{ env.SERVER_IP }} "cd ${{ env.DEPLOY_PATH }} && /usr/php82/usr/bin/php artisan config:cache && /usr/php82/usr/bin/php artisan route:cache"
+
+      - name: Storage Link
+        run: |
+          ssh ${{ env.SERVER_USER }}@${{ env.SERVER_IP }} "cd ${{ env.DEPLOY_PATH }} && /usr/php82/usr/bin/php artisan storage:link"

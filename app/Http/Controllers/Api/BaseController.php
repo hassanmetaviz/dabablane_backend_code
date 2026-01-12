@@ -1,0 +1,62 @@
+<?php
+
+namespace App\Http\Controllers\Api;
+
+use App\Http\Controllers\Controller;
+
+abstract class BaseController extends Controller
+{
+    /**
+     * Return a success JSON response.
+     *
+     * @param mixed $data
+     * @param string $message
+     * @param int $code
+     * @return \Illuminate\Http\JsonResponse
+     */
+    protected function success($data, $message = 'Success', $code = 200)
+    {
+        return response()->json([
+            'status' => true,
+            'code' => $code,
+            'message' => $message,
+            'data' => $data
+        ], $code);
+    }
+
+    /**
+     * Return an error JSON response.
+     *
+     * @param string $message
+     * @param array $errors
+     * @param int $code
+     * @return \Illuminate\Http\JsonResponse
+     */
+    protected function error($message, $errors = [], $code = 400)
+    {
+        return response()->json([
+            'status' => false,
+            'code' => $code,
+            'message' => $message,
+            'errors' => $errors
+        ], $code);
+    }
+
+    /**
+     * Return a validation error JSON response.
+     *
+     * @param array $errors
+     * @param string $message
+     * @return \Illuminate\Http\JsonResponse
+     */
+    protected function validationError($errors, $message = 'validation error')
+    {
+        return $this->error($message, $errors, 422);
+    }
+}
+
+
+
+
+
+
