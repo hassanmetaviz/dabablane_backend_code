@@ -189,7 +189,6 @@ class VendorReservationController extends ReservationController
             } else {
                 return response()->json([
                     'message' => 'Only cash payments are allowed for vendors',
-                    'error' => $e->getMessage(),
                 ], status: 404);
             }
 
@@ -197,7 +196,6 @@ class VendorReservationController extends ReservationController
             DB::rollBack();
             return response()->json([
                 'message' => 'Failed to create Reservation',
-                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -380,7 +378,6 @@ class VendorReservationController extends ReservationController
             DB::rollBack();
             return response()->json([
                 'message' => 'Failed to update Reservation',
-                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -491,7 +488,6 @@ class VendorReservationController extends ReservationController
             Log::error('Failed to get available time slots: ' . $e->getMessage());
             return response()->json([
                 'message' => 'Failed to get available time slots',
-                'error' => $e->getMessage(),
             ], 500);
         }
     }

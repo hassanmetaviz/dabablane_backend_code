@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Api\Back\V1;
 
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\Api\BaseController;
 use App\Http\Requests\StoreTermsConditionRequest;
 use App\Http\Requests\UpdateTermsConditionRequest;
 use App\Http\Resources\TermsConditionResource;
@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 
-class TermsConditionController extends Controller
+class TermsConditionController extends BaseController
 {
     /**
      * Display a listing of the terms & conditions.
@@ -71,7 +71,7 @@ class TermsConditionController extends Controller
                 'status' => false,
                 'code' => 500,
                 'message' => 'Failed to retrieve terms & conditions',
-                'errors' => [$e->getMessage()],
+                'errors' => [$this->safeExceptionMessage($e)],
             ], 500);
         }
     }
@@ -113,7 +113,7 @@ class TermsConditionController extends Controller
                 'status' => false,
                 'code' => 500,
                 'message' => 'Failed to upload terms & conditions',
-                'errors' => [$e->getMessage()],
+                'errors' => [$this->safeExceptionMessage($e)],
             ], 500);
         }
     }
@@ -147,7 +147,7 @@ class TermsConditionController extends Controller
                 'status' => false,
                 'code' => 500,
                 'message' => 'Failed to retrieve terms & conditions',
-                'errors' => [$e->getMessage()],
+                'errors' => [$this->safeExceptionMessage($e)],
             ], 500);
         }
     }
@@ -202,7 +202,7 @@ class TermsConditionController extends Controller
                 'status' => false,
                 'code' => 500,
                 'message' => 'Failed to update terms & conditions',
-                'errors' => [$e->getMessage()],
+                'errors' => [$this->safeExceptionMessage($e)],
             ], 500);
         }
     }
@@ -240,7 +240,7 @@ class TermsConditionController extends Controller
                 'status' => false,
                 'code' => 500,
                 'message' => 'Failed to delete terms & conditions',
-                'errors' => [$e->getMessage()],
+                'errors' => [$this->safeExceptionMessage($e)],
             ], 500);
         }
     }
@@ -290,7 +290,7 @@ class TermsConditionController extends Controller
                 'status' => false,
                 'code' => 500,
                 'message' => 'Failed to retrieve active terms & conditions',
-                'errors' => [$e->getMessage()],
+                'errors' => [$this->safeExceptionMessage($e)],
             ], 500);
         }
     }
@@ -326,7 +326,7 @@ class TermsConditionController extends Controller
                 'status' => false,
                 'code' => 500,
                 'message' => 'Failed to update terms & conditions status',
-                'errors' => [$e->getMessage()],
+                'errors' => [$this->safeExceptionMessage($e)],
             ], 500);
         }
     }

@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Api\Front\V1;
 
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\Api\BaseController;
 use App\Http\Resources\Front\V1\BannerResource;
 use App\Http\Resources\Front\V1\BlaneResource;
 use App\Http\Resources\Front\V1\CategoryResource;
@@ -17,7 +17,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
-class HomeController extends Controller
+class HomeController extends BaseController
 {
     public function index(): JsonResponse
     {

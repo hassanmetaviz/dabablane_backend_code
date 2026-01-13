@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Api\Front\V1;
 
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\Api\BaseController;
 use App\Mail\OrderConfirmation;
 use App\Mail\ReservationConfirmation;
 use App\Models\Order;
@@ -15,7 +15,7 @@ use App\Models\Reservation;
 use Illuminate\Support\Facades\Mail;
 use App\Models\Transaction;
 
-class PaymentCmiController extends Controller
+class PaymentCmiController extends BaseController
 {
     private $paymentService;
     private $vendorPaymentService;
@@ -118,15 +118,13 @@ class PaymentCmiController extends Controller
 
         } catch (\Exception $e) {
             Log::error('Payment initiation error', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
                 'request' => $request->all()
             ]);
 
             return response()->json([
                 'status' => false,
                 'code' => 500,
-                'message' => 'An error occurred while initiating payment: ' . $e->getMessage()
+                'message' => 'An error occurred while initiating payment.'
             ], 500);
         }
     }
@@ -175,7 +173,6 @@ class PaymentCmiController extends Controller
                     } catch (\Exception $e) {
                         Log::error('Failed to create vendor payment from order', [
                             'order_id' => $order->id,
-                            'error' => $e->getMessage(),
                         ]);
                     }
                 }
@@ -203,7 +200,6 @@ class PaymentCmiController extends Controller
                     } catch (\Exception $e) {
                         Log::error('Failed to create vendor payment from reservation', [
                             'reservation_id' => $reservation->id,
-                            'error' => $e->getMessage(),
                         ]);
                     }
                 }
@@ -216,7 +212,6 @@ class PaymentCmiController extends Controller
                 return response('FAILURE', 200);
             }
         } catch (\Exception $e) {
-            Log::error('Exception during CMI callback', ['error' => $e->getMessage(), 'params' => $params]);
             return response('FAILURE', 200);
         }
 

@@ -5,11 +5,11 @@ namespace App\Http\Controllers\Api\Front\V1;
 use Illuminate\Http\Request;
 use App\Models\Coupon;
 use Illuminate\Http\JsonResponse;
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\Api\BaseController;
 use Illuminate\Validation\ValidationException;
 use App\Http\Resources\Front\V1\CouponResource;
 
-class CouponController extends Controller
+class CouponController extends BaseController
 {
     /**
      * Display a listing of the Coupons.

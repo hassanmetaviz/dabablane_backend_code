@@ -5,7 +5,10 @@ use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Validation\ValidationException;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Symfony\Component\HttpKernel\Exception\HttpException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Illuminate\Http\Request;
 
 
@@ -29,6 +32,7 @@ return Application::configure(basePath: dirname(__DIR__))
             // Rate limiting disabled temporarily to fix 500 errors
             // \Illuminate\Routing\Middleware\ThrottleRequests::class . ':api',
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
+            \App\Http\Middleware\WrapApiResponse::class,
         ]);
         $middleware->alias([
             'role' => \Spatie\Permission\Middleware\RoleMiddleware::class,
@@ -39,6 +43,23 @@ return Application::configure(basePath: dirname(__DIR__))
     })
     ->withExceptions(function (Exceptions $exceptions) {
         $exceptions->render(function (Throwable $e, Request $request) {
+            // Only standardize API responses
+            $isApi = $request->is('api/*') || $request->expectsJson();
+
+            if (!$isApi) {
+                return null;
+            }
+
+            // Validation errors
+            if ($e instanceof ValidationException) {
+                return response()->json([
+                    'status' => false,
+                    'code' => 422,
+                    'message' => 'Validation error',
+                    'errors' => $e->errors(),
+                ], 422);
+            }
+
             // Handle authentication exceptions
             if ($e instanceof AuthenticationException) {
                 return response()->json(
@@ -63,26 +84,24 @@ return Application::configure(basePath: dirname(__DIR__))
                 );
             }
 
-            // Handle API requests
-            if ($request->is('api/*')) {
-                $statusCode = $e instanceof HttpException ? $e->getStatusCode() : 500;
-
-                // Don't expose error details in production
-                $message = config('app.debug')
-                    ? $e->getMessage()
-                    : 'An error occurred';
-
-                $response = [
-                    'status' => $statusCode == 200,
-                    'code' => $statusCode,
+            // 404
+            if ($e instanceof ModelNotFoundException || $e instanceof NotFoundHttpException) {
+                $message = config('app.debug') ? $e->getMessage() : 'Not found';
+                return response()->json([
+                    'status' => false,
+                    'code' => 404,
                     'message' => $message,
-                ];
-
-                if (config('app.debug')) {
-                    $response['trace'] = $e->getTraceAsString();
-                }
-
-                return response()->json($response, $statusCode);
+                ], 404);
             }
+
+            // Generic API error
+            $statusCode = $e instanceof HttpException ? $e->getStatusCode() : 500;
+            $message = config('app.debug') ? $e->getMessage() : 'Internal server error.';
+
+            return response()->json([
+                'status' => false,
+                'code' => $statusCode,
+                'message' => $message,
+            ], $statusCode);
         });
     })->create();

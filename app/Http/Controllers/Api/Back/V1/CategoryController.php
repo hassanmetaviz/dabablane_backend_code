@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Api\Back\V1;
 
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\Api\BaseController;
 use App\Http\Resources\Back\V1\CategoryResource;
 use App\Models\Category;
 use App\Models\SubCategory;
@@ -12,7 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
-class CategoryController extends Controller
+class CategoryController extends BaseController
 {
     /**
      * Display a listing of the categories.
@@ -139,7 +139,6 @@ class CategoryController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Failed to create category',
-                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -229,7 +228,6 @@ class CategoryController extends Controller
             } catch (\Exception $e) {
                 return response()->json([
                     'message' => 'Failed to update category',
-                    'error' => $e->getMessage(),
                 ], 500);
             }
         } catch (ValidationException $e) {
@@ -256,7 +254,6 @@ class CategoryController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Failed to delete category',
-                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -340,7 +337,6 @@ class CategoryController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Failed to update category status',
-                'error' => $e->getMessage()
             ], 500);
         }
     }

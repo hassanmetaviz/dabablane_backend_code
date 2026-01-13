@@ -5,11 +5,11 @@ namespace App\Http\Controllers\Api\Back\V1;
 use Illuminate\Http\Request;
 use App\Models\FAQ;
 use Illuminate\Http\JsonResponse;
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\Api\BaseController;
 use Illuminate\Validation\ValidationException;
 use App\Http\Resources\Back\V1\FAQResource;
 
-class FAQController extends Controller
+class FAQController extends BaseController
 {
     /**
      * Display a listing of the FAQs.
@@ -84,7 +84,6 @@ class FAQController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Failed to create FAQ',
-                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -122,7 +121,6 @@ class FAQController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Failed to update FAQ',
-                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -149,7 +147,6 @@ class FAQController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Failed to delete FAQ',
-                'error' => $e->getMessage(),
             ], 500);
         }
     }

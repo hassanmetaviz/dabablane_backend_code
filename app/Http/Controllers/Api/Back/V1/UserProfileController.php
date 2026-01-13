@@ -78,7 +78,7 @@ class UserProfileController extends BaseController
                     'code' => 500,
                     'message' => 'Profile update failed',
                     'errors' => [
-                        'server' => [$e->getMessage()],
+                        'server' => [$this->safeExceptionMessage($e)],
                     ],
                 ],
                 500,
@@ -125,7 +125,7 @@ class UserProfileController extends BaseController
                 'code' => 500,
                 'message' => 'Failed to delete account',
                 'errors' => [
-                    'server' => [$e->getMessage()],
+                    'server' => [$this->safeExceptionMessage($e)],
                 ],
             ], 500);
         }

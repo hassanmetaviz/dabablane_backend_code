@@ -5,11 +5,11 @@ namespace App\Http\Controllers\Api\Back\V1;
 use Illuminate\Http\Request;
 use App\Models\Coupon;
 use Illuminate\Http\JsonResponse;
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\Api\BaseController;
 use Illuminate\Validation\ValidationException;
 use App\Http\Resources\Back\V1\CouponResource;
 
-class CouponController extends Controller
+class CouponController extends BaseController
 {
     /**
      * Display a listing of the Coupons.
@@ -91,7 +91,6 @@ class CouponController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Failed to create Coupon',
-                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -140,7 +139,6 @@ class CouponController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Failed to update Coupon',
-                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -167,7 +165,6 @@ class CouponController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Failed to delete Coupon',
-                'error' => $e->getMessage(),
             ], 500);
         }
     }

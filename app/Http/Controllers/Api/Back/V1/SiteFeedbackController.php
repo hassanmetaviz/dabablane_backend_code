@@ -5,11 +5,11 @@ namespace App\Http\Controllers\Api\Back\V1;
 use Illuminate\Http\Request;
 use App\Models\SiteFeedback;
 use Illuminate\Http\JsonResponse;
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\Api\BaseController;
 use Illuminate\Validation\ValidationException;
 use App\Http\Resources\Back\V1\SiteFeedbackResource;
 
-class SiteFeedbackController extends Controller
+class SiteFeedbackController extends BaseController
 {
     /**
      * Display a listing of the Site Feedbacks.
@@ -130,7 +130,6 @@ class SiteFeedbackController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Failed to create Site Feedback',
-                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -168,7 +167,6 @@ class SiteFeedbackController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Failed to update Site Feedback',
-                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -195,7 +193,6 @@ class SiteFeedbackController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Failed to delete Site Feedback',
-                'error' => $e->getMessage(),
             ], 500);
         }
     }

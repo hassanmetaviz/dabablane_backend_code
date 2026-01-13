@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Api\Back\V1;
 use Illuminate\Http\Request;
 use App\Models\Blane;
 use Illuminate\Http\JsonResponse;
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\Api\BaseController;
 use Illuminate\Validation\ValidationException;
 use App\Http\Resources\Back\V1\BlaneResource;
 use App\Services\BlaneQueryService;
@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Validator;
 
-class BlaneCatalogController extends Controller
+class BlaneCatalogController extends BaseController
 {
     protected $queryService;
 
@@ -830,7 +830,7 @@ class BlaneCatalogController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to retrieve vendor data.',
-                'errors' => $e->getMessage(),
+                'errors' => $this->safeExceptionMessage($e),
             ], 500);
         }
     }

@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Api\Front\V1;
 use Illuminate\Http\Request;
 use App\Models\Reservation;
 use Illuminate\Http\JsonResponse;
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\Api\BaseController;
 use Illuminate\Validation\ValidationException;
 use App\Http\Resources\Front\V1\ReservationResource;
 use App\Models\Customers;
@@ -21,7 +21,7 @@ use App\Http\Traits\WebhookNotifiable;
 use Carbon\Carbon;
 
 
-class ReservationController extends Controller
+class ReservationController extends BaseController
 {
     use WebhookNotifiable;
 
@@ -305,7 +305,6 @@ class ReservationController extends Controller
             Log::error('Failed to create Reservation: ' . $e->getMessage());
             return response()->json([
                 'message' => 'Failed to create Reservation',
-                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -423,7 +422,6 @@ class ReservationController extends Controller
             DB::rollBack();
             return response()->json([
                 'message' => 'Failed to update Reservation',
-                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -478,7 +476,6 @@ class ReservationController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Failed to delete Reservation',
-                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -654,7 +651,6 @@ class ReservationController extends Controller
             Log::error('Failed to get available time slots: ' . $e->getMessage());
             return response()->json([
                 'message' => 'Failed to get available time slots',
-                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -730,7 +726,6 @@ class ReservationController extends Controller
             Log::error('Failed to cancel reservation: ' . $e->getMessage());
             return response()->json([
                 'message' => 'Failed to cancel reservation',
-                'error' => $e->getMessage(),
             ], 500);
         }
     }

@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Api\Back\V1;
 use Illuminate\Http\Request;
 use App\Models\Blane;
 use Illuminate\Http\JsonResponse;
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\Api\BaseController;
 use Illuminate\Validation\ValidationException;
 use App\Http\Resources\Back\V1\BlaneResource;
 use Illuminate\Support\Facades\DB;
@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Log;
 use App\Models\Category;
 use App\Models\Subcategory;
 
-class BlaneImportController extends Controller
+class BlaneImportController extends BaseController
 {
     /**
      * Import blanes from a JSON file.
@@ -221,14 +221,11 @@ class BlaneImportController extends Controller
                 } catch (\Exception $e) {
                     Log::error('Error processing blane:', [
                         'name' => $blaneData['name'] ?? 'unknown',
-                        'error' => $e->getMessage(),
-                        'trace' => $e->getTraceAsString()
                     ]);
 
                     $errors[] = [
                         'index' => $index,
                         'name' => $blaneData['name'] ?? 'Unknown',
-                        'error' => $e->getMessage()
                     ];
                 }
             }
@@ -253,12 +250,10 @@ class BlaneImportController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Import error:', [
-                'message' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'message' => 'An unexpected error occurred.',
             ]);
             return response()->json([
                 'message' => 'Failed to import blanes',
-                'error' => $e->getMessage()
             ], 500);
         }
     }

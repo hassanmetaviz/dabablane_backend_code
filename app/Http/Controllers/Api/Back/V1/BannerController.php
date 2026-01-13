@@ -5,12 +5,12 @@ namespace App\Http\Controllers\Api\Back\V1;
 use Illuminate\Http\Request;
 use App\Models\Banner;
 use Illuminate\Http\JsonResponse;
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\Api\BaseController;
 use Illuminate\Validation\ValidationException;
 use App\Http\Resources\Back\V1\BannerResource;
 use App\Services\BunnyService;
 
-class BannerController extends Controller
+class BannerController extends BaseController
 {
     /**
      * Display a listing of the Banner.
@@ -158,7 +158,6 @@ class BannerController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Failed to create banner',
-                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -264,7 +263,6 @@ class BannerController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Failed to update banner',
-                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -298,7 +296,6 @@ class BannerController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Failed to delete Banner',
-                'error' => $e->getMessage(),
             ], 500);
         }
     }

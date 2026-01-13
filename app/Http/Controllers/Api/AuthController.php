@@ -2,15 +2,15 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\Auth\GetUserByTokenRequest;
+use App\Http\Requests\Api\Auth\LoginRequest;
+use App\Http\Requests\Api\Auth\RegisterRequest;
 use App\Http\Resources\Front\V1\UserResource;
 use App\Models\User;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Validator;
 use Laravel\Sanctum\PersonalAccessToken;
 
-class AuthController extends Controller
+class AuthController extends BaseController
 {
     /**
      * Register a new user
@@ -18,35 +18,20 @@ class AuthController extends Controller
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function register(Request $request)
+    public function register(RegisterRequest $request)
     {
-        $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
-            'password' => 'required|string|min:8|confirmed',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json(
-                [
-                    'status' => false,
-                    'code' => 422,
-                    'message' => 'validation error',
-                    'errors' => $validator->errors(),
-                ],
-                422,
-            );
-        }
+        $data = $request->validated();
 
         $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
+            'name' => $data['name'],
+            'email' => $data['email'],
+            'password' => Hash::make($data['password']),
         ]);
 
         $user->assignRole('user');
 
-        return response()->json(['status' => true, 'code' => 201, 'message' => 'User registered successfully', 'data' => $user], 201);
+        // Keep response shape backward-compatible: data is the user object (not nested).
+        return $this->success($user, 'User registered successfully', 201);
     }
 
     /**
@@ -55,43 +40,31 @@ class AuthController extends Controller
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function login(Request $request)
+    public function login(LoginRequest $request)
     {
-        $request->validate([
-            'email' => 'required|string|email',
-            'password' => 'required|string',
-        ]);
+        $data = $request->validated();
 
-        $user = User::where('email', $request->email)->first();
+        $user = User::where('email', $data['email'])->first();
 
-        if (!$user || !Hash::check($request->password, $user->password)) {
-            return response()->json(
-                [
-                    'status' => false,
-                    'code' => 401,
-                    'message' => 'The provided credentials are incorrect.',
-                    'errors' => [
-                        'email' => ['The provided credentials are incorrect.'],
-                    ],
-                ],
-                401,
+        if (!$user || !Hash::check($data['password'], $user->password)) {
+            return $this->error(
+                'The provided credentials are incorrect.',
+                ['email' => ['The provided credentials are incorrect.']],
+                401
             );
         }
         $token = $user->createToken('auth_token')->plainTextToken;
         $roles = $user->getRoleNames();
-        return response()->json(
+
+        return $this->success(
             [
-                'status' => true,
-                'code' => 200,
-                'message' => 'Login successful!',
-                'data' => [
-                    'user_token' => $token,
-                    'user' => $user,
-                    'roles' => $roles,
-                    'token_type' => 'Bearer',
-                ],
+                'user_token' => $token,
+                'user' => new UserResource($user),
+                'roles' => $roles,
+                'token_type' => 'Bearer',
             ],
-            200,
+            'Login successful!',
+            200
         );
     }
 
@@ -101,27 +74,22 @@ class AuthController extends Controller
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function logout(Request $request)
+    public function logout(\Illuminate\Http\Request $request)
     {
         if (!$request->user()) {
-            return response()->json([
-                'message' => 'Unauthenticated. Please log in first.',
-            ], 401);
+            return $this->error('Unauthenticated. Please log in first.', [], 401);
         }
 
         $token = $request->user()->currentAccessToken();
 
         if (!$token) {
-            return response()->json([
-                'message' => 'No active session found.',
-            ], 404);
+            return $this->error('No active session found.', [], 404);
         }
 
         $token->delete();
 
-        return response()->json([
-            'message' => 'Logged out successfully!',
-        ]);
+        // Keep backward-compatible key for existing frontend integrations.
+        return response()->json(['message' => 'Logged out successfully!'], 200);
     }
 
     /**
@@ -130,8 +98,9 @@ class AuthController extends Controller
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function me(Request $request)
+    public function me(\Illuminate\Http\Request $request)
     {
+        // Keep backward-compatible response shape (Laravel resource collection).
         return UserResource::collection([$request->user()]);
     }
 
@@ -141,42 +110,30 @@ class AuthController extends Controller
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function getUserByToken(Request $request)
+    public function getUserByToken(GetUserByTokenRequest $request)
     {
-        $request->validate([
-            'token' => 'required|string',
-        ]);
+        $data = $request->validated();
 
-        $token = PersonalAccessToken::findToken($request->token);
+        $token = PersonalAccessToken::findToken($data['token']);
 
         if (!$token) {
-            return response()->json(
-                [
-                    'status' => false,
-                    'code' => 401,
-                    'message' => 'The provided token is invalid or expired.',
-                    'errors' => [
-                        'token' => ['The provided token is invalid or expired.'],
-                    ],
-                ],
-                401,
+            return $this->error(
+                'The provided token is invalid or expired.',
+                ['token' => ['The provided token is invalid or expired.']],
+                401
             );
         }
         $user = $token->tokenable;
         $roles = $user->getRoleNames();
-        return response()->json(
+        return $this->success(
             [
-                'status' => true,
-                'code' => 200,
-                'message' => 'User retrieved successfully!',
-                'data' => [
-                    'user_token' => $request->token,
-                    'user' => $user,
-                    'roles' => $roles,
-                    'token_type' => 'Bearer',
-                ],
+                'user_token' => $data['token'],
+                'user' => new UserResource($user),
+                'roles' => $roles,
+                'token_type' => 'Bearer',
             ],
-            200,
+            'User retrieved successfully!',
+            200
         );
     }
 }

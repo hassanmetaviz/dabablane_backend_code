@@ -5,11 +5,11 @@ namespace App\Http\Controllers\Api\Front\V1;
 use Illuminate\Http\Request;
 use App\Models\Address;
 use Illuminate\Http\JsonResponse;
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\Api\BaseController;
 use Illuminate\Validation\ValidationException;
 use App\Http\Resources\Front\V1\AddressResource;
 
-class AddressController extends Controller
+class AddressController extends BaseController
 {
     /**
      * Display a listing of the Addresses.
@@ -163,7 +163,6 @@ class AddressController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Failed to create Address',
-                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -203,7 +202,6 @@ class AddressController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Failed to update Address',
-                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -230,7 +228,6 @@ class AddressController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Failed to delete Address',
-                'error' => $e->getMessage(),
             ], 500);
         }
     }

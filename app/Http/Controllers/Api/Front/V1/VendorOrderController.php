@@ -146,14 +146,12 @@ class VendorOrderController extends OrderController
             } else {
                 return response()->json([
                     'message' => 'Only cash payments are allowed for vendors',
-                    'error' => $e->getMessage(),
                 ], status: 404);
             }
         } catch (\Exception $e) {
             DB::rollBack();
             return response()->json([
                 'message' => 'Failed to create Order',
-                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -305,7 +303,6 @@ class VendorOrderController extends OrderController
             DB::rollBack();
             return response()->json([
                 'message' => 'Failed to update Order',
-                'error' => $e->getMessage(),
             ], 500);
         }
     }

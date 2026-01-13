@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Api\Back\V1;
 use Illuminate\Http\Request;
 use App\Models\Order;
 use Illuminate\Http\JsonResponse;
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\Api\BaseController;
 use Illuminate\Validation\ValidationException;
 use App\Http\Resources\Back\V1\OrderResource;
 use App\Models\Blane;
@@ -17,7 +17,7 @@ use App\Mail\OrderUpdated;
 use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 
-class OrderController extends Controller
+class OrderController extends BaseController
 {
     /**
      * Display a listing of the Orders.
@@ -279,7 +279,6 @@ class OrderController extends Controller
             DB::rollBack();
             return response()->json([
                 'message' => 'Failed to create Order',
-                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -409,7 +408,6 @@ class OrderController extends Controller
             DB::rollBack();
             return response()->json([
                 'message' => 'Failed to update Order',
-                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -436,7 +434,6 @@ class OrderController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Failed to delete Order',
-                'error' => $e->getMessage(),
             ], 500);
         }
     }

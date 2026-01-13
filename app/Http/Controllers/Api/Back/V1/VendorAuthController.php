@@ -3,15 +3,17 @@
 namespace App\Http\Controllers\Api\Back\V1;
 
 use App\Http\Controllers\Api\BaseController;
+use App\Http\Requests\Api\Back\V1\CheckVendorCreatedByAdminRequest;
+use App\Http\Requests\Api\Back\V1\ForgotVendorPasswordRequest;
+use App\Http\Requests\Api\Back\V1\VendorLoginRequest;
+use App\Http\Requests\Api\Back\V1\VendorSignupRequest;
 use App\Mail\VendorRegistrationNotification;
 use App\Mail\VendorCredentialsMail;
 use App\Models\User;
 use App\Notifications\VendorRegistrationNotification as VendorRegistrationNotificationDB;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Spatie\Permission\Models\Role;
 
@@ -23,93 +25,63 @@ class VendorAuthController extends BaseController
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function vendorLogin(Request $request)
+    public function vendorLogin(VendorLoginRequest $request)
     {
-        $validator = Validator::make($request->all(), [
-            'email' => 'required|string|email',
-            'password' => 'nullable|string',
-            'firebase_uid' => 'nullable|string',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'status' => false,
-                'code' => 422,
-                'message' => 'Validation error',
-                'errors' => $validator->errors(),
-            ], 422);
-        }
+        $data = $request->validated();
 
         try {
-            $user = User::where('email', $request->email)
+            $user = User::where('email', $data['email'])
                 ->whereHas('roles', function ($query) {
                     $query->where('name', 'vendor');
                 })
                 ->first();
 
             if (!$user) {
-                return response()->json([
-                    'status' => false,
-                    'code' => 404,
-                    'message' => 'Vendor not found. Please sign up as a vendor first.',
-                    'errors' => [
-                        'credentials' => ['The provided credentials are incorrect or the user is not a vendor.'],
-                    ],
-                ], 404);
+                return $this->error(
+                    'Vendor not found. Please sign up as a vendor first.',
+                    ['credentials' => ['The provided credentials are incorrect or the user is not a vendor.']],
+                    404
+                );
             }
 
             $hasPassword = !empty($user->password);
 
             if ($hasPassword) {
-                if (!$request->has('password') || empty($request->password)) {
-                    return response()->json([
-                        'status' => false,
-                        'code' => 422,
-                        'message' => 'Password is required for this account.',
-                        'errors' => [
-                            'password' => ['Password is required for this account.'],
-                        ],
-                    ], 422);
+                if (empty($data['password'])) {
+                    return $this->validationError(
+                        ['password' => ['Password is required for this account.']],
+                        'Validation error'
+                    );
                 }
 
-                if (!Hash::check($request->password, $user->password)) {
-                    return response()->json([
-                        'status' => false,
-                        'code' => 401,
-                        'message' => 'The provided password is incorrect.',
-                        'errors' => [
-                            'credentials' => ['The provided password is incorrect.'],
-                        ],
-                    ], 401);
+                if (!Hash::check($data['password'], $user->password)) {
+                    return $this->error(
+                        'The provided password is incorrect.',
+                        ['credentials' => ['The provided password is incorrect.']],
+                        401
+                    );
                 }
 
-                if ($request->has('firebase_uid') && !empty($request->firebase_uid) && empty($user->firebase_uid)) {
-                    $user->update(['firebase_uid' => $request->firebase_uid]);
+                if (!empty($data['firebase_uid']) && empty($user->firebase_uid)) {
+                    $user->update(['firebase_uid' => $data['firebase_uid']]);
                 }
             } else {
-                if (!$request->has('firebase_uid') || empty($request->firebase_uid)) {
-                    return response()->json([
-                        'status' => false,
-                        'code' => 422,
-                        'message' => 'Firebase UID is required for this account.',
-                        'errors' => [
-                            'firebase_uid' => ['Firebase UID is required for this account.'],
-                        ],
-                    ], 422);
+                if (empty($data['firebase_uid'])) {
+                    return $this->validationError(
+                        ['firebase_uid' => ['Firebase UID is required for this account.']],
+                        'Validation error'
+                    );
                 }
 
-                if ($user->firebase_uid !== $request->firebase_uid) {
+                if ($user->firebase_uid !== $data['firebase_uid']) {
                     if (empty($user->firebase_uid)) {
-                        $user->update(['firebase_uid' => $request->firebase_uid]);
+                        $user->update(['firebase_uid' => $data['firebase_uid']]);
                     } else {
-                        return response()->json([
-                            'status' => false,
-                            'code' => 401,
-                            'message' => 'The provided Firebase UID does not match.',
-                            'errors' => [
-                                'credentials' => ['The provided Firebase UID is incorrect.'],
-                            ],
-                        ], 401);
+                        return $this->error(
+                            'The provided Firebase UID does not match.',
+                            ['credentials' => ['The provided Firebase UID is incorrect.']],
+                            401
+                        );
                     }
                 }
             }
@@ -122,26 +94,21 @@ class VendorAuthController extends BaseController
                 $message .= ' Consider setting a password for easier future logins.';
             }
 
-            return response()->json([
-                'status' => true,
-                'code' => 200,
-                'message' => $message,
-                'data' => [
+            return $this->success(
+                [
                     'user_token' => $token,
                     'user' => $user,
                     'roles' => $roles,
                     'token_type' => 'Bearer',
                 ],
-            ], 200);
+                $message,
+                200
+            );
         } catch (\Exception $e) {
-            return response()->json([
-                'status' => false,
-                'code' => 500,
-                'message' => 'Vendor login failed',
-                'errors' => [
-                    'server' => [$e->getMessage()],
-                ],
-            ], 500);
+            Log::error('Vendor login failed', [
+                'email' => $data['email'] ?? null,
+            ]);
+            return $this->error('Vendor login failed', [], 500);
         }
     }
 
@@ -151,68 +118,40 @@ class VendorAuthController extends BaseController
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function vendorSignup(Request $request)
+    public function vendorSignup(VendorSignupRequest $request)
     {
-        $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
-            'firebase_uid' => 'required|string|unique:users,firebase_uid',
-            'phone' => 'required|string|max:20',
-            'city' => 'required|string|max:100',
-            'company_name' => 'required|string|max:255',
-            'address' => 'nullable|string|max:500',
-            'district' => 'nullable|string|max:100',
-            'subdistrict' => 'nullable|string|max:100',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'status' => false,
-                'code' => 422,
-                'message' => 'Validation error',
-                'errors' => $validator->errors(),
-            ], 422);
-        }
+        $data = $request->validated();
 
         $userData = [
-            'name' => $request->name,
-            'email' => $request->email,
-            'firebase_uid' => $request->firebase_uid,
-            'phone' => $request->phone,
-            'city' => $request->city,
-            'company_name' => $request->company_name,
+            'name' => $data['name'],
+            'email' => $data['email'],
+            'firebase_uid' => $data['firebase_uid'],
+            'phone' => $data['phone'],
+            'city' => $data['city'],
+            'company_name' => $data['company_name'],
             'status' => 'pending',
         ];
 
-        if ($request->has('address')) {
-            $userData['address'] = $request->address;
+        if (array_key_exists('address', $data)) {
+            $userData['address'] = $data['address'];
         }
-
-        if ($request->has('district')) {
-            $userData['district'] = $request->district;
+        if (array_key_exists('district', $data)) {
+            $userData['district'] = $data['district'];
         }
-
-        if ($request->has('subdistrict')) {
-            $userData['subdistrict'] = $request->subdistrict;
+        if (array_key_exists('subdistrict', $data)) {
+            $userData['subdistrict'] = $data['subdistrict'];
         }
 
         $user = User::create($userData);
 
         try {
-            $vendorRole = Role::firstOrCreate(['name' => 'vendor']);
+            Role::firstOrCreate(['name' => 'vendor']);
             $user->assignRole('vendor');
         } catch (\Exception $roleException) {
             Log::error('Failed to assign vendor role: ' . $roleException->getMessage());
 
             $user->delete();
-            return response()->json([
-                'status' => false,
-                'code' => 500,
-                'message' => 'Failed to create vendor account. Please contact support.',
-                'errors' => [
-                    'server' => ['Vendor role is not available. Please run database seeder.'],
-                ],
-            ], 500);
+            return $this->error('Failed to create vendor account. Please contact support.', [], 500);
         }
 
         try {
@@ -237,31 +176,28 @@ class VendorAuthController extends BaseController
                         \Log::error('Failed to send database notification to admin', [
                             'admin_id' => $admin->id,
                             'error' => $notifyException->getMessage(),
-                            'trace' => $notifyException->getTraceAsString(),
                         ]);
                     }
                 }
             }
         } catch (\Exception $e) {
             \Log::error('Failed to send vendor registration notification: ' . $e->getMessage(), [
-                'trace' => $e->getTraceAsString(),
             ]);
         }
 
         $token = $user->createToken('auth_token')->plainTextToken;
         $roles = $user->getRoleNames();
 
-        return response()->json([
-            'status' => true,
-            'code' => 201,
-            'message' => 'Vendor registered successfully',
-            'data' => [
+        return $this->success(
+            [
                 'user_token' => $token,
                 'user' => $user,
                 'roles' => $roles,
                 'token_type' => 'Bearer',
             ],
-        ], 201);
+            'Vendor registered successfully',
+            201
+        );
     }
 
     /**
@@ -270,46 +206,27 @@ class VendorAuthController extends BaseController
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function forgotVendorPassword(Request $request)
+    public function forgotVendorPassword(ForgotVendorPasswordRequest $request)
     {
-        $validator = Validator::make($request->all(), [
-            'email' => 'required|string|email',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'status' => false,
-                'code' => 422,
-                'message' => 'Validation error',
-                'errors' => $validator->errors(),
-            ], 422);
-        }
+        $data = $request->validated();
 
         try {
-            $vendor = User::where('email', $request->email)
+            $vendor = User::where('email', $data['email'])
                 ->whereHas('roles', function ($query) {
                     $query->where('name', 'vendor');
                 })
                 ->first();
 
             if (!$vendor) {
-
-                return response()->json([
-                    'status' => true,
-                    'code' => 200,
-                    'message' => 'If a vendor account exists with this email, a password reset email has been sent.',
-                ], 200);
+                return $this->success(null, 'If a vendor account exists with this email, a password reset email has been sent.', 200);
             }
 
             if (empty($vendor->password)) {
-                return response()->json([
-                    'status' => false,
-                    'code' => 400,
-                    'message' => 'This account does not have a password. Please contact admin or use Firebase authentication.',
-                    'errors' => [
-                        'account' => ['This account does not have a password set.'],
-                    ],
-                ], 400);
+                return $this->error(
+                    'This account does not have a password. Please contact admin or use Firebase authentication.',
+                    ['account' => ['This account does not have a password set.']],
+                    400
+                );
             }
 
             $newPassword = Str::password(12);
@@ -320,37 +237,20 @@ class VendorAuthController extends BaseController
             try {
                 Mail::to($vendor->email)->send(new VendorCredentialsMail($vendor, $newPassword));
 
-                return response()->json([
-                    'status' => true,
-                    'code' => 200,
-                    'message' => 'Password reset email sent successfully. Please check your email for the new password.',
-                ], 200);
+                return $this->success(null, 'Password reset email sent successfully. Please check your email for the new password.', 200);
             } catch (\Exception $mailException) {
-
-                return response()->json([
-                    'status' => false,
-                    'code' => 500,
-                    'message' => 'Failed to send password reset email. Please contact admin.',
-                    'errors' => [
-                        'email' => ['Failed to send password reset email. Please contact admin.'],
-                    ],
-                ], 500);
+                Log::error('Failed to send vendor password reset email', [
+                    'email' => $vendor->email,
+                    'error' => $mailException->getMessage(),
+                ]);
+                return $this->error('Failed to send password reset email. Please contact admin.', [], 500);
             }
         } catch (\Exception $e) {
             Log::error('Failed to process forgot password request', [
-                'email' => $request->email,
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
+                'email' => $data['email'] ?? null,
             ]);
 
-            return response()->json([
-                'status' => false,
-                'code' => 500,
-                'message' => 'Failed to process password reset request',
-                'errors' => [
-                    'server' => [$e->getMessage()],
-                ],
-            ], 500);
+            return $this->error('Failed to process password reset request', [], 500);
         }
     }
 
@@ -360,37 +260,23 @@ class VendorAuthController extends BaseController
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function checkVendorCreatedByAdmin(Request $request)
+    public function checkVendorCreatedByAdmin(CheckVendorCreatedByAdminRequest $request)
     {
-        $validator = Validator::make($request->all(), [
-            'email' => 'required|string|email',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'status' => false,
-                'code' => 422,
-                'message' => 'Validation error',
-                'errors' => $validator->errors(),
-            ], 422);
-        }
+        $data = $request->validated();
 
         try {
-            $vendor = User::where('email', $request->email)
+            $vendor = User::where('email', $data['email'])
                 ->whereHas('roles', function ($query) {
                     $query->where('name', 'vendor');
                 })
                 ->first();
 
             if (!$vendor) {
-                return response()->json([
-                    'status' => false,
-                    'code' => 404,
-                    'message' => 'Vendor not found with this email.',
-                    'errors' => [
-                        'email' => ['Vendor not found with this email.'],
-                    ],
-                ], 404);
+                return $this->error(
+                    'Vendor not found with this email.',
+                    ['email' => ['Vendor not found with this email.']],
+                    404
+                );
             }
 
             $hasFirebaseUid = !empty($vendor->firebase_uid);
@@ -398,11 +284,8 @@ class VendorAuthController extends BaseController
             $hasPassword = !empty($vendor->password);
             $definitelyAdminCreated = $hasPassword && !$hasFirebaseUid;
 
-            return response()->json([
-                'status' => true,
-                'code' => 200,
-                'message' => 'Vendor information retrieved successfully',
-                'data' => [
+            return $this->success(
+                [
                     'email' => $vendor->email,
                     'vendor_id' => $vendor->id,
                     'name' => $vendor->name,
@@ -412,17 +295,15 @@ class VendorAuthController extends BaseController
                     'definitely_admin_created' => $definitelyAdminCreated,
                     'creation_method' => $definitelyAdminCreated ? 'admin' : ($hasFirebaseUid ? 'mobile_signup' : 'unknown'),
                 ],
-            ], 200);
+                'Vendor information retrieved successfully',
+                200
+            );
         } catch (\Exception $e) {
+            Log::error('Failed to check vendor creation method', [
+                'email' => $data['email'] ?? null,
+            ]);
 
-            return response()->json([
-                'status' => false,
-                'code' => 500,
-                'message' => 'Failed to check vendor creation method',
-                'errors' => [
-                    'server' => [$e->getMessage()],
-                ],
-            ], 500);
+            return $this->error('Failed to check vendor creation method', [], 500);
         }
     }
 }

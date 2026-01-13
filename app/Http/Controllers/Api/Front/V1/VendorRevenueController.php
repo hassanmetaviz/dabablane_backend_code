@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Api\Front\V1;
 
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\Api\BaseController;
 use App\Services\VendorRevenueService;
 use App\Models\VendorMonthlyInvoice;
 use Illuminate\Http\Request;
@@ -11,7 +11,7 @@ use Carbon\Carbon;
 use Rap2hpoutre\FastExcel\FastExcel;
 use Barryvdh\DomPDF\Facade\Pdf;
 
-class VendorRevenueController extends Controller
+class VendorRevenueController extends BaseController
 {
     protected $revenueService;
 
@@ -57,7 +57,7 @@ class VendorRevenueController extends Controller
                 'status' => false,
                 'code' => 500,
                 'message' => 'Failed to retrieve vendor overview',
-                'errors' => [$e->getMessage()],
+                'errors' => [$this->safeExceptionMessage($e)],
             ], 500);
         }
     }
@@ -106,7 +106,7 @@ class VendorRevenueController extends Controller
                 'status' => false,
                 'code' => 500,
                 'message' => 'Failed to retrieve vendor transactions',
-                'errors' => [$e->getMessage()],
+                'errors' => [$this->safeExceptionMessage($e)],
             ], 500);
         }
     }
@@ -175,7 +175,7 @@ class VendorRevenueController extends Controller
                 'status' => false,
                 'code' => 500,
                 'message' => 'Failed to download invoice',
-                'errors' => [$e->getMessage()],
+                'errors' => [$this->safeExceptionMessage($e)],
             ], 500);
         }
     }
@@ -229,7 +229,7 @@ class VendorRevenueController extends Controller
                 'status' => false,
                 'code' => 500,
                 'message' => 'Failed to export Excel',
-                'errors' => [$e->getMessage()],
+                'errors' => [$this->safeExceptionMessage($e)],
             ], 500);
         }
     }
@@ -275,7 +275,7 @@ class VendorRevenueController extends Controller
                 'status' => false,
                 'code' => 500,
                 'message' => 'Failed to export PDF',
-                'errors' => [$e->getMessage()],
+                'errors' => [$this->safeExceptionMessage($e)],
             ], 500);
         }
     }
@@ -300,7 +300,7 @@ class VendorRevenueController extends Controller
                 'status' => false,
                 'code' => 500,
                 'message' => 'Failed to retrieve vendor statistics',
-                'errors' => [$e->getMessage()],
+                'errors' => [$this->safeExceptionMessage($e)],
             ], 500);
         }
     }
@@ -343,7 +343,7 @@ class VendorRevenueController extends Controller
                 'status' => false,
                 'code' => 500,
                 'message' => 'Failed to create monthly invoice',
-                'errors' => [$e->getMessage()],
+                'errors' => [$this->safeExceptionMessage($e)],
             ], 500);
         }
     }

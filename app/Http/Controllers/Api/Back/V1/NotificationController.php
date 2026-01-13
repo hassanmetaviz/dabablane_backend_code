@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers\Api\Back\V1;
 
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\Api\BaseController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Notification;
 use Illuminate\Support\Facades\Artisan;
-class NotificationController extends Controller
+class NotificationController extends BaseController
 {
     /**
      * Get all notifications for the authenticated user

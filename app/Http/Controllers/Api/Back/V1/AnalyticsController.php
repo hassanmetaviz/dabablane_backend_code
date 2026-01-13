@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Api\Back\V1;
 
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\Api\BaseController;
 use App\Models\Order;
 use App\Models\User;
 use App\Models\Blane;
@@ -12,7 +12,7 @@ use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 
-class AnalyticsController extends Controller
+class AnalyticsController extends BaseController
 {
     public function getAnalytics()
     {
@@ -623,7 +623,6 @@ class AnalyticsController extends Controller
                 'status' => false,
                 'code' => 500,
                 'message' => 'Failed to retrieve vendor analytics',
-                'error' => $e->getMessage(),
             ], 500);
         }
     }

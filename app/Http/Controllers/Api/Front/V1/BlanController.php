@@ -5,12 +5,12 @@ namespace App\Http\Controllers\Api\Front\V1;
 use Illuminate\Http\Request;
 use App\Models\Blane;
 use Illuminate\Http\JsonResponse;
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\Api\BaseController;
 use Illuminate\Validation\ValidationException;
 use App\Http\Resources\Front\V1\BlaneResource;
 use App\Http\Resources\Front\V1\BlanImageResource;
 
-class BlanController extends Controller
+class BlanController extends BaseController
 {
     /**
      * Display a listing of the Blanes.

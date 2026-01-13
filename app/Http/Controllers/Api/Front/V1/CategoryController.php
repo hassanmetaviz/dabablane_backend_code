@@ -2,14 +2,14 @@
 
 namespace App\Http\Controllers\Api\Front\V1;
 
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\Api\BaseController;
 use App\Http\Resources\Front\V1\CategoryResource;
 use App\Http\Resources\Front\V1\SubcategoryResource;
 use App\Models\Category;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 
-class CategoryController extends Controller
+class CategoryController extends BaseController
 {
     public function index(Request $request)
     {

@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Api\Back\V1;
 
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\Api\BaseController;
 use App\Models\VendorCommission;
 use App\Models\CommissionSettings;
 use App\Models\Category;
@@ -11,7 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
 
-class CommissionController extends Controller
+class CommissionController extends BaseController
 {
     /**
      * List all commission rates.
@@ -82,7 +82,7 @@ class CommissionController extends Controller
                 'status' => false,
                 'code' => 500,
                 'message' => 'Failed to retrieve commissions',
-                'errors' => [$e->getMessage()],
+                'errors' => [$this->safeExceptionMessage($e)],
             ], 500);
         }
     }
@@ -143,7 +143,7 @@ class CommissionController extends Controller
                 'status' => false,
                 'code' => 500,
                 'message' => 'Failed to create/update commission',
-                'errors' => [$e->getMessage()],
+                'errors' => [$this->safeExceptionMessage($e)],
             ], 500);
         }
     }
@@ -189,7 +189,7 @@ class CommissionController extends Controller
                 'status' => false,
                 'code' => 500,
                 'message' => 'Failed to update commission',
-                'errors' => [$e->getMessage()],
+                'errors' => [$this->safeExceptionMessage($e)],
             ], 500);
         }
     }
@@ -213,7 +213,7 @@ class CommissionController extends Controller
                 'status' => false,
                 'code' => 500,
                 'message' => 'Failed to delete commission',
-                'errors' => [$e->getMessage()],
+                'errors' => [$this->safeExceptionMessage($e)],
             ], 500);
         }
     }
@@ -289,7 +289,7 @@ class CommissionController extends Controller
                 'status' => false,
                 'code' => 500,
                 'message' => 'Failed to retrieve vendor rates',
-                'errors' => [$e->getMessage()],
+                'errors' => [$this->safeExceptionMessage($e)],
             ], 500);
         }
     }
@@ -332,7 +332,7 @@ class CommissionController extends Controller
                 'status' => false,
                 'code' => 500,
                 'message' => 'Failed to update vendor rate',
-                'errors' => [$e->getMessage()],
+                'errors' => [$this->safeExceptionMessage($e)],
             ], 500);
         }
     }
@@ -356,7 +356,7 @@ class CommissionController extends Controller
                 'status' => false,
                 'code' => 500,
                 'message' => 'Failed to retrieve settings',
-                'errors' => [$e->getMessage()],
+                'errors' => [$this->safeExceptionMessage($e)],
             ], 500);
         }
     }
@@ -401,7 +401,7 @@ class CommissionController extends Controller
                 'status' => false,
                 'code' => 500,
                 'message' => 'Failed to update settings',
-                'errors' => [$e->getMessage()],
+                'errors' => [$this->safeExceptionMessage($e)],
             ], 500);
         }
     }
@@ -451,7 +451,7 @@ class CommissionController extends Controller
                 'status' => false,
                 'code' => 500,
                 'message' => 'Failed to retrieve category defaults',
-                'errors' => [$e->getMessage()],
+                'errors' => [$this->safeExceptionMessage($e)],
             ], 500);
         }
     }
@@ -478,7 +478,7 @@ class CommissionController extends Controller
                 'status' => false,
                 'code' => 500,
                 'message' => 'Failed to retrieve category default commissions',
-                'errors' => [$e->getMessage()],
+                'errors' => [$this->safeExceptionMessage($e)],
             ], 500);
         }
     }
@@ -531,7 +531,7 @@ class CommissionController extends Controller
                 'status' => false,
                 'code' => 500,
                 'message' => 'Failed to set category default commission',
-                'errors' => [$e->getMessage()],
+                'errors' => [$this->safeExceptionMessage($e)],
             ], 500);
         }
     }

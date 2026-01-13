@@ -5,11 +5,11 @@ namespace App\Http\Controllers\Api\Back\V1;
 use Illuminate\Http\Request;
 use App\Models\MenuItem;
 use Illuminate\Http\JsonResponse;
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\Api\BaseController;
 use Illuminate\Validation\ValidationException;
 use App\Http\Resources\Back\V1\MenuItemResource;
 
-class MenuItemController extends Controller
+class MenuItemController extends BaseController
 {
     /**
      * Display a listing of the MenuItems.
@@ -87,7 +87,6 @@ class MenuItemController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Failed to create MenuItem',
-                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -127,7 +126,6 @@ class MenuItemController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Failed to update MenuItem',
-                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -154,7 +152,6 @@ class MenuItemController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Failed to delete MenuItem',
-                'error' => $e->getMessage(),
             ], 500);
         }
     }

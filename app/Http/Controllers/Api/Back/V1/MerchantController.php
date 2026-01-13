@@ -5,11 +5,11 @@ namespace App\Http\Controllers\Api\Back\V1;
 use Illuminate\Http\Request;
 use App\Models\Merchant;
 use Illuminate\Http\JsonResponse;
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\Api\BaseController;
 use Illuminate\Validation\ValidationException;
 use App\Http\Resources\Back\V1\MerchantResource;
 
-class MerchantController extends Controller
+class MerchantController extends BaseController
 {
     /**
      * Display a listing of the Merchants.
@@ -133,7 +133,6 @@ class MerchantController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Failed to create Merchant',
-                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -174,7 +173,6 @@ class MerchantController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Failed to update Merchant',
-                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -201,7 +199,6 @@ class MerchantController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Failed to delete Merchant',
-                'error' => $e->getMessage(),
             ], 500);
         }
     }

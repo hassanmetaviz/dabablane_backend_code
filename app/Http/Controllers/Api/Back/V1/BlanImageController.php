@@ -7,7 +7,7 @@ use App\Models\Blane;
 use App\Models\BlaneImage;
 use App\Models\VendorCoverMedia;
 use Illuminate\Http\JsonResponse;
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\Api\BaseController;
 use App\Helpers\FileHelper;
 use Illuminate\Validation\ValidationException;
 use App\Http\Resources\Back\V1\BlanImageResource;
@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\Log;
 use App\Services\BunnyService;
 use Illuminate\Http\UploadedFile;
 
-class BlanImageController extends Controller
+class BlanImageController extends BaseController
 {
     private const VIDEO_EXTENSIONS = ['mp4', 'mov', 'avi', 'mkv', 'wmv', 'flv', 'webm'];
 
@@ -148,7 +148,6 @@ class BlanImageController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Failed to create BlaneImage',
-                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -186,7 +185,6 @@ class BlanImageController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Failed to update BlaneImage',
-                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -213,7 +211,6 @@ class BlanImageController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Failed to delete BlaneImage',
-                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -337,15 +334,14 @@ class BlanImageController extends Controller
                         }
                     } catch (\RuntimeException $e) {
                         Log::error('Bunny.net upload failed for vendor image', [
-                            'error' => $e->getMessage(),
                             'file_name' => $file->getClientOriginalName(),
                             'type' => $request->type,
                         ]);
 
                         return response()->json([
                             'success' => false,
-                            'message' => 'File upload to Bunny.net failed: ' . $e->getMessage(),
-                            'errors' => $e->getMessage(),
+                            'message' => 'File upload to Bunny.net failed.',
+                            'errors' => $this->safeExceptionMessage($e),
                         ], 422);
                     }
                 }
@@ -366,14 +362,12 @@ class BlanImageController extends Controller
             ], 422);
         } catch (\Exception $e) {
             Log::error('Failed to upload vendor images', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
             ]);
 
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to upload file',
-                'errors' => $e->getMessage(),
+                'errors' => $this->safeExceptionMessage($e),
             ], 500);
         }
     }
@@ -604,15 +598,12 @@ class BlanImageController extends Controller
             ]);
 
         } catch (\RuntimeException $e) {
-            \Log::error('Failed to update/create BlaneImage', ['error' => $e->getMessage(), 'id' => $id]);
             return response()->json([
-                'message' => $e->getMessage(),
+                'message' => 'An unexpected error occurred.',
             ], 422);
         } catch (\Exception $e) {
-            \Log::error('Failed to update/create BlaneImage', ['error' => $e->getMessage(), 'id' => $id]);
             return response()->json([
                 'message' => 'Failed to update/create BlaneImage(s)',
-                'error' => $e->getMessage(),
             ], 500);
         }
     }

@@ -2,13 +2,13 @@
 
 namespace App\Http\Controllers\Api\Back\V1;
 
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\Api\BaseController;
 use App\Http\Resources\Back\V1\SubcategoryResource;
 use App\Models\Subcategory;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 
-class SubcategoryController extends Controller
+class SubcategoryController extends BaseController
 {
     /**
      * Display a listing of the subcategories.
@@ -110,7 +110,6 @@ class SubcategoryController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Failed to create subcategory',
-                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -146,7 +145,6 @@ class SubcategoryController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Failed to update subcategory',
-                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -169,7 +167,6 @@ class SubcategoryController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Failed to delete subcategory',
-                'error' => $e->getMessage(),
             ], 500);
         }
     }

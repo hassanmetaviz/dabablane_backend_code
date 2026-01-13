@@ -4,14 +4,14 @@ namespace App\Http\Controllers\Api\Front\V1;
 
 use App\Models\User;
 use Illuminate\Http\Request;
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\Api\BaseController;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 use App\Http\Resources\Front\V1\UserResource;
 
-class UserController extends Controller
+class UserController extends BaseController
 {
     // Remove constructor completely
 
@@ -27,7 +27,6 @@ class UserController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to fetch profile',
-                'error' => $e->getMessage()
             ], 500);
         }
     }
@@ -58,7 +57,6 @@ class UserController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to update profile',
-                'error' => $e->getMessage()
             ], 500);
         }
     }
@@ -101,7 +99,6 @@ class UserController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Failed to change password',
-                'error' => $e->getMessage()
             ], 500);
         }
     }
@@ -129,7 +126,6 @@ class UserController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Failed to fetch activity history',
-                'error' => $e->getMessage()
             ], 500);
         }
     }
@@ -151,7 +147,6 @@ class UserController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Failed to delete user',
-                'error' => $e->getMessage(),
             ], 500);
         }
     }

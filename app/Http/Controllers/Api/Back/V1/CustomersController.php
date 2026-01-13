@@ -5,11 +5,11 @@ namespace App\Http\Controllers\Api\Back\V1;
 use Illuminate\Http\Request;
 use App\Models\Customers;
 use Illuminate\Http\JsonResponse;
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\Api\BaseController;
 use Illuminate\Validation\ValidationException;
 use App\Http\Resources\Back\V1\CustomersResource;
 
-class CustomersController extends Controller
+class CustomersController extends BaseController
 {
     /**
      * Display a listing of the Customers.
@@ -87,7 +87,6 @@ class CustomersController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Failed to create Customers',
-                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -128,7 +127,6 @@ class CustomersController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Failed to update customer',
-                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -155,7 +153,6 @@ class CustomersController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Failed to delete Customers',
-                'error' => $e->getMessage(),
             ], 500);
         }
     }

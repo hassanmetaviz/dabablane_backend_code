@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Api\Back\V1;
 
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\Api\BaseController;
 use App\Models\Plan;
 use App\Models\AddOn;
 use App\Models\PromoCode;
@@ -13,6 +13,7 @@ use App\Models\CommissionChart;
 use App\Models\Category;
 use App\Mail\InvoiceMail;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Storage;
 use Barryvdh\DomPDF\PDF;
@@ -21,7 +22,7 @@ use App\Models\User;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\DB;
 
-class AdminSubscriptionController extends Controller
+class AdminSubscriptionController extends BaseController
 {
 
     public function createPlan(Request $request)
@@ -39,12 +40,12 @@ class AdminSubscriptionController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json(['status' => false, 'code' => 422, 'errors' => $validator->errors()], 422);
+            return $this->validationError($validator->errors(), 'Validation error');
         }
 
         $plan = Plan::create($validator->validated());
 
-        return response()->json(['status' => true, 'code' => 201, 'message' => 'Plan created', 'data' => $plan], 201);
+        return $this->success($plan, 'Plan created', 201);
     }
 
     public function updatePlan(Request $request, Plan $plan)
@@ -62,12 +63,12 @@ class AdminSubscriptionController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json(['status' => false, 'code' => 422, 'errors' => $validator->errors()], 422);
+            return $this->validationError($validator->errors(), 'Validation error');
         }
 
         $plan->update($validator->validated());
 
-        return response()->json(['status' => true, 'code' => 200, 'message' => 'Plan updated', 'data' => $plan], 200);
+        return $this->success($plan, 'Plan updated', 200);
     }
 
     public function deletePlan(Request $request, Plan $plan)
@@ -76,41 +77,30 @@ class AdminSubscriptionController extends Controller
             $purchaseCount = Purchase::where('plan_id', $plan->id)->count();
 
             if ($purchaseCount > 0) {
-                return response()->json([
-                    'status' => false,
-                    'code' => 422,
-                    'message' => 'Cannot delete plan. It is being used in ' . $purchaseCount . ' purchase(s).',
-                    'data' => [
+                return $this->error(
+                    'Cannot delete plan. It is being used in ' . $purchaseCount . ' purchase(s).',
+                    [],
+                    422,
+                    [
                         'purchase_count' => $purchaseCount,
-                        'alternative' => 'You can deactivate the plan instead by setting is_active to false.'
+                        'alternative' => 'You can deactivate the plan instead by setting is_active to false.',
                     ]
-                ], 422);
+                );
             }
 
             $plan->delete();
 
-            return response()->json([
-                'status' => true,
-                'code' => 200,
-                'message' => 'Plan deleted successfully'
-            ], 200);
+            return $this->success(null, 'Plan deleted successfully', 200);
 
         } catch (\Exception $e) {
-            \Log::error('Error deleting plan: ' . $e->getMessage());
-
-            return response()->json([
-                'status' => false,
-                'code' => 500,
-                'message' => 'Failed to delete plan',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->error('Failed to delete plan', [], 500);
         }
     }
 
     public function listPlans(Request $request)
     {
         $plans = Plan::orderBy('display_order')->get();
-        return response()->json(['status' => true, 'code' => 200, 'data' => $plans], 200);
+        return $this->success($plans, 'Success', 200);
     }
 
     // Add-ons
@@ -125,12 +115,12 @@ class AdminSubscriptionController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json(['status' => false, 'code' => 422, 'errors' => $validator->errors()], 422);
+            return $this->validationError($validator->errors(), 'Validation error');
         }
 
         $addOn = AddOn::create($validator->validated());
 
-        return response()->json(['status' => true, 'code' => 201, 'message' => 'Add-on created', 'data' => $addOn], 201);
+        return $this->success($addOn, 'Add-on created', 201);
     }
 
     public function updateAddOn(Request $request, AddOn $addOn)
@@ -144,12 +134,12 @@ class AdminSubscriptionController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json(['status' => false, 'code' => 422, 'errors' => $validator->errors()], 422);
+            return $this->validationError($validator->errors(), 'Validation error');
         }
 
         $addOn->update($validator->validated());
 
-        return response()->json(['status' => true, 'code' => 200, 'message' => 'Add-on updated', 'data' => $addOn], 200);
+        return $this->success($addOn, 'Add-on updated', 200);
     }
 
     public function deleteAddOn(Request $request, AddOn $addOn)
@@ -160,41 +150,30 @@ class AdminSubscriptionController extends Controller
                 ->count();
 
             if ($purchaseCount > 0) {
-                return response()->json([
-                    'status' => false,
-                    'code' => 422,
-                    'message' => 'Cannot delete add-on. It is being used in ' . $purchaseCount . ' purchase(s).',
-                    'data' => [
+                return $this->error(
+                    'Cannot delete add-on. It is being used in ' . $purchaseCount . ' purchase(s).',
+                    [],
+                    422,
+                    [
                         'purchase_count' => $purchaseCount,
-                        'alternative' => 'You can deactivate the add-on instead by setting is_active to false.'
+                        'alternative' => 'You can deactivate the add-on instead by setting is_active to false.',
                     ]
-                ], 422);
+                );
             }
 
             $addOn->delete();
 
-            return response()->json([
-                'status' => true,
-                'code' => 200,
-                'message' => 'Add-on deleted successfully'
-            ], 200);
+            return $this->success(null, 'Add-on deleted successfully', 200);
 
         } catch (\Exception $e) {
-            \Log::error('Error deleting add-on: ' . $e->getMessage());
-
-            return response()->json([
-                'status' => false,
-                'code' => 500,
-                'message' => 'Failed to delete add-on',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->error('Failed to delete add-on', [], 500);
         }
     }
 
     public function listAddOns(Request $request)
     {
         $addOns = AddOn::all();
-        return response()->json(['status' => true, 'code' => 200, 'data' => $addOns], 200);
+        return $this->success($addOns, 'Success', 200);
     }
 
     public function createPromoCode(Request $request)
@@ -208,12 +187,12 @@ class AdminSubscriptionController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json(['status' => false, 'code' => 422, 'errors' => $validator->errors()], 422);
+            return $this->validationError($validator->errors(), 'Validation error');
         }
 
         $promoCode = PromoCode::create($validator->validated());
 
-        return response()->json(['status' => true, 'code' => 201, 'message' => 'Promo code created', 'data' => $promoCode], 201);
+        return $this->success($promoCode, 'Promo code created', 201);
     }
 
     public function updatePromoCode(Request $request, PromoCode $promoCode)
@@ -227,12 +206,12 @@ class AdminSubscriptionController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json(['status' => false, 'code' => 422, 'errors' => $validator->errors()], 422);
+            return $this->validationError($validator->errors(), 'Validation error');
         }
 
         $promoCode->update($validator->validated());
 
-        return response()->json(['status' => true, 'code' => 200, 'message' => 'Promo code updated', 'data' => $promoCode], 200);
+        return $this->success($promoCode, 'Promo code updated', 200);
     }
 
     public function deletePromoCode(Request $request, PromoCode $promoCode)
@@ -241,41 +220,30 @@ class AdminSubscriptionController extends Controller
             $purchaseCount = Purchase::where('promo_code_id', $promoCode->id)->count();
 
             if ($purchaseCount > 0) {
-                return response()->json([
-                    'status' => false,
-                    'code' => 422,
-                    'message' => 'Cannot delete promo code. It is being used in ' . $purchaseCount . ' purchase(s).',
-                    'data' => [
+                return $this->error(
+                    'Cannot delete promo code. It is being used in ' . $purchaseCount . ' purchase(s).',
+                    [],
+                    422,
+                    [
                         'purchase_count' => $purchaseCount,
-                        'alternative' => 'You can deactivate the promo code instead by setting is_active to false.'
+                        'alternative' => 'You can deactivate the promo code instead by setting is_active to false.',
                     ]
-                ], 422);
+                );
             }
 
             $promoCode->delete();
 
-            return response()->json([
-                'status' => true,
-                'code' => 200,
-                'message' => 'Promo code deleted successfully'
-            ], 200);
+            return $this->success(null, 'Promo code deleted successfully', 200);
 
         } catch (\Exception $e) {
-            \Log::error('Error deleting promo code: ' . $e->getMessage());
-
-            return response()->json([
-                'status' => false,
-                'code' => 500,
-                'message' => 'Failed to delete promo code',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->error('Failed to delete promo code', [], 500);
         }
     }
 
     public function listPromoCodes(Request $request)
     {
         $promoCodes = PromoCode::all();
-        return response()->json(['status' => true, 'code' => 200, 'data' => $promoCodes], 200);
+        return $this->success($promoCodes, 'Success', 200);
     }
 
     public function updateConfiguration(Request $request)
@@ -291,7 +259,7 @@ class AdminSubscriptionController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json(['status' => false, 'code' => 422, 'errors' => $validator->errors()], 422);
+            return $this->validationError($validator->errors(), 'Validation error');
         }
 
         $config = Configuration::firstOrNew([]);
@@ -315,7 +283,7 @@ class AdminSubscriptionController extends Controller
 
         $config->fill($data)->save();
 
-        return response()->json(['status' => true, 'code' => 200, 'message' => 'Configuration updated', 'data' => $config], 200);
+        return $this->success($config, 'Configuration updated', 200);
     }
 
     public function getConfiguration(Request $request)
@@ -327,7 +295,7 @@ class AdminSubscriptionController extends Controller
             'invoice_prefix' => 'DABA-INV-',
         ]);
 
-        return response()->json(['status' => true, 'code' => 200, 'data' => $config], 200);
+        return $this->success($config, 'Success', 200);
     }
     // Manual Activation
     public function activatePurchase(Request $request, Purchase $purchase)
@@ -337,7 +305,7 @@ class AdminSubscriptionController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json(['status' => false, 'code' => 422, 'errors' => $validator->errors()], 422);
+            return $this->validationError($validator->errors(), 'Validation error');
         }
 
         $purchase->update([
@@ -349,7 +317,7 @@ class AdminSubscriptionController extends Controller
 
         $this->updateOrCreateInvoice($purchase);
 
-        return response()->json(['status' => true, 'code' => 200, 'message' => 'Purchase activated'], 200);
+        return $this->success(null, 'Purchase activated', 200);
     }
 
     private function updateOrCreateInvoice(Purchase $purchase)
@@ -648,12 +616,7 @@ class AdminSubscriptionController extends Controller
 
         } catch (\Exception $e) {
 
-            return response()->json([
-                'status' => false,
-                'code' => 500,
-                'message' => 'Failed to retrieve vendors with subscriptions',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->error('Failed to retrieve vendors with subscriptions', [], 500);
         }
     }
 
@@ -830,7 +793,7 @@ class AdminSubscriptionController extends Controller
                 'status' => false,
                 'code' => 500,
                 'message' => 'Failed to retrieve vendors',
-                'errors' => [$e->getMessage()],
+                'errors' => [$this->safeExceptionMessage($e)],
             ], 500);
         }
     }
@@ -843,7 +806,7 @@ class AdminSubscriptionController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json(['status' => false, 'code' => 422, 'errors' => $validator->errors()], 422);
+            return $this->validationError($validator->errors(), 'Validation error');
         }
 
         try {
@@ -889,22 +852,10 @@ class AdminSubscriptionController extends Controller
 
             \Log::info('Commission chart uploaded successfully for category: ' . $category->name);
 
-            return response()->json([
-                'status' => true,
-                'code' => 201,
-                'message' => 'Commission chart uploaded successfully',
-                'data' => $commissionChart->load('category')
-            ], 201);
+            return $this->success($commissionChart->load('category'), 'Commission chart uploaded successfully', 201);
 
         } catch (\Exception $e) {
-            \Log::error('Commission chart upload failed: ' . $e->getMessage());
-
-            return response()->json([
-                'status' => false,
-                'code' => 500,
-                'message' => 'Failed to upload commission chart',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->error('Failed to upload commission chart', [], 500);
         }
     }
     public function updateCommissionChart(Request $request, $id)
@@ -916,31 +867,32 @@ class AdminSubscriptionController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json(['status' => false, 'code' => 422, 'errors' => $validator->errors()], 422);
+            return $this->validationError($validator->errors(), 'Validation error');
         }
 
         try {
             $commissionChart = CommissionChart::findOrFail($id);
 
-            // DEBUG: Extensive logging
-            \Log::info('=== START COMMISSION CHART UPDATE DEBUG ===');
-            \Log::info('Commission Chart ID: ' . $commissionChart->id);
-            \Log::info('Request has file: ' . ($request->hasFile('commission_file') ? 'YES' : 'NO'));
-            \Log::info('Request files: ', $request->allFiles());
-            \Log::info('All request data: ', $request->all());
+            // DEBUG (only when APP_DEBUG=true): avoid logging full request payloads in production.
+            if (config('app.debug')) {
+                Log::info('=== START COMMISSION CHART UPDATE DEBUG ===');
+                Log::info('Commission Chart ID: ' . $commissionChart->id);
+                Log::info('Request has file: ' . ($request->hasFile('commission_file') ? 'YES' : 'NO'));
+                Log::info('Request files: ', $request->allFiles());
+                Log::info('All request data: ', $request->all());
 
-            // Check file input specifically
-            $file = $request->file('commission_file');
-            \Log::info('File object: ' . ($file ? get_class($file) : 'NULL'));
-            if ($file) {
-                \Log::info('File details:', [
-                    'original_name' => $file->getClientOriginalName(),
-                    'size' => $file->getSize(),
-                    'mime_type' => $file->getMimeType(),
-                    'extension' => $file->getClientOriginalExtension(),
-                ]);
+                $file = $request->file('commission_file');
+                Log::info('File object: ' . ($file ? get_class($file) : 'NULL'));
+                if ($file) {
+                    Log::info('File details:', [
+                        'original_name' => $file->getClientOriginalName(),
+                        'size' => $file->getSize(),
+                        'mime_type' => $file->getMimeType(),
+                        'extension' => $file->getClientOriginalExtension(),
+                    ]);
+                }
+                Log::info('=== END COMMISSION CHART UPDATE DEBUG ===');
             }
-            \Log::info('=== END COMMISSION CHART UPDATE DEBUG ===');
 
             $updateData = $request->only(['category_id', 'is_active']);
 
@@ -998,23 +950,12 @@ class AdminSubscriptionController extends Controller
                 'updated_fields' => array_keys($updateData),
             ]);
 
-            return response()->json([
-                'status' => true,
-                'code' => 200,
-                'message' => 'Commission chart updated successfully',
-                'data' => $commissionChart->load('category')
-            ], 200);
+            return $this->success($commissionChart->load('category'), 'Commission chart updated successfully', 200);
 
         } catch (\Exception $e) {
-            \Log::error('Commission chart update failed: ' . $e->getMessage());
-            \Log::error('Stack trace: ' . $e->getTraceAsString());
-
-            return response()->json([
-                'status' => false,
-                'code' => 500,
-                'message' => 'Failed to update commission chart',
-                'error' => $e->getMessage()
-            ], 500);
+            Log::error('Commission chart update failed', [
+            ]);
+            return $this->error('Failed to update commission chart', [], 500);
         }
     }
 
@@ -1037,21 +978,10 @@ class AdminSubscriptionController extends Controller
 
             \Log::info('Commission chart deleted successfully: ' . $commissionChart->id);
 
-            return response()->json([
-                'status' => true,
-                'code' => 200,
-                'message' => 'Commission chart deleted successfully'
-            ], 200);
+            return $this->success(null, 'Commission chart deleted successfully', 200);
 
         } catch (\Exception $e) {
-            \Log::error('Commission chart deletion failed: ' . $e->getMessage());
-
-            return response()->json([
-                'status' => false,
-                'code' => 500,
-                'message' => 'Failed to delete commission chart',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->error('Failed to delete commission chart', [], 500);
         }
     }
 
@@ -1069,11 +999,7 @@ class AdminSubscriptionController extends Controller
 
         $commissionCharts = $query->orderBy('created_at', 'desc')->get();
 
-        return response()->json([
-            'status' => true,
-            'code' => 200,
-            'data' => $commissionCharts
-        ], 200);
+        return $this->success($commissionCharts, 'Success', 200);
     }
 
     public function downloadCommissionChart(Request $request, CommissionChart $commissionChart)
@@ -1089,24 +1015,13 @@ class AdminSubscriptionController extends Controller
             ]);
 
             if (!Storage::disk('public')->exists($filePath)) {
-                return response()->json([
-                    'status' => false,
-                    'code' => 404,
-                    'message' => 'Commission chart file not found at: ' . $filePath
-                ], 404);
+                return $this->error('Commission chart file not found', [], 404);
             }
 
             return Storage::disk('public')->download($filePath, $commissionChart->original_filename);
 
         } catch (\Exception $e) {
-            \Log::error('Commission chart download failed: ' . $e->getMessage());
-
-            return response()->json([
-                'status' => false,
-                'code' => 500,
-                'message' => 'Failed to download commission chart',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->error('Failed to download commission chart', [], 500);
         }
     }
 

@@ -132,7 +132,7 @@ class MobileAuthController extends BaseController
                     'code' => 500,
                     'message' => 'Login failed',
                     'errors' => [
-                        'server' => [$e->getMessage()],
+                        'server' => [$this->safeExceptionMessage($e)],
                     ],
                 ],
                 500,

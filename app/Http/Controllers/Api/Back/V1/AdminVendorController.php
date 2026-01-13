@@ -176,7 +176,6 @@ class AdminVendorController extends BaseController
                         ]);
                     } catch (\RuntimeException $e) {
                         Log::error('Bunny.net upload failed in admin update', [
-                            'error' => $e->getMessage(),
                             'vendor_id' => $vendor->id,
                         ]);
                         continue;
@@ -184,7 +183,6 @@ class AdminVendorController extends BaseController
                 }
             } catch (\Exception $e) {
                 Log::error('Failed to upload vendor cover media in admin update', [
-                    'error' => $e->getMessage(),
                     'vendor_id' => $vendor->id,
                 ]);
             }
@@ -221,7 +219,6 @@ class AdminVendorController extends BaseController
                     } catch (\Exception $e) {
                         Log::warning('Failed to delete file from Bunny.net', [
                             'url' => $media->media_url,
-                            'error' => $e->getMessage(),
                         ]);
                     }
                 }
@@ -370,8 +367,6 @@ class AdminVendorController extends BaseController
         } catch (\Exception $e) {
             Log::error('Failed to create vendor by admin', [
                 'admin_id' => auth()->id(),
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
             ]);
 
             return response()->json([
@@ -379,7 +374,7 @@ class AdminVendorController extends BaseController
                 'code' => 500,
                 'message' => 'Failed to create vendor',
                 'errors' => [
-                    'server' => [$e->getMessage()],
+                    'server' => [$this->safeExceptionMessage($e)],
                 ],
             ], 500);
         }
@@ -447,7 +442,7 @@ class AdminVendorController extends BaseController
                 'status' => false,
                 'code' => 500,
                 'message' => 'Failed to update vendor status',
-                'errors' => [$e->getMessage()],
+                'errors' => [$this->safeExceptionMessage($e)],
             ], 500);
         }
     }
@@ -545,7 +540,7 @@ class AdminVendorController extends BaseController
                 'code' => 500,
                 'message' => 'Failed to reset vendor password',
                 'errors' => [
-                    'server' => [$e->getMessage()],
+                    'server' => [$this->safeExceptionMessage($e)],
                 ],
             ], 500);
         }
@@ -641,7 +636,7 @@ class AdminVendorController extends BaseController
                 'status' => false,
                 'code' => 500,
                 'message' => 'Failed to retrieve vendors',
-                'errors' => [$e->getMessage()],
+                'errors' => [$this->safeExceptionMessage($e)],
             ], 500);
         }
     }
@@ -719,7 +714,7 @@ class AdminVendorController extends BaseController
                 'status' => false,
                 'code' => 500,
                 'message' => 'Failed to retrieve vendor',
-                'errors' => [$e->getMessage()],
+                'errors' => [$this->safeExceptionMessage($e)],
             ], 500);
         }
     }
@@ -799,7 +794,7 @@ class AdminVendorController extends BaseController
                 'status' => false,
                 'code' => 500,
                 'message' => 'Failed to retrieve vendor',
-                'errors' => [$e->getMessage()],
+                'errors' => [$this->safeExceptionMessage($e)],
             ], 500);
         }
     }

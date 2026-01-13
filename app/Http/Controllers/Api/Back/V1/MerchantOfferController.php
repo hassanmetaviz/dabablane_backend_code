@@ -5,11 +5,11 @@ namespace App\Http\Controllers\Api\Back\V1;
 use Illuminate\Http\Request;
 use App\Models\MerchantOffer;
 use Illuminate\Http\JsonResponse;
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\Api\BaseController;
 use Illuminate\Validation\ValidationException;
 use App\Http\Resources\Back\V1\MerchantOfferResource;
 
-class MerchantOfferController extends Controller
+class MerchantOfferController extends BaseController
 {
     /**
      * Display a listing of the Merchant Offers.
@@ -131,7 +131,6 @@ class MerchantOfferController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Failed to create Merchant Offer',
-                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -170,7 +169,6 @@ class MerchantOfferController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Failed to update Merchant Offer',
-                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -197,7 +195,6 @@ class MerchantOfferController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Failed to delete Merchant Offer',
-                'error' => $e->getMessage(),
             ], 500);
         }
     }

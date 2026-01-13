@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Api\Back\V1;
 use Illuminate\Http\Request;
 use App\Models\Blane;
 use Illuminate\Http\JsonResponse;
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\Api\BaseController;
 use Illuminate\Validation\ValidationException;
 use App\Http\Resources\Back\V1\BlaneResource;
 use App\Helpers\FileHelper;
@@ -25,7 +25,7 @@ use Illuminate\Support\Facades\Validator;
 use App\Services\BlaneQueryService;
 use Illuminate\Support\Facades\Gate;
 
-class BlanController extends Controller
+class BlanController extends BaseController
 {
     protected $queryService;
 
@@ -188,7 +188,7 @@ class BlanController extends Controller
                 return response()->json([
                     'status' => false,
                     'code' => 403,
-                    'message' => $e->getMessage() ?: 'Unauthorized: You do not have permission to view this blane'
+                    'message' => 'An unexpected error occurred.',
                 ], 403);
             }
 
@@ -196,7 +196,6 @@ class BlanController extends Controller
 
         } catch (\Exception $e) {
             Log::error('Error in BlanController@show: ' . $e->getMessage(), [
-                'trace' => $e->getTraceAsString(),
                 'id' => $id,
                 'user_id' => auth()->id(),
             ]);
@@ -225,7 +224,7 @@ class BlanController extends Controller
             } catch (\Illuminate\Auth\Access\AuthorizationException $e) {
                 return response()->json([
                     'status' => false,
-                    'message' => $e->getMessage() ?: 'Unauthorized: You do not have permission to create blanes'
+                    'message' => 'An unexpected error occurred.',
                 ], 403);
             }
 
@@ -354,7 +353,6 @@ class BlanController extends Controller
             return response()->json(
                 [
                     'message' => 'Failed to create Blane',
-                    'error' => $e->getMessage(),
                 ],
                 500,
             );
@@ -379,7 +377,7 @@ class BlanController extends Controller
             } catch (\Illuminate\Auth\Access\AuthorizationException $e) {
                 return response()->json([
                     'status' => false,
-                    'message' => $e->getMessage() ?: 'Unauthorized: You do not have permission to update this blane'
+                    'message' => 'An unexpected error occurred.',
                 ], 403);
             }
 
@@ -541,7 +539,7 @@ class BlanController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'error' => 'Failed to update Blane',
-                'message' => $e->getMessage()
+                'message' => 'An unexpected error occurred.',
             ], 500);
         }
     }
@@ -564,7 +562,7 @@ class BlanController extends Controller
             } catch (\Illuminate\Auth\Access\AuthorizationException $e) {
                 return response()->json([
                     'status' => false,
-                    'message' => $e->getMessage() ?: 'Unauthorized: You do not have permission to update this blane'
+                    'message' => 'An unexpected error occurred.',
                 ], 403);
             }
 
@@ -682,7 +680,7 @@ class BlanController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'error' => 'Failed to update Blane',
-                'message' => $e->getMessage()
+                'message' => 'An unexpected error occurred.',
             ], 500);
         }
     }
@@ -707,7 +705,7 @@ class BlanController extends Controller
         } catch (\Illuminate\Auth\Access\AuthorizationException $e) {
             return response()->json([
                 'status' => false,
-                'message' => $e->getMessage() ?: 'Unauthorized: You do not have permission to delete this blane'
+                'message' => 'An unexpected error occurred.',
             ], 403);
         }
 
@@ -736,7 +734,6 @@ class BlanController extends Controller
             return response()->json(
                 [
                     'message' => 'Failed to delete Blane',
-                    'error' => $e->getMessage(),
                 ],
                 500,
             );
@@ -786,7 +783,6 @@ class BlanController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Failed to delete blanes',
-                'error' => $e->getMessage()
             ], 500);
         }
     }
@@ -811,7 +807,7 @@ class BlanController extends Controller
         } catch (\Illuminate\Auth\Access\AuthorizationException $e) {
             return response()->json([
                 'status' => false,
-                'message' => $e->getMessage() ?: 'Unauthorized: You do not have permission to update the status of this blane'
+                'message' => 'An unexpected error occurred.',
             ], 403);
         }
 

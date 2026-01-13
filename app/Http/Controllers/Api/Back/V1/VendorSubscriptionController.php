@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Api\Back\V1;
 
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\Api\BaseController;
 use App\Models\Plan;
 use App\Models\AddOn;
 use App\Models\PromoCode;
@@ -19,7 +19,7 @@ use Illuminate\Support\Facades\Storage;
 use Barryvdh\DomPDF\PDF;
 use App\Services\CmiService;
 
-class VendorSubscriptionController extends Controller
+class VendorSubscriptionController extends BaseController
 {
     private $paymentService;
     private $gatewayUrl;
@@ -269,7 +269,6 @@ class VendorSubscriptionController extends Controller
 
         } catch (\Exception $e) {
             \Log::error('Exception during subscription CMI callback', [
-                'error' => $e->getMessage(),
                 'params' => $params
             ]);
             return response('FAILURE', 200);
@@ -356,7 +355,6 @@ class VendorSubscriptionController extends Controller
                 'status' => false,
                 'code' => 500,
                 'message' => 'Failed to get subscription status',
-                'error' => $e->getMessage()
             ], 500);
         }
     }
@@ -523,7 +521,6 @@ class VendorSubscriptionController extends Controller
                 'status' => false,
                 'code' => 500,
                 'message' => 'Failed to download commission chart',
-                'error' => $e->getMessage()
             ], 500);
         }
     }

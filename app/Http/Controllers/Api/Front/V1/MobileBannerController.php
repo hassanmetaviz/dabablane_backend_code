@@ -5,11 +5,11 @@ namespace App\Http\Controllers\Api\Front\V1;
 use Illuminate\Http\Request;
 use App\Models\MobileBanner;
 use Illuminate\Http\JsonResponse;
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\Api\BaseController;
 use App\Http\Resources\Front\V1\MobileBannerResource;
 use Illuminate\Validation\ValidationException;
 
-class MobileBannerController extends Controller
+class MobileBannerController extends BaseController
 {
     /**
      * Display active mobile banners for mobile app.
@@ -56,7 +56,6 @@ class MobileBannerController extends Controller
                 'status' => false,
                 'code' => 500,
                 'message' => 'Failed to retrieve mobile banners',
-                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -92,7 +91,6 @@ class MobileBannerController extends Controller
                 'status' => false,
                 'code' => 500,
                 'message' => 'Failed to retrieve mobile banner',
-                'error' => $e->getMessage(),
             ], 500);
         }
     }

@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Api\Back\V1;
 use Illuminate\Http\Request;
 use App\Models\Reservation;
 use Illuminate\Http\JsonResponse;
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\Api\BaseController;
 use Illuminate\Validation\ValidationException;
 use App\Http\Resources\Back\V1\ReservationResource;
 use App\Http\Resources\Back\V1\OrderResource;
@@ -22,7 +22,7 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth;
 
-class ReservationController extends Controller
+class ReservationController extends BaseController
 {
     /**
      * Display a listing of the Reservations.
@@ -269,7 +269,6 @@ class ReservationController extends Controller
             Log::error('Failed to create Reservation: ' . $e->getMessage());
             return response()->json([
                 'message' => 'Failed to create Reservation',
-                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -386,7 +385,6 @@ class ReservationController extends Controller
             DB::rollBack();
             return response()->json([
                 'message' => 'Failed to update Reservation',
-                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -413,7 +411,6 @@ class ReservationController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Failed to delete Reservation',
-                'error' => $e->getMessage(),
             ], 500);
         }
     }

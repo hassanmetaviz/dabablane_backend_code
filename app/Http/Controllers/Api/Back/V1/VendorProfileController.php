@@ -215,7 +215,7 @@ class VendorProfileController extends BaseController
                 'code' => 500,
                 'message' => 'Password update failed',
                 'errors' => [
-                    'server' => [$e->getMessage()],
+                    'server' => [$this->safeExceptionMessage($e)],
                 ],
             ], 500);
         }
@@ -297,8 +297,6 @@ class VendorProfileController extends BaseController
         } catch (\Exception $e) {
             Log::error('Failed to set vendor password', [
                 'user_id' => $user->id,
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
             ]);
 
             return response()->json([
@@ -306,7 +304,7 @@ class VendorProfileController extends BaseController
                 'code' => 500,
                 'message' => 'Failed to set password',
                 'errors' => [
-                    'server' => [$e->getMessage()],
+                    'server' => [$this->safeExceptionMessage($e)],
                 ],
             ], 500);
         }

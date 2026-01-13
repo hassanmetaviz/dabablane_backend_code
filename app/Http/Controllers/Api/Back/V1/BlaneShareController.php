@@ -5,11 +5,11 @@ namespace App\Http\Controllers\Api\Back\V1;
 use Illuminate\Http\Request;
 use App\Models\Blane;
 use Illuminate\Http\JsonResponse;
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\Api\BaseController;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Str;
 
-class BlaneShareController extends Controller
+class BlaneShareController extends BaseController
 {
     /**
      * Generate a share link for a Blane.
@@ -39,7 +39,6 @@ class BlaneShareController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Failed to generate share link',
-                'error' => $e->getMessage()
             ], 500);
         }
     }
@@ -68,7 +67,6 @@ class BlaneShareController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Failed to revoke share link',
-                'error' => $e->getMessage()
             ], 500);
         }
     }
@@ -118,7 +116,6 @@ class BlaneShareController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Failed to update visibility',
-                'error' => $e->getMessage()
             ], 500);
         }
     }

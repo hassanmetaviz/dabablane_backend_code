@@ -5,13 +5,13 @@ namespace App\Http\Controllers\Api\Back\V1;
 use Illuminate\Http\Request;
 use App\Models\MobileBanner;
 use Illuminate\Http\JsonResponse;
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\Api\BaseController;
 use Illuminate\Validation\ValidationException;
 use App\Http\Resources\Back\V1\MobileBannerResource;
 use App\Services\BunnyService;
 use Illuminate\Support\Facades\Validator;
 
-class MobileBannerController extends Controller
+class MobileBannerController extends BaseController
 {
     /**
      * Display a listing of the MobileBanners.
@@ -147,7 +147,6 @@ class MobileBannerController extends Controller
                         'status' => false,
                         'code' => 422,
                         'message' => 'File upload failed',
-                        'error' => $e->getMessage(),
                     ], 422);
                 }
             }
@@ -173,7 +172,6 @@ class MobileBannerController extends Controller
                 'status' => false,
                 'code' => 500,
                 'message' => 'Failed to create mobile banner',
-                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -240,7 +238,6 @@ class MobileBannerController extends Controller
                         'status' => false,
                         'code' => 422,
                         'message' => 'File upload failed',
-                        'error' => $e->getMessage(),
                     ], 422);
                 }
             }
@@ -266,7 +263,6 @@ class MobileBannerController extends Controller
                 'status' => false,
                 'code' => 500,
                 'message' => 'Failed to update mobile banner',
-                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -306,7 +302,6 @@ class MobileBannerController extends Controller
                 'status' => false,
                 'code' => 500,
                 'message' => 'Failed to delete mobile banner',
-                'error' => $e->getMessage(),
             ], 500);
         }
     }

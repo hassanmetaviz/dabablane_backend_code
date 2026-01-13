@@ -4,13 +4,13 @@ namespace App\Http\Controllers\Api\Back\V1;
 
 use App\Models\User;
 use Illuminate\Http\Request;
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\Api\BaseController;
 use Illuminate\Http\JsonResponse;
 use App\Http\Resources\Back\V1\UserResource;
 use Illuminate\Validation\ValidationException;
 use Spatie\Permission\Models\Role;
 
-class UserController extends Controller
+class UserController extends BaseController
 {
     /**
      * Display a listing of the users.
@@ -99,7 +99,6 @@ class UserController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Failed to create user',
-                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -150,7 +149,6 @@ class UserController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Failed to update user',
-                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -177,7 +175,6 @@ class UserController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Failed to delete user',
-                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -215,7 +212,6 @@ class UserController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Failed to assign roles',
-                'error' => $e->getMessage(),
             ], 500);
         }
     }

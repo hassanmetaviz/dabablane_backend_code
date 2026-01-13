@@ -5,11 +5,11 @@ namespace App\Http\Controllers\Api\Back\V1;
 use Illuminate\Http\Request;
 use App\Models\City;
 use Illuminate\Http\JsonResponse;
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\Api\BaseController;
 use Illuminate\Validation\ValidationException;
 use App\Http\Resources\Back\V1\CityResource;
 
-class CityController extends Controller
+class CityController extends BaseController
 {
     /**
      * Display a listing of the Cities.
@@ -130,7 +130,6 @@ class CityController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Failed to create City',
-                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -168,7 +167,6 @@ class CityController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Failed to update City',
-                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -195,7 +193,6 @@ class CityController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Failed to delete City',
-                'error' => $e->getMessage(),
             ], 500);
         }
     }

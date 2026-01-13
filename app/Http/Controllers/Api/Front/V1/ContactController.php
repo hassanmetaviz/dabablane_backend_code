@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Api\Front\V1;
 
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\Api\BaseController;
 use App\Models\Contact;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
@@ -14,7 +14,7 @@ use App\Mail\ContactFormSubmission;
 use App\Notifications\ContactFormNotification;
 use App\Models\User;
 
-class ContactController extends Controller
+class ContactController extends BaseController
 {
     /**
      * Store a newly created contact message from guest users.
@@ -51,7 +51,6 @@ class ContactController extends Controller
             } catch (\Exception $e) {
 
                 Log::error('Failed to send contact form notification:', [
-                    'error' => $e->getMessage(),
                     'contact_id' => $contact->id
                 ]);
             }
@@ -71,8 +70,7 @@ class ContactController extends Controller
             ], 422);
         } catch (\Exception $e) {
             Log::error('Error in contact form submission:', [
-                'message' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'message' => 'An unexpected error occurred.',
             ]);
             return response()->json([
                 'success' => false,

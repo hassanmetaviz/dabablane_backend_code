@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Api\Back\V1;
 
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\Api\BaseController;
 use App\Services\VendorPaymentService;
 use App\Models\VendorPayment;
 use App\Models\VendorPaymentLog;
@@ -12,7 +12,7 @@ use Carbon\Carbon;
 use Rap2hpoutre\FastExcel\FastExcel;
 use Barryvdh\DomPDF\Facade\Pdf;
 
-class VendorPaymentController extends Controller
+class VendorPaymentController extends BaseController
 {
     protected $paymentService;
 
@@ -87,7 +87,7 @@ class VendorPaymentController extends Controller
                 'status' => false,
                 'code' => 500,
                 'message' => 'Failed to retrieve vendor payments',
-                'errors' => [$e->getMessage()],
+                'errors' => [$this->safeExceptionMessage($e)],
             ], 500);
         }
     }
@@ -112,7 +112,7 @@ class VendorPaymentController extends Controller
                 'status' => false,
                 'code' => 404,
                 'message' => 'Vendor payment not found',
-                'errors' => [$e->getMessage()],
+                'errors' => [$this->safeExceptionMessage($e)],
             ], 404);
         }
     }
@@ -160,7 +160,7 @@ class VendorPaymentController extends Controller
                 'status' => false,
                 'code' => 500,
                 'message' => 'Failed to mark payments as processed',
-                'errors' => [$e->getMessage()],
+                'errors' => [$this->safeExceptionMessage($e)],
             ], 500);
         }
     }
@@ -198,7 +198,7 @@ class VendorPaymentController extends Controller
                 'status' => false,
                 'code' => 500,
                 'message' => 'Failed to revert payment',
-                'errors' => [$e->getMessage()],
+                'errors' => [$this->safeExceptionMessage($e)],
             ], 500);
         }
     }
@@ -252,7 +252,7 @@ class VendorPaymentController extends Controller
                 'status' => false,
                 'code' => 500,
                 'message' => 'Failed to update payment',
-                'errors' => [$e->getMessage()],
+                'errors' => [$this->safeExceptionMessage($e)],
             ], 500);
         }
     }
@@ -320,7 +320,7 @@ class VendorPaymentController extends Controller
                 'status' => false,
                 'code' => 500,
                 'message' => 'Failed to export Excel',
-                'errors' => [$e->getMessage()],
+                'errors' => [$this->safeExceptionMessage($e)],
             ], 500);
         }
     }
@@ -374,7 +374,7 @@ class VendorPaymentController extends Controller
                 'status' => false,
                 'code' => 500,
                 'message' => 'Failed to export PDF',
-                'errors' => [$e->getMessage()],
+                'errors' => [$this->safeExceptionMessage($e)],
             ], 500);
         }
     }
@@ -415,7 +415,7 @@ class VendorPaymentController extends Controller
                 'status' => false,
                 'code' => 500,
                 'message' => 'Failed to generate banking report',
-                'errors' => [$e->getMessage()],
+                'errors' => [$this->safeExceptionMessage($e)],
             ], 500);
         }
     }
@@ -471,7 +471,7 @@ class VendorPaymentController extends Controller
                 'status' => false,
                 'code' => 500,
                 'message' => 'Failed to retrieve audit logs',
-                'errors' => [$e->getMessage()],
+                'errors' => [$this->safeExceptionMessage($e)],
             ], 500);
         }
     }
@@ -522,7 +522,7 @@ class VendorPaymentController extends Controller
                 'status' => false,
                 'code' => 500,
                 'message' => 'Failed to retrieve dashboard stats',
-                'errors' => [$e->getMessage()],
+                'errors' => [$this->safeExceptionMessage($e)],
             ], 500);
         }
     }
@@ -564,7 +564,7 @@ class VendorPaymentController extends Controller
                 'status' => false,
                 'code' => 500,
                 'message' => 'Failed to retrieve weekly summary',
-                'errors' => [$e->getMessage()],
+                'errors' => [$this->safeExceptionMessage($e)],
             ], 500);
         }
     }
@@ -649,7 +649,7 @@ class VendorPaymentController extends Controller
                 'status' => false,
                 'code' => 500,
                 'message' => 'Failed to update payment status',
-                'errors' => [$e->getMessage()],
+                'errors' => [$this->safeExceptionMessage($e)],
             ], 500);
         }
     }

@@ -96,7 +96,7 @@ class SocialAuthController extends BaseController
                     'code' => 500,
                     'message' => 'Social login failed',
                     'errors' => [
-                        'server' => [$e->getMessage()],
+                        'server' => [$this->safeExceptionMessage($e)],
                     ],
                 ],
                 500,

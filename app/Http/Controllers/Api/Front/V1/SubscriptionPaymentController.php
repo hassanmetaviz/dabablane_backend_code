@@ -2,17 +2,18 @@
 
 namespace App\Http\Controllers\Api\Front\V1;
 
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\Api\BaseController;
+use App\Http\Requests\Api\Front\V1\InitiateSubscriptionPaymentRequest;
+use App\Http\Requests\Api\Front\V1\RetrySubscriptionPaymentRequest;
 use App\Models\Purchase;
 use App\Models\Configuration;
 use App\Services\CmiService;
 use App\Mail\InvoiceMail;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\DB;
 
-class SubscriptionPaymentController extends Controller
+class SubscriptionPaymentController extends BaseController
 {
     private $paymentService;
     private $gatewayUrl;
@@ -26,29 +27,19 @@ class SubscriptionPaymentController extends Controller
     /**
      * Initiate subscription payment
      */
-    public function initiatePayment(Request $request)
+    public function initiatePayment(InitiateSubscriptionPaymentRequest $request)
     {
         try {
-            $request->validate([
-                'purchase_id' => 'required|integer|exists:purchases,id'
-            ]);
+            $data = $request->validated();
 
-            $purchase = Purchase::with(['user', 'plan', 'addOns', 'promoCode'])->findOrFail($request->purchase_id);
+            $purchase = Purchase::with(['user', 'plan', 'addOns', 'promoCode'])->findOrFail($data['purchase_id']);
 
             if ($purchase->user_id !== auth()->id()) {
-                return response()->json([
-                    'status' => false,
-                    'code' => 403,
-                    'message' => 'Unauthorized access to this purchase'
-                ], 403);
+                return $this->error('Unauthorized access to this purchase', [], 403);
             }
 
             if ($purchase->status !== 'pending') {
-                return response()->json([
-                    'status' => false,
-                    'code' => 400,
-                    'message' => 'Purchase is not in pending status'
-                ], 400);
+                return $this->error('Purchase is not in pending status', [], 400);
             }
 
             $user = $purchase->user;
@@ -64,39 +55,32 @@ class SubscriptionPaymentController extends Controller
 
             $params = $this->paymentService->preparePaymentParams($orderData);
 
-            return response()->json([
-                'status' => true,
-                'code' => 200,
-                'message' => 'Payment initiated successfully',
-                'data' => [
+            return $this->success(
+                [
                     'purchase' => $purchase,
                     'payment_info' => [
                         'payment_url' => $this->gatewayUrl,
                         'method' => 'post',
-                        'inputs' => $params
-                    ]
-                ]
-            ]);
+                        'inputs' => $params,
+                    ],
+                ],
+                'Payment initiated successfully',
+                200
+            );
 
         } catch (\Exception $e) {
             Log::error('Subscription payment initiation error', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
                 'request' => $request->all()
             ]);
 
-            return response()->json([
-                'status' => false,
-                'code' => 500,
-                'message' => 'An error occurred while initiating payment: ' . $e->getMessage()
-            ], 500);
+            return $this->error('An error occurred while initiating payment.', [], 500);
         }
     }
 
     /**
      * Handle CMI callback for subscription payments
      */
-    public function handleCallback(Request $request)
+    public function handleCallback(\Illuminate\Http\Request $request)
     {
         $params = $request->except('HASH');
         $receivedHash = $request->input('HASH');
@@ -162,7 +146,6 @@ class SubscriptionPaymentController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Exception during subscription CMI callback', [
-                'error' => $e->getMessage(),
                 'params' => $params
             ]);
             return response('FAILURE', 200);
@@ -174,7 +157,7 @@ class SubscriptionPaymentController extends Controller
     /**
      * Handle payment timeout or cancellation
      */
-    public function timeout(Request $request)
+    public function timeout(\Illuminate\Http\Request $request)
     {
         $oid = $request->input('oid');
         $purchaseId = str_replace('SUB-', '', $oid);
@@ -200,48 +183,40 @@ class SubscriptionPaymentController extends Controller
             }
         } catch (\Exception $e) {
             Log::error('Error updating purchase status on timeout', [
-                'error' => $e->getMessage(),
                 'purchase_id' => $purchaseId
             ]);
         }
 
-        return response()->json([
-            'status' => false,
-            'code' => 408,
-            'message' => 'Payment timeout or cancelled',
-            'data' => [
+        // Keep backward-compatible response payload (includes data fields).
+        return $this->error(
+            'Payment timeout or cancelled',
+            [],
+            408,
+            [
                 'oid' => $oid,
                 'purchase_id' => $purchaseId,
-                'status' => 'cancelled'
+                'status' => 'cancelled',
             ]
-        ], 408);
+        );
     }
 
     /**
      * Retry payment for failed/cancelled purchases
      */
-    public function retryPayment(Request $request)
+    public function retryPayment(RetrySubscriptionPaymentRequest $request)
     {
         try {
-            $request->validate([
-                'purchase_id' => 'required|integer|exists:purchases,id'
-            ]);
+            $data = $request->validated();
 
-            $purchase = Purchase::with(['user', 'plan', 'addOns', 'promoCode'])->findOrFail($request->purchase_id);
+            $purchase = Purchase::with(['user', 'plan', 'addOns', 'promoCode'])->findOrFail($data['purchase_id']);
 
             if ($purchase->user_id !== auth()->id()) {
-                return response()->json([
-                    'status' => false,
-                    'code' => 403,
-                    'message' => 'Unauthorized access to this purchase'
-                ], 403);
+                return $this->error('Unauthorized access to this purchase', [], 403);
             }
 
             if (!in_array($purchase->status, ['failed', 'cancelled', 'pending'])) {
-                return response()->json([
-                    'status' => false,
-                    'code' => 400,
-                    'message' => 'Purchase cannot be retried. Current status: ' . $purchase->status
+                return $this->error('Purchase cannot be retried.', [
+                    'status' => ['Purchase cannot be retried. Current status: ' . $purchase->status],
                 ], 400);
             }
 
@@ -260,39 +235,32 @@ class SubscriptionPaymentController extends Controller
 
             $params = $this->paymentService->preparePaymentParams($orderData);
 
-            return response()->json([
-                'status' => true,
-                'code' => 200,
-                'message' => 'Payment retry initiated successfully',
-                'data' => [
+            return $this->success(
+                [
                     'purchase' => $purchase,
                     'payment_info' => [
                         'payment_url' => $this->gatewayUrl,
                         'method' => 'post',
-                        'inputs' => $params
-                    ]
-                ]
-            ]);
+                        'inputs' => $params,
+                    ],
+                ],
+                'Payment retry initiated successfully',
+                200
+            );
 
         } catch (\Exception $e) {
             Log::error('Payment retry error', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
                 'request' => $request->all()
             ]);
 
-            return response()->json([
-                'status' => false,
-                'code' => 500,
-                'message' => 'An error occurred while retrying payment: ' . $e->getMessage()
-            ], 500);
+            return $this->error('An error occurred while retrying payment.', [], 500);
         }
     }
 
     /**
      * Handle successful payment redirect
      */
-    public function success(Request $request)
+    public function success(\Illuminate\Http\Request $request)
     {
         $oid = $request->input('oid');
         $purchaseId = str_replace('SUB-', '', $oid);
@@ -300,36 +268,30 @@ class SubscriptionPaymentController extends Controller
         try {
             $purchase = Purchase::with(['plan', 'user'])->findOrFail($purchaseId);
 
-            return response()->json([
-                'status' => true,
-                'code' => 200,
-                'message' => 'Payment completed successfully',
-                'data' => [
+            return $this->success(
+                [
                     'purchase_id' => $purchase->id,
                     'plan_title' => $purchase->plan->title,
                     'status' => $purchase->status,
                     'start_date' => $purchase->start_date,
-                    'end_date' => $purchase->end_date
-                ]
-            ]);
+                    'end_date' => $purchase->end_date,
+                ],
+                'Payment completed successfully',
+                200
+            );
         } catch (\Exception $e) {
             Log::error('Error in success callback', [
-                'error' => $e->getMessage(),
                 'oid' => $oid
             ]);
 
-            return response()->json([
-                'status' => false,
-                'code' => 500,
-                'message' => 'Error processing payment success'
-            ], 500);
+            return $this->error('Error processing payment success', [], 500);
         }
     }
 
     /**
      * Handle failed payment redirect
      */
-    public function failure(Request $request)
+    public function failure(\Illuminate\Http\Request $request)
     {
         $oid = $request->input('oid');
         $purchaseId = str_replace('SUB-', '', $oid);
@@ -355,20 +317,20 @@ class SubscriptionPaymentController extends Controller
             }
         } catch (\Exception $e) {
             Log::error('Error updating purchase status on failure', [
-                'error' => $e->getMessage(),
                 'purchase_id' => $purchaseId
             ]);
         }
 
-        return response()->json([
-            'status' => false,
-            'code' => 400,
-            'message' => 'Payment failed or cancelled',
-            'data' => [
+        // Keep backward-compatible response payload (includes data fields).
+        return $this->error(
+            'Payment failed or cancelled',
+            [],
+            400,
+            [
                 'oid' => $oid,
                 'purchase_id' => $purchaseId,
-                'status' => 'failed'
+                'status' => 'failed',
             ]
-        ], 400);
+        );
     }
 }

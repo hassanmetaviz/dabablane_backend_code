@@ -5,11 +5,11 @@ namespace App\Http\Controllers\Api\Back\V1;
 use Illuminate\Http\Request;
 use App\Models\Contact;
 use Illuminate\Http\JsonResponse;
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\Api\BaseController;
 use Illuminate\Validation\ValidationException;
 use App\Http\Resources\Back\V1\ContactResource;
 
-class ContactController extends Controller
+class ContactController extends BaseController
 {
     /**
      * Display a listing of the Contact.
@@ -82,7 +82,6 @@ class ContactController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Failed to create contact',
-                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -125,7 +124,6 @@ class ContactController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Failed to update contact',
-                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -152,7 +150,6 @@ class ContactController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Failed to delete contact',
-                'error' => $e->getMessage(),
             ], 500);
         }
     }
