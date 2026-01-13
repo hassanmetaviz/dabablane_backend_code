@@ -6,7 +6,6 @@ use Illuminate\Http\Request;
 use App\Models\Address;
 use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Api\BaseController;
-use Illuminate\Validation\ValidationException;
 use App\Http\Resources\Front\V1\AddressResource;
 
 class AddressController extends BaseController
@@ -18,18 +17,14 @@ class AddressController extends BaseController
      */
     public function index(Request $request)
     {
-        try {
-            $request->validate([
-                'include' => 'nullable|string',
-                'sort_by' => 'nullable|string|in:created_at,city,zip_code',
-                'sort_order' => 'nullable|string|in:asc,desc',
-                'search' => 'nullable|string',
-                'city' => 'nullable|string',
-                'zip_code' => 'nullable|string',
-            ]);
-        } catch (ValidationException $e) {
-            return response()->json(['error' => $e->errors()], 400);
-        }
+        $request->validate([
+            'include' => 'nullable|string',
+            'sort_by' => 'nullable|string|in:created_at,city,zip_code',
+            'sort_order' => 'nullable|string|in:asc,desc',
+            'search' => 'nullable|string',
+            'city' => 'nullable|string',
+            'zip_code' => 'nullable|string',
+        ]);
 
         $query = Address::where('user_id', auth()->id());
 
@@ -55,16 +50,9 @@ class AddressController extends BaseController
      */
     public function show($id, Request $request)
     {
-        try {
-            $request->validate([
-                'include' => [
-                    'nullable',
-                    'string',                    
-                ],
-            ]);
-        } catch (ValidationException $e) {
-            return response()->json(['error' => $e->errors()], 400);
-        }
+        $request->validate([
+            'include' => 'nullable|string',
+        ]);
 
         $query = Address::where('user_id', auth()->id());
 
@@ -76,7 +64,7 @@ class AddressController extends BaseController
         $address = $query->find($id);
 
         if (!$address) {
-            return response()->json(['message' => 'Address not found'], 404);
+            return $this->notFound('Address not found');
         }
 
         return new AddressResource($address);
@@ -143,27 +131,18 @@ class AddressController extends BaseController
      */
     public function store(Request $request): JsonResponse
     {
-        try {
-            $validatedData = $request->validate([
-                'city' => 'required|string|max:255',
-                'user_id' => 'required|integer|exists:users,id',
-                'address' => 'required|string|max:255',
-                'zip_code' => 'required|string|max:10',
-            ]);
-        } catch (ValidationException $e) {
-            return response()->json(['error' => $e->errors()], 400);
-        }
+        $validatedData = $request->validate([
+            'city' => 'required|string|max:255',
+            'user_id' => 'required|integer|exists:users,id',
+            'address' => 'required|string|max:255',
+            'zip_code' => 'required|string|max:10',
+        ]);
 
         try {
             $address = Address::create($validatedData);
-            return response()->json([
-                'message' => 'Address created successfully',
-                'data' => new AddressResource($address),
-            ], 201);
+            return $this->created(new AddressResource($address), 'Address created successfully');
         } catch (\Exception $e) {
-            return response()->json([
-                'message' => 'Failed to create Address',
-            ], 500);
+            return $this->error('Failed to create Address', [], 500);
         }
     }
 
@@ -176,33 +155,24 @@ class AddressController extends BaseController
      */
     public function update(Request $request, $id): JsonResponse
     {
-        try {
-            $validatedData = $request->validate([
-                'city' => 'required|string|max:255',
-                'user_id' => 'required|integer|exists:users,id',
-                'address' => 'required|string|max:255',
-                'zip_code' => 'required|string|max:10',
-            ]);
-        } catch (ValidationException $e) {
-            return response()->json(['error' => $e->errors()], 400);
-        }
+        $validatedData = $request->validate([
+            'city' => 'required|string|max:255',
+            'user_id' => 'required|integer|exists:users,id',
+            'address' => 'required|string|max:255',
+            'zip_code' => 'required|string|max:10',
+        ]);
 
         $address = Address::find($id);
 
         if (!$address) {
-            return response()->json(['message' => 'Address not found'], 404);
+            return $this->notFound('Address not found');
         }
 
         try {
             $address->update($validatedData);
-            return response()->json([
-                'message' => 'Address updated successfully',
-                'data' => new AddressResource($address),
-            ]);
+            return $this->success(new AddressResource($address), 'Address updated successfully');
         } catch (\Exception $e) {
-            return response()->json([
-                'message' => 'Failed to update Address',
-            ], 500);
+            return $this->error('Failed to update Address', [], 500);
         }
     }
 
@@ -217,18 +187,14 @@ class AddressController extends BaseController
         $address = Address::find($id);
 
         if (!$address) {
-            return response()->json(['message' => 'Address not found'], 404);
+            return $this->notFound('Address not found');
         }
 
         try {
             $address->delete();
-            return response()->json([
-                'message' => 'Address deleted successfully',
-            ], 204);
+            return $this->deleted('Address deleted successfully');
         } catch (\Exception $e) {
-            return response()->json([
-                'message' => 'Failed to delete Address',
-            ], 500);
+            return $this->error('Failed to delete Address', [], 500);
         }
     }
 }

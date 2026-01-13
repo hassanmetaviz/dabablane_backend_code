@@ -27,13 +27,13 @@ class WrapApiResponse
         $payload = $response->getData(true);
 
         // If already in our standard envelope, don't wrap again
-        if (is_array($payload)
-            && array_key_exists('status', $payload)
-            && array_key_exists('code', $payload)
-            && array_key_exists('message', $payload)
-            && (array_key_exists('data', $payload) || array_key_exists('errors', $payload))
-        ) {
+        if ($this->isAlreadyWrapped($payload)) {
             return $response;
+        }
+
+        // Handle Laravel paginated Resource collections
+        if ($this->isPaginatedResponse($payload)) {
+            return $this->wrapPaginatedResponse($payload, $statusCode);
         }
 
         $isSuccess = $statusCode < 400;
@@ -77,6 +77,45 @@ class WrapApiResponse
         }
 
         return response()->json($wrapped, $statusCode);
+    }
+
+    /**
+     * Check if the response is already wrapped in our standard envelope.
+     */
+    private function isAlreadyWrapped($payload): bool
+    {
+        return is_array($payload)
+            && array_key_exists('status', $payload)
+            && array_key_exists('code', $payload)
+            && array_key_exists('message', $payload)
+            && (array_key_exists('data', $payload) || array_key_exists('errors', $payload));
+    }
+
+    /**
+     * Check if the response is a Laravel paginated Resource collection.
+     */
+    private function isPaginatedResponse($payload): bool
+    {
+        return is_array($payload)
+            && isset($payload['data'])
+            && isset($payload['meta'])
+            && isset($payload['links'])
+            && isset($payload['meta']['current_page']);
+    }
+
+    /**
+     * Wrap a paginated response in our standard envelope.
+     */
+    private function wrapPaginatedResponse($payload, $statusCode): JsonResponse
+    {
+        return response()->json([
+            'status' => true,
+            'code' => $statusCode,
+            'message' => 'Success',
+            'data' => $payload['data'],
+            'meta' => $payload['meta'],
+            'links' => $payload['links'],
+        ], $statusCode);
     }
 }
 

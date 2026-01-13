@@ -88,8 +88,7 @@ class AuthController extends BaseController
 
         $token->delete();
 
-        // Keep backward-compatible key for existing frontend integrations.
-        return response()->json(['message' => 'Logged out successfully!'], 200);
+        return $this->success(null, 'Logged out successfully!');
     }
 
     /**

@@ -7,22 +7,16 @@ use App\Http\Resources\Front\V1\CategoryResource;
 use App\Http\Resources\Front\V1\SubcategoryResource;
 use App\Models\Category;
 use Illuminate\Http\Request;
-use Illuminate\Validation\ValidationException;
 
 class CategoryController extends BaseController
 {
     public function index(Request $request)
     {
-        // Validate input parameters
-        try {
-            $request->validate([
-                'include' => 'nullable|string|in:subcategories', // Add your valid relations here
-                'sort_by' => 'nullable|string|in:created_at,name',
-                'sort_order' => 'nullable|string|in:asc,desc',
-            ]);
-        } catch (ValidationException $e) {
-            return response()->json(['error' => $e->errors()], 400);
-        }
+        $request->validate([
+            'include' => 'nullable|string|in:subcategories',
+            'sort_by' => 'nullable|string|in:created_at,name',
+            'sort_order' => 'nullable|string|in:asc,desc',
+        ]);
 
         $query = Category::query()->where('status', 'active');
 
@@ -72,14 +66,10 @@ class CategoryController extends BaseController
 
     public function show($id, Request $request)
     {
-        try {
-            $request->validate([
-                'include' => 'nullable|string|in:subcategories',
-            ]);
-        } catch (ValidationException $e) {
-            return response()->json(['error' => $e->errors()], 400);
-        }
-        
+        $request->validate([
+            'include' => 'nullable|string|in:subcategories',
+        ]);
+
         $query = Category::query()->where('status', 'active');
 
         if ($request->has('include')) {
@@ -87,7 +77,12 @@ class CategoryController extends BaseController
             $query->with($includes);
         }
 
-        $category = $query->findOrFail($id);
+        $category = $query->find($id);
+
+        if (!$category) {
+            return $this->notFound('Category not found');
+        }
+
         return new CategoryResource($category);
     }
 

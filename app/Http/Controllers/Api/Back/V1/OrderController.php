@@ -6,7 +6,6 @@ use Illuminate\Http\Request;
 use App\Models\Order;
 use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Api\BaseController;
-use Illuminate\Validation\ValidationException;
 use App\Http\Resources\Back\V1\OrderResource;
 use App\Models\Blane;
 use App\Models\Customers;
@@ -26,32 +25,28 @@ class OrderController extends BaseController
      */
     public function index(Request $request)
     {
-        try {
-            $request->validate([
-                'include' => [
-                    'nullable',
-                    'string',
-                    function ($attribute, $value, $fail) {
-                        $validIncludes = ['blane', 'user', 'shippingDetails', 'customer']; // Valid relationships
-                        $includes = explode(',', $value);
-                        foreach ($includes as $include) {
-                            if (!in_array($include, $validIncludes)) {
-                                $fail('The selected ' . $attribute . ' is invalid.');
-                            }
+        $request->validate([
+            'include' => [
+                'nullable',
+                'string',
+                function ($attribute, $value, $fail) {
+                    $validIncludes = ['blane', 'user', 'shippingDetails', 'customer'];
+                    $includes = explode(',', $value);
+                    foreach ($includes as $include) {
+                        if (!in_array($include, $validIncludes)) {
+                            $fail('The selected ' . $attribute . ' is invalid.');
                         }
-                    },
-                ],
-                'paginationSize' => 'nullable|integer|min:1',
-                'sort_by' => 'nullable|string|in:created_at,total_price,status,source',
-                'sort_order' => 'nullable|string|in:asc,desc',
-                'search' => 'nullable|string',
-                'status' => 'nullable|string',
-                'blane_id' => 'nullable|integer',
-                'source' => 'nullable|string|in:web,mobile,agent',
-            ]);
-        } catch (ValidationException $e) {
-            return response()->json(['error' => $e->errors()], 400);
-        }
+                    }
+                },
+            ],
+            'paginationSize' => 'nullable|integer|min:1',
+            'sort_by' => 'nullable|string|in:created_at,total_price,status,source',
+            'sort_order' => 'nullable|string|in:asc,desc',
+            'search' => 'nullable|string',
+            'status' => 'nullable|string',
+            'blane_id' => 'nullable|integer',
+            'source' => 'nullable|string|in:web,mobile,agent',
+        ]);
 
         $query = Order::query();
 
@@ -78,25 +73,21 @@ class OrderController extends BaseController
      */
     public function show($id, Request $request)
     {
-        try {
-            $request->validate([
-                'include' => [
-                    'nullable',
-                    'string',
-                    function ($attribute, $value, $fail) {
-                        $validIncludes = ['blane', 'user', 'shippingDetails'];
-                        $includes = explode(',', $value);
-                        foreach ($includes as $include) {
-                            if (!in_array($include, $validIncludes)) {
-                                $fail('The selected ' . $attribute . ' is invalid.');
-                            }
+        $request->validate([
+            'include' => [
+                'nullable',
+                'string',
+                function ($attribute, $value, $fail) {
+                    $validIncludes = ['blane', 'user', 'shippingDetails'];
+                    $includes = explode(',', $value);
+                    foreach ($includes as $include) {
+                        if (!in_array($include, $validIncludes)) {
+                            $fail('The selected ' . $attribute . ' is invalid.');
                         }
-                    },
-                ],
-            ]);
-        } catch (ValidationException $e) {
-            return response()->json(['error' => $e->errors()], 400);
-        }
+                    }
+                },
+            ],
+        ]);
 
         $query = Order::query();
 
@@ -108,7 +99,7 @@ class OrderController extends BaseController
         $order = $query->find($id);
 
         if (!$order) {
-            return response()->json(['message' => 'Order not found'], 404);
+            return $this->notFound('Order not found');
         }
 
         return new OrderResource($order);
@@ -179,24 +170,20 @@ class OrderController extends BaseController
      */
     public function store(Request $request): JsonResponse
     {
-        try {
-            $validatedData = $request->validate([
-                'blane_id' => 'required|integer|exists:blanes,id',
-                'name' => 'required|string|max:255',
-                'email' => 'required|email',
-                'phone' => 'required|string|max:20',
-                'city' => 'required|string|max:255',
-                'quantity' => 'required|integer|min:1',
-                'delivery_address' => 'required|string|max:255',
-                'total_price' => 'nullable|numeric|min:0',
-                'partiel_price' => 'nullable|numeric|min:0',
-                'payment_method' => 'nullable|string|in:cash,online',
-                'status' => 'required|string|in:confirmed,paid,pending,shipped,cancelled',
-                'source' => 'nullable|string|in:web,mobile,agent',
-            ]);
-        } catch (ValidationException $e) {
-            return response()->json(['error' => $e->errors()], 400);
-        }
+        $validatedData = $request->validate([
+            'blane_id' => 'required|integer|exists:blanes,id',
+            'name' => 'required|string|max:255',
+            'email' => 'required|email',
+            'phone' => 'required|string|max:20',
+            'city' => 'required|string|max:255',
+            'quantity' => 'required|integer|min:1',
+            'delivery_address' => 'required|string|max:255',
+            'total_price' => 'nullable|numeric|min:0',
+            'partiel_price' => 'nullable|numeric|min:0',
+            'payment_method' => 'nullable|string|in:cash,online',
+            'status' => 'required|string|in:confirmed,paid,pending,shipped,cancelled',
+            'source' => 'nullable|string|in:web,mobile,agent',
+        ]);
 
         if (!isset($validatedData['partiel_price']) || $validatedData['partiel_price'] === null) {
             $validatedData['partiel_price'] = 0;
@@ -212,21 +199,15 @@ class OrderController extends BaseController
             $quantity = $validatedData['quantity'];
             if (!$this->checkDailyOrderAvailability($validatedData['blane_id'], $quantity)) {
                 $remaining = $this->getRemainingDailyOrderAvailability($validatedData['blane_id']);
-                return response()->json([
-                    'message' => 'Daily order limit reached. Only ' . $remaining . ' orders available for today.'
-                ], 400);
+                return $this->error('Daily order limit reached. Only ' . $remaining . ' orders available for today.', [], 400);
             }
 
             if ($validatedData['quantity'] > $blane->stock) {
-                return response()->json([
-                    'message' => 'Order quantity exceeds available stock',
-                ], 400);
+                return $this->error('Order quantity exceeds available stock', [], 400);
             }
 
             if ($validatedData['quantity'] > $blane->max_orders) {
-                return response()->json([
-                    'message' => 'Order quantity exceeds maximum allowed orders',
-                ], 400);
+                return $this->error('Order quantity exceeds maximum allowed orders', [], 400);
             }
 
             if (!isset($validatedData['total_price']) || $validatedData['total_price'] === null || $validatedData['total_price'] == 0) {
@@ -271,15 +252,10 @@ class OrderController extends BaseController
 
             DB::commit();
 
-            return response()->json([
-                'message' => 'Order created successfully',
-                'data' => new OrderResource($order),
-            ], 201);
+            return $this->created(new OrderResource($order), 'Order created successfully');
         } catch (\Exception $e) {
             DB::rollBack();
-            return response()->json([
-                'message' => 'Failed to create Order',
-            ], 500);
+            return $this->error('Failed to create Order', [], 500);
         }
     }
 
@@ -309,28 +285,29 @@ class OrderController extends BaseController
         $order = Order::find($id);
 
         if (!$order) {
-            return response()->json(['message' => 'Order not found'], 404);
+            return $this->notFound('Order not found');
         }
 
         if ($order->status !== 'pending') {
-            return response()->json(['message' => 'Only pending orders can be updated'], 403);
+            return $this->forbidden('Only pending orders can be updated');
         }
 
+        $validatedData = $request->validate([
+            'blane_id' => 'required|integer|exists:blanes,id',
+            'name' => 'required|string',
+            'email' => 'required|email',
+            'quantity' => 'required|integer|min:1',
+            'city' => 'required|string',
+            'phone' => 'required|string|max:20',
+            'total_price' => 'nullable|numeric|min:0',
+            'partiel_price' => 'nullable|numeric|min:0',
+            'delivery_address' => 'required|string|max:255',
+            'payment_method' => 'nullable|string|in:cash,online,partiel',
+            'status' => 'required|string|in:confirmed,pending,paid,shipped,cancelled',
+            'source' => 'nullable|string|in:web,mobile,agent',
+        ]);
+
         try {
-            $validatedData = $request->validate([
-                'blane_id' => 'required|integer|exists:blanes,id',
-                'name' => 'required|string',
-                'email' => 'required|email',
-                'quantity' => 'required|integer|min:1',
-                'city' => 'required|string',
-                'phone' => 'required|string|max:20',
-                'total_price' => 'nullable|numeric|min:0',
-                'partiel_price' => 'nullable|numeric|min:0',
-                'delivery_address' => 'required|string|max:255',
-                'payment_method' => 'nullable|string|in:cash,online,partiel',
-                'status' => 'required|string|in:confirmed,pending,paid,shipped,cancelled',
-                'source' => 'nullable|string|in:web,mobile,agent',
-            ]);
 
             DB::beginTransaction();
 
@@ -353,22 +330,16 @@ class OrderController extends BaseController
                     $availableSlots = $blane->availability_per_day - $dailyOrdersExcludingThis;
 
                     if ($newQuantity > $availableSlots && $blane->availability_per_day !== null) {
-                        return response()->json([
-                            'message' => 'Daily order limit reached. Only ' . $availableSlots . ' orders available for today.'
-                        ], 400);
+                        return $this->error('Daily order limit reached. Only ' . $availableSlots . ' orders available for today.', [], 400);
                     }
                 }
 
                 if ($newQuantity > $blane->stock + $oldQuantity) {
-                    return response()->json([
-                        'message' => 'Order quantity exceeds available stock',
-                    ], 400);
+                    return $this->error('Order quantity exceeds available stock', [], 400);
                 }
 
                 if ($newQuantity > $blane->max_orders) {
-                    return response()->json([
-                        'message' => 'Order quantity exceeds maximum allowed orders',
-                    ], 400);
+                    return $this->error('Order quantity exceeds maximum allowed orders', [], 400);
                 }
                 if ($validatedData['total_price'] == null || $validatedData['total_price'] == 0) {
                     $validatedData['total_price'] = $blane->price * $newQuantity;
@@ -397,18 +368,10 @@ class OrderController extends BaseController
 
             DB::commit();
 
-            return response()->json([
-                'message' => 'Order updated successfully',
-                'data' => new OrderResource($order),
-            ]);
-        } catch (ValidationException $e) {
-            DB::rollBack();
-            return response()->json(['error' => $e->errors()], 400);
+            return $this->success(new OrderResource($order), 'Order updated successfully');
         } catch (\Exception $e) {
             DB::rollBack();
-            return response()->json([
-                'message' => 'Failed to update Order',
-            ], 500);
+            return $this->error('Failed to update Order', [], 500);
         }
     }
 
@@ -423,18 +386,14 @@ class OrderController extends BaseController
         $order = Order::find($id);
 
         if (!$order) {
-            return response()->json(['message' => 'Order not found'], 404);
+            return $this->notFound('Order not found');
         }
 
         try {
             $order->delete();
-            return response()->json([
-                'message' => 'Order deleted successfully',
-            ], 204);
+            return $this->deleted('Order deleted successfully');
         } catch (\Exception $e) {
-            return response()->json([
-                'message' => 'Failed to delete Order',
-            ], 500);
+            return $this->error('Failed to delete Order', [], 500);
         }
     }
 
@@ -512,10 +471,9 @@ class OrderController extends BaseController
         $order = Order::find($id);
 
         if (!$order) {
-            return response()->json(['message' => 'Order not found'], 404);
+            return $this->notFound('Order not found');
         }
 
-        // the request data
         $request->validate([
             'status' => 'required|string',
         ]);
@@ -523,37 +481,33 @@ class OrderController extends BaseController
         $order->status = $request->input('status');
         $order->save();
 
-        return response()->json(['message' => 'Order status updated successfully'], 200);
+        return $this->success(new OrderResource($order), 'Order status updated successfully');
     }
 
     public function getOrdersList(Request $request)
     {
-        try {
-            $request->validate([
-                'include' => [
-                    'nullable',
-                    'string',
-                    function ($attribute, $value, $fail) {
-                        $validIncludes = ['blane', 'user', 'shippingDetails', 'customer', 'blaneImage']; // Added blaneImage
-                        $includes = explode(',', $value);
-                        foreach ($includes as $include) {
-                            if (!in_array($include, $validIncludes)) {
-                                $fail('The selected ' . $attribute . ' is invalid.');
-                            }
+        $request->validate([
+            'include' => [
+                'nullable',
+                'string',
+                function ($attribute, $value, $fail) {
+                    $validIncludes = ['blane', 'user', 'shippingDetails', 'customer', 'blaneImage'];
+                    $includes = explode(',', $value);
+                    foreach ($includes as $include) {
+                        if (!in_array($include, $validIncludes)) {
+                            $fail('The selected ' . $attribute . ' is invalid.');
                         }
-                    },
-                ],
-                'paginationSize' => 'nullable|integer|min:1',
-                'sort_by' => 'nullable|string|in:created_at,total_price,status,source',
-                'sort_order' => 'nullable|string|in:asc,desc',
-                'search' => 'nullable|string',
-                'status' => 'nullable|string',
-                'blane_id' => 'nullable|integer',
-                'source' => 'nullable|string|in:web,mobile,agent',
-            ]);
-        } catch (ValidationException $e) {
-            return response()->json(['error' => $e->errors()], 400);
-        }
+                    }
+                },
+            ],
+            'paginationSize' => 'nullable|integer|min:1',
+            'sort_by' => 'nullable|string|in:created_at,total_price,status,source',
+            'sort_order' => 'nullable|string|in:asc,desc',
+            'search' => 'nullable|string',
+            'status' => 'nullable|string',
+            'blane_id' => 'nullable|integer',
+            'source' => 'nullable|string|in:web,mobile,agent',
+        ]);
 
         $query = Order::query();
 

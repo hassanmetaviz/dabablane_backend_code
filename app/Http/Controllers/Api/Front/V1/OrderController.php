@@ -7,10 +7,9 @@ use App\Models\Order;
 use App\Models\Customers;
 use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Api\BaseController;
-use Illuminate\Validation\ValidationException;
 use App\Http\Resources\Front\V1\OrderResource;
 use App\Models\Blane;
-use Illuminate\Support\Facades\DB;  // Add this import
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\OrderConfirmation;
 use Illuminate\Support\Facades\Log;
@@ -97,43 +96,36 @@ class OrderController extends BaseController
      */
     public function store(Request $request): JsonResponse
     {
-        try {
-            $blaneId = $request->input('blane_id');
-            $blane = Blane::findOrFail($blaneId);
+        $blaneId = $request->input('blane_id');
+        $blane = Blane::findOrFail($blaneId);
 
-            $rules = [
-                'blane_id' => 'required|integer|exists:blanes,id',
-                'name' => 'required|string|max:255',
-                'email' => 'required|email',
-                'phone' => 'required|string|max:20',
-                'quantity' => 'required|integer|min:1',
-                'payment_method' => 'required|string|in:cash,online,partiel',
-                'total_price' => 'required|numeric|min:0',
-                'partiel_price' => 'nullable|numeric|min:0',
-                'comments' => 'nullable|string',
-                'source' => 'nullable|string|in:web,mobile,agent',
-            ];
+        $rules = [
+            'blane_id' => 'required|integer|exists:blanes,id',
+            'name' => 'required|string|max:255',
+            'email' => 'required|email',
+            'phone' => 'required|string|max:20',
+            'quantity' => 'required|integer|min:1',
+            'payment_method' => 'required|string|in:cash,online,partiel',
+            'total_price' => 'required|numeric|min:0',
+            'partiel_price' => 'nullable|numeric|min:0',
+            'comments' => 'nullable|string',
+            'source' => 'nullable|string|in:web,mobile,agent',
+        ];
 
-            if (!$blane->is_digital) {
-                $rules['delivery_address'] = 'required|string|max:255';
-                $rules['city'] = 'required|string|max:255';
-            } else {
-                $rules['delivery_address'] = 'nullable|string|max:255';
-                $rules['city'] = 'nullable|string|max:255';
-            }
+        if (!$blane->is_digital) {
+            $rules['delivery_address'] = 'required|string|max:255';
+            $rules['city'] = 'required|string|max:255';
+        } else {
+            $rules['delivery_address'] = 'nullable|string|max:255';
+            $rules['city'] = 'nullable|string|max:255';
+        }
 
-            $validatedData = $request->validate($rules);
+        $validatedData = $request->validate($rules);
 
-            $quantity = $validatedData['quantity'];
-            if (!$this->checkDailyOrderAvailability($blaneId, $quantity)) {
-                $remaining = $this->getRemainingDailyOrderAvailability($blaneId);
-                return response()->json([
-                    'error' => 'Daily order limit reached. Only ' . $remaining . ' orders available for today.'
-                ], 422);
-            }
-
-        } catch (ValidationException $e) {
-            return response()->json(['error' => $e->errors()], 400);
+        $quantity = $validatedData['quantity'];
+        if (!$this->checkDailyOrderAvailability($blaneId, $quantity)) {
+            $remaining = $this->getRemainingDailyOrderAvailability($blaneId);
+            return $this->error('Daily order limit reached. Only ' . $remaining . ' orders available for today.', [], 422);
         }
 
         try {
@@ -142,17 +134,15 @@ class OrderController extends BaseController
             $quantity = $validatedData['quantity'];
             if (!$this->checkDailyOrderAvailability($blaneId, $quantity)) {
                 $remaining = $this->getRemainingDailyOrderAvailability($blaneId);
-                return response()->json([
-                    'error' => 'Daily order limit reached. Only ' . $remaining . ' orders available for today.'
-                ], 422);
+                return $this->error('Daily order limit reached. Only ' . $remaining . ' orders available for today.', [], 422);
             }
 
             if ($validatedData['quantity'] > $blane->stock) {
-                return response()->json(['message' => 'Order quantity exceeds available stock'], 400);
+                return $this->error('Order quantity exceeds available stock', [], 400);
             }
 
             if ($validatedData['quantity'] > $blane->max_orders && $blane->max_orders !== 0) {
-                return response()->json(['message' => 'Order quantity exceeds maximum allowed orders'], 400);
+                return $this->error('Order quantity exceeds maximum allowed orders', [], 400);
             }
 
             $validatedData['NUM_ORD'] = $this->generateUniqueOrderCode();
@@ -198,11 +188,10 @@ class OrderController extends BaseController
             $this->sendWebhookNotification($this->prepareWebhookData($order, 'order'));
 
             if ($validatedData['payment_method'] == 'cash') {
-                return response()->json([
-                    'message' => 'Order created successfully',
-                    'data' => new OrderResource($order),
+                return $this->created([
+                    'order' => new OrderResource($order),
                     'cancellation' => $this->generateCancellationParams($order),
-                ], 201);
+                ], 'Order created successfully');
             } else {
                 $paymentAmount = ($order->payment_method === 'partiel')
                     ? $order->partiel_price
@@ -221,22 +210,19 @@ class OrderController extends BaseController
 
                 $params = $this->paymentService->preparePaymentParams($orderData);
 
-                return response()->json([
-                    'message' => 'Order created successfully',
-                    'data' => new OrderResource($order),
+                return $this->created([
+                    'order' => new OrderResource($order),
                     'cancellation' => $this->generateCancellationParams($order),
                     'payment_info' => [
                         'payment_url' => $this->gatewayUrl,
                         'method' => 'post',
                         'inputs' => $params
                     ]
-                ], 201);
+                ], 'Order created successfully');
             }
         } catch (\Exception $e) {
             DB::rollBack();
-            return response()->json([
-                'message' => 'Failed to create Order',
-            ], 500);
+            return $this->error('Failed to create Order', [], 500);
         }
     }
 
@@ -281,25 +267,21 @@ class OrderController extends BaseController
      */
     public function show($id, Request $request)
     {
-        try {
-            $request->validate([
-                'include' => [
-                    'nullable',
-                    'string',
-                    function ($attribute, $value, $fail) {
-                        $validIncludes = ['blane', 'blane.blaneImages', 'customer', 'shippingDetails']; // Valid relationships
-                        $includes = explode(',', $value);
-                        foreach ($includes as $include) {
-                            if (!in_array($include, $validIncludes)) {
-                                $fail('The selected ' . $attribute . ' is invalid.');
-                            }
+        $request->validate([
+            'include' => [
+                'nullable',
+                'string',
+                function ($attribute, $value, $fail) {
+                    $validIncludes = ['blane', 'blane.blaneImages', 'customer', 'shippingDetails'];
+                    $includes = explode(',', $value);
+                    foreach ($includes as $include) {
+                        if (!in_array($include, $validIncludes)) {
+                            $fail('The selected ' . $attribute . ' is invalid.');
                         }
-                    },
-                ],
-            ]);
-        } catch (ValidationException $e) {
-            return response()->json(['error' => $e->errors()], 400);
-        }
+                    }
+                },
+            ],
+        ]);
 
         $query = Order::query();
 
@@ -308,10 +290,10 @@ class OrderController extends BaseController
             $query->with($includes);
         }
 
-        $order = $query->where('NUM_ORD', $id)->firstOrFail();
+        $order = $query->where('NUM_ORD', $id)->first();
 
         if (!$order) {
-            return response()->json(['message' => 'Order not found'], 404);
+            return $this->notFound('Order not found');
         }
 
         return new OrderResource($order);
@@ -333,16 +315,13 @@ class OrderController extends BaseController
         $order = Order::where('NUM_ORD', $id)->where('status', 'pending')->first();
 
         if (!$order) {
-            return response()->json(['message' => 'Order not found'], 404);
+            return $this->notFound('Order not found');
         }
 
         $order->status = $request->input('status');
         $order->save();
 
-        return response()->json([
-            'message' => 'Order status updated successfully',
-            'data' => new OrderResource($order),
-        ]);
+        return $this->success(new OrderResource($order), 'Order status updated successfully');
     }
 
     /**
@@ -356,20 +335,18 @@ class OrderController extends BaseController
         $order = Order::find($id);
 
         if (!$order) {
-            return response()->json(['message' => 'Order not found'], 404);
+            return $this->notFound('Order not found');
         }
 
         if ($order->status !== 'pending') {
-            return response()->json(['message' => 'Only pending orders can be deleted'], 403);
+            return $this->forbidden('Only pending orders can be deleted');
         }
 
         try {
             $order->delete();
-            return response()->json(['message' => 'Order deleted successfully']);
+            return $this->deleted('Order deleted successfully');
         } catch (\Exception $e) {
-            return response()->json([
-                'message' => 'Failed to delete Order',
-            ], 500);
+            return $this->error('Failed to delete Order', [], 500);
         }
     }
 
@@ -457,27 +434,27 @@ class OrderController extends BaseController
      */
     public function cancelByToken(Request $request): JsonResponse
     {
+        $request->validate([
+            'id' => 'required|string',
+            'token' => 'required|string',
+            'timestamp' => 'required|numeric',
+        ]);
+
+        $order = Order::where('NUM_ORD', $request->id)->first();
+
+        if (!$order) {
+            return $this->notFound('Order not found');
+        }
+
+        if (!$order->verifyCancellationRequest($request->token, $request->timestamp)) {
+            return $this->forbidden('Invalid or expired cancellation token');
+        }
+
+        if ($order->status !== 'pending') {
+            return $this->error('This order cannot be cancelled anymore', [], 400);
+        }
+
         try {
-            $request->validate([
-                'id' => 'required|string',
-                'token' => 'required|string',
-                'timestamp' => 'required|numeric',
-            ]);
-
-            $order = Order::where('NUM_ORD', $request->id)->first();
-
-            if (!$order) {
-                return response()->json(['message' => 'Order not found'], 404);
-            }
-
-            if (!$order->verifyCancellationRequest($request->token, $request->timestamp)) {
-                return response()->json(['message' => 'Invalid or expired cancellation token'], 403);
-            }
-
-            if ($order->status !== 'pending') {
-                return response()->json(['message' => 'This order cannot be cancelled anymore'], 400);
-            }
-
             DB::beginTransaction();
 
             $order->status = 'cancelled';
@@ -491,18 +468,11 @@ class OrderController extends BaseController
 
             DB::commit();
 
-            return response()->json([
-                'message' => 'Order cancelled successfully',
-                'data' => new OrderResource($order),
-            ]);
-        } catch (ValidationException $e) {
-            return response()->json(['error' => $e->errors()], 400);
+            return $this->success(new OrderResource($order), 'Order cancelled successfully');
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Failed to cancel order: ' . $e->getMessage());
-            return response()->json([
-                'message' => 'Failed to cancel order',
-            ], 500);
+            return $this->error('Failed to cancel order', [], 500);
         }
     }
 }

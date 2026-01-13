@@ -6,7 +6,6 @@ use Illuminate\Http\Request;
 use App\Models\Reservation;
 use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Api\BaseController;
-use Illuminate\Validation\ValidationException;
 use App\Http\Resources\Front\V1\ReservationResource;
 use App\Models\Customers;
 use Illuminate\Support\Facades\Log;
@@ -141,86 +140,76 @@ class ReservationController extends BaseController
      */
     public function store(Request $request): JsonResponse
     {
-        try {
-            $blaneId = $request->input('blane_id');
-            $blane = Blane::findOrFail($blaneId);
-            $reservationType = $blane->type_time ?? 'time';
+        $blaneId = $request->input('blane_id');
+        $blane = Blane::findOrFail($blaneId);
+        $reservationType = $blane->type_time ?? 'time';
 
-            $validationRules = [
-                'blane_id' => 'required|exists:blanes,id',
-                'date' => 'required|date',
-                'number_persons' => 'required|integer|min:1',
-                'phone' => 'required|string',
-                'comments' => 'nullable|string',
-                'payment_method' => 'required|string|in:cash,online,partiel',
-                'total_price' => 'required|numeric',
-                'partiel_price' => 'nullable|numeric',
-                'source' => 'nullable|string|in:web,mobile,agent',
-            ];
+        $validationRules = [
+            'blane_id' => 'required|exists:blanes,id',
+            'date' => 'required|date',
+            'number_persons' => 'required|integer|min:1',
+            'phone' => 'required|string',
+            'comments' => 'nullable|string',
+            'payment_method' => 'required|string|in:cash,online,partiel',
+            'total_price' => 'required|numeric',
+            'partiel_price' => 'nullable|numeric',
+            'source' => 'nullable|string|in:web,mobile,agent',
+        ];
 
-            if ($reservationType === 'time') {
-                $validationRules['time'] = 'required|date_format:H:i';
+        if ($reservationType === 'time') {
+            $validationRules['time'] = 'required|date_format:H:i';
+        }
+
+        if ($request->input('payment_method') === 'partiel') {
+            $validationRules['partiel_price'] = 'required|numeric|lt:total_price';
+        }
+
+        $request->validate($validationRules);
+
+        $quantity = $request->input('quantity', 1);
+        if (!$this->checkDailyAvailability($request->blane_id, $request->date, $quantity)) {
+            $remaining = $this->getRemainingDailyAvailability($request->blane_id, $request->date);
+            return $this->error('Daily reservation limit reached. Only ' . $remaining . ' spots available for this date.', [], 422);
+        }
+
+        if ($reservationType === 'time') {
+            if ($this->hasReachedMaxReservations($request->blane_id, $request->date, $request->time)) {
+                return $this->error('This time slot has reached its maximum number of reservations.', [], 422);
             }
-
-            if ($request->input('payment_method') === 'partiel') {
-                $validationRules['partiel_price'] = 'required|numeric|lt:total_price';
+        } else {
+            if ($this->hasReachedMaxReservations($request->blane_id, $request->date, $request->end_date)) {
+                return $this->error('This date has reached its maximum number of reservations.', [], 422);
             }
+        }
 
-            $request->validate($validationRules);
+        $validatedData = $request->validate([
+            'blane_id' => 'required|integer|exists:blanes,id',
+            'name' => 'required|string',
+            'email' => 'required|email',
+            'date' => 'required|date|after_or_equal:today',
+            'phone' => 'required|string|max:20',
+            'number_persons' => 'required|integer',
+            'total_price' => 'required|numeric|min:0',
+            'partiel_price' => 'nullable|numeric|min:0',
+            'time' => 'nullable|date_format:H:i',
+            'end_date' => 'nullable|date|after_or_equal:date',
+            'quantity' => 'nullable|integer',
+            'payment_method' => 'required|string|in:cash,online,partiel',
+            'comments' => 'nullable|string',
+            'city' => 'nullable|string|max:255',
+            'source' => 'nullable|string|in:web,mobile,agent',
+        ]);
 
-            $quantity = $request->input('quantity', 1);
-            if (!$this->checkDailyAvailability($request->blane_id, $request->date, $quantity)) {
-                $remaining = $this->getRemainingDailyAvailability($request->blane_id, $request->date);
-                return response()->json([
-                    'error' => 'Daily reservation limit reached. Only ' . $remaining . ' spots available for this date.'
-                ], 422);
-            }
+        $validatedData['status'] = 'pending';
 
-            if ($reservationType === 'time') {
-                if ($this->hasReachedMaxReservations($request->blane_id, $request->date, $request->time)) {
-                    return response()->json([
-                        'error' => 'This time slot has reached its maximum number of reservations.'
-                    ], 422);
-                }
-            } else {
-                if ($this->hasReachedMaxReservations($request->blane_id, $request->date, $request->end_date)) {
-                    return response()->json([
-                        'error' => 'This date has reached its maximum number of reservations.'
-                    ], 422);
-                }
-            }
+        if ($validatedData['date']) {
+            $date = \Carbon\Carbon::parse($validatedData['date'])->setTimezone(config('app.timezone'));
+            $validatedData['date'] = $date->format('Y-m-d H:i:s');
+        }
 
-            $validatedData = $request->validate([
-                'blane_id' => 'required|integer|exists:blanes,id',
-                'name' => 'required|string',
-                'email' => 'required|email',
-                'date' => 'required|date|after_or_equal:today',
-                'phone' => 'required|string|max:20',
-                'number_persons' => 'required|integer',
-                'total_price' => 'required|numeric|min:0',
-                'partiel_price' => 'nullable|numeric|min:0',
-                'time' => 'nullable|date_format:H:i',
-                'end_date' => 'nullable|date|after_or_equal:date',
-                'quantity' => 'nullable|integer',
-                'payment_method' => 'required|string|in:cash,online,partiel',
-                'comments' => 'nullable|string',
-                'city' => 'nullable|string|max:255',
-                'source' => 'nullable|string|in:web,mobile,agent',
-            ]);
-
-            $validatedData['status'] = 'pending';
-
-            if ($validatedData['date']) {
-                $date = \Carbon\Carbon::parse($validatedData['date'])->setTimezone(config('app.timezone'));
-                $validatedData['date'] = $date->format('Y-m-d H:i:s');
-            }
-
-            if (isset($validatedData['end_date'])) {
-                $endDate = \Carbon\Carbon::parse($validatedData['end_date'])->setTimezone(config('app.timezone'));
-                $validatedData['end_date'] = $endDate->format('Y-m-d H:i:s');
-            }
-        } catch (ValidationException $e) {
-            return response()->json(['error' => $e->errors()], 400);
+        if (isset($validatedData['end_date'])) {
+            $endDate = \Carbon\Carbon::parse($validatedData['end_date'])->setTimezone(config('app.timezone'));
+            $validatedData['end_date'] = $endDate->format('Y-m-d H:i:s');
         }
 
         try {
@@ -231,13 +220,11 @@ class ReservationController extends BaseController
             $quantity = $validatedData['quantity'] ?? 1;
             if (!$this->checkDailyAvailability($validatedData['blane_id'], $validatedData['date'], $quantity)) {
                 $remaining = $this->getRemainingDailyAvailability($validatedData['blane_id'], $validatedData['date']);
-                return response()->json([
-                    'error' => 'Daily reservation limit reached. Only ' . $remaining . ' spots available for this date.'
-                ], 422);
+                return $this->error('Daily reservation limit reached. Only ' . $remaining . ' spots available for this date.', [], 422);
             }
 
             if ($blane->nombre_max_reservation < $validatedData['quantity']) {
-                return response()->json(['message' => 'Blane is full'], 400);
+                return $this->error('Blane is full', [], 400);
             }
             $blane->nombre_max_reservation -= $validatedData['quantity'];
             $blane->save();
@@ -267,11 +254,10 @@ class ReservationController extends BaseController
             DB::commit();
 
             if ($validatedData['payment_method'] == 'cash') {
-                return response()->json([
-                    'message' => 'Reservation created successfully',
-                    'data' => new ReservationResource($reservation),
+                return $this->created([
+                    'reservation' => new ReservationResource($reservation),
                     'cancellation' => $this->generateCancellationParams($reservation),
-                ], 201);
+                ], 'Reservation created successfully');
             } else {
                 $paymentAmount = ($reservation->payment_method === 'partiel')
                     ? $reservation->partiel_price
@@ -289,23 +275,20 @@ class ReservationController extends BaseController
 
                 $params = $this->paymentService->preparePaymentParams($orderData);
 
-                return response()->json([
-                    'message' => 'Reservation created successfully',
-                    'data' => new ReservationResource($reservation),
+                return $this->created([
+                    'reservation' => new ReservationResource($reservation),
                     'cancellation' => $this->generateCancellationParams($reservation),
                     'payment_info' => [
                         'payment_url' => $this->gatewayUrl,
                         'method' => 'post',
                         'inputs' => $params
                     ]
-                ], 201);
+                ], 'Reservation created successfully');
             }
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Failed to create Reservation: ' . $e->getMessage());
-            return response()->json([
-                'message' => 'Failed to create Reservation',
-            ], 500);
+            return $this->error('Failed to create Reservation', [], 500);
         }
     }
 
@@ -332,31 +315,27 @@ class ReservationController extends BaseController
      */
     public function update(Request $request, $id): JsonResponse
     {
-        try {
-            $validatedData = $request->validate([
-                'blane_id' => 'required|integer|exists:blanes,id',
-                'name' => 'required|string',
-                'email' => 'required|email',
-                'date' => 'required|date|after_or_equal:today',
-                'phone' => 'required|string|max:20',
-                'number_persons' => 'required|integer',
-                'time' => 'nullable|date_format:H:i',
-                'end_date' => 'nullable|date|after_or_equal:date',
-                'total_price' => 'required|numeric|min:0',
-                'partiel_price' => 'nullable|numeric|min:0',
-                'quantity' => 'nullable|integer',
-                'payment_method' => 'required|string|in:cash,online,partiel',
-                'comments' => 'nullable|string',
-                'source' => 'nullable|string|in:web,mobile,agent',
-            ]);
-        } catch (ValidationException $e) {
-            return response()->json(['error' => $e->errors()], 400);
-        }
+        $validatedData = $request->validate([
+            'blane_id' => 'required|integer|exists:blanes,id',
+            'name' => 'required|string',
+            'email' => 'required|email',
+            'date' => 'required|date|after_or_equal:today',
+            'phone' => 'required|string|max:20',
+            'number_persons' => 'required|integer',
+            'time' => 'nullable|date_format:H:i',
+            'end_date' => 'nullable|date|after_or_equal:date',
+            'total_price' => 'required|numeric|min:0',
+            'partiel_price' => 'nullable|numeric|min:0',
+            'quantity' => 'nullable|integer',
+            'payment_method' => 'required|string|in:cash,online,partiel',
+            'comments' => 'nullable|string',
+            'source' => 'nullable|string|in:web,mobile,agent',
+        ]);
 
         $reservation = Reservation::find($id);
 
         if (!$reservation) {
-            return response()->json(['message' => 'Reservation not found'], 404);
+            return $this->notFound('Reservation not found');
         }
 
         try {
@@ -379,17 +358,15 @@ class ReservationController extends BaseController
                 $availableSlots = $blane->availability_per_day - $dailyReservationsExcludingThis;
 
                 if ($newQuantity > $availableSlots && $blane->availability_per_day !== null) {
-                    return response()->json([
-                        'message' => 'Daily reservation limit reached. Only ' . $availableSlots . ' spots available for this date.'
-                    ], 400);
+                    return $this->error('Daily reservation limit reached. Only ' . $availableSlots . ' spots available for this date.', [], 400);
                 }
             }
 
             if ($blane->nombre_max_reservation <= Reservation::where('blane_id', $validatedData['blane_id'])->where('date', $validatedData['date'])->count()) {
-                return response()->json(['message' => 'Blane is full'], 400);
+                return $this->error('Blane is full', [], 400);
             }
             if ($blane->personnes_prestation < $validatedData['number_persons']) {
-                return response()->json(['message' => 'Number of persons is greater than the number of persons in the blane'], 400);
+                return $this->error('Number of persons is greater than the number of persons in the blane', [], 400);
             }
 
             $customer = Customers::where('phone', $validatedData['phone'])->first();
@@ -414,15 +391,10 @@ class ReservationController extends BaseController
 
             DB::commit();
 
-            return response()->json([
-                'message' => 'Reservation updated successfully',
-                'data' => new ReservationResource($reservation),
-            ]);
+            return $this->success(new ReservationResource($reservation), 'Reservation updated successfully');
         } catch (\Exception $e) {
             DB::rollBack();
-            return response()->json([
-                'message' => 'Failed to update Reservation',
-            ], 500);
+            return $this->error('Failed to update Reservation', [], 500);
         }
     }
 
@@ -442,16 +414,13 @@ class ReservationController extends BaseController
         $reservation = Reservation::where('NUM_RES', $id)->where('status', 'pending')->first();
 
         if (!$reservation) {
-            return response()->json(['message' => 'Reservation not found'], 404);
+            return $this->notFound('Reservation not found');
         }
 
         $reservation->status = $request->input('status');
         $reservation->save();
 
-        return response()->json([
-            'message' => 'Reservation status updated successfully',
-            'data' => new ReservationResource($reservation),
-        ]);
+        return $this->success(new ReservationResource($reservation), 'Reservation status updated successfully');
     }
 
     /**
@@ -465,18 +434,14 @@ class ReservationController extends BaseController
         $reservation = Reservation::find($id);
 
         if (!$reservation) {
-            return response()->json(['message' => 'Reservation not found'], 404);
+            return $this->notFound('Reservation not found');
         }
 
         try {
             $reservation->delete();
-            return response()->json([
-                'message' => 'Reservation deleted successfully',
-            ], 204);
+            return $this->deleted('Reservation deleted successfully');
         } catch (\Exception $e) {
-            return response()->json([
-                'message' => 'Failed to delete Reservation',
-            ], 500);
+            return $this->error('Failed to delete Reservation', [], 500);
         }
     }
 
@@ -553,17 +518,16 @@ class ReservationController extends BaseController
      */
     public function getAvailableTimeSlots(Request $request, $slug): JsonResponse
     {
-        try {
-            $validatedData = $request->validate([
-                'date' => 'required|date',
-            ]);
+        $validatedData = $request->validate([
+            'date' => 'required|date',
+        ]);
 
-            $date = $validatedData['date'];
+        $date = $validatedData['date'];
 
-            $blane = Blane::where('slug', $slug)->first();
-            if (!$blane) {
-                return response()->json(['message' => 'Blane not found'], 404);
-            }
+        $blane = Blane::where('slug', $slug)->first();
+        if (!$blane) {
+            return $this->notFound('Blane not found');
+        }
 
             $reservationType = $blane->type_time ?? 'time';
             $maxReservationsPerSlot = $blane->max_reservation_par_creneau ?? 3;
@@ -602,15 +566,15 @@ class ReservationController extends BaseController
                     ];
                 }
 
-                return response()->json([
+                return $this->success([
                     'type' => 'time',
-                    'data' => $timeSlots,
+                    'slots' => $timeSlots,
                     'daily_availability' => [
                         'remaining' => $dailyAvailability,
                         'limit' => $dailyLimit,
                         'has_daily_limit' => $dailyLimit !== null
                     ]
-                ], 200);
+                ]);
             } else {
                 $currentReservations = Reservation::where('blane_id', $blane->id)
                     ->where('date', $date)
@@ -626,9 +590,9 @@ class ReservationController extends BaseController
                     ? round(($currentReservations / $maxReservationsPerSlot) * 100)
                     : 0;
 
-                return response()->json([
+                return $this->success([
                     'type' => 'date',
-                    'data' => [
+                    'availability' => [
                         'date' => $date,
                         'available' => $available,
                         'currentReservations' => $currentReservations,
@@ -643,16 +607,8 @@ class ReservationController extends BaseController
                         'limit' => $dailyLimit,
                         'has_daily_limit' => $dailyLimit !== null
                     ]
-                ], 200);
+                ]);
             }
-        } catch (ValidationException $e) {
-            return response()->json(['error' => $e->errors()], 400);
-        } catch (\Exception $e) {
-            Log::error('Failed to get available time slots: ' . $e->getMessage());
-            return response()->json([
-                'message' => 'Failed to get available time slots',
-            ], 500);
-        }
     }
 
     /**
@@ -681,27 +637,27 @@ class ReservationController extends BaseController
      */
     public function cancelByToken(Request $request): JsonResponse
     {
+        $request->validate([
+            'id' => 'required|string',
+            'token' => 'required|string',
+            'timestamp' => 'required|numeric',
+        ]);
+
+        $reservation = Reservation::where('NUM_RES', $request->id)->first();
+
+        if (!$reservation) {
+            return $this->notFound('Reservation not found');
+        }
+
+        if (!$reservation->verifyCancellationRequest($request->token, $request->timestamp)) {
+            return $this->forbidden('Invalid or expired cancellation token');
+        }
+
+        if ($reservation->status !== 'pending') {
+            return $this->error('This reservation cannot be cancelled anymore', [], 400);
+        }
+
         try {
-            $request->validate([
-                'id' => 'required|string',
-                'token' => 'required|string',
-                'timestamp' => 'required|numeric',
-            ]);
-
-            $reservation = Reservation::where('NUM_RES', $request->id)->first();
-
-            if (!$reservation) {
-                return response()->json(['message' => 'Reservation not found'], 404);
-            }
-
-            if (!$reservation->verifyCancellationRequest($request->token, $request->timestamp)) {
-                return response()->json(['message' => 'Invalid or expired cancellation token'], 403);
-            }
-
-            if ($reservation->status !== 'pending') {
-                return response()->json(['message' => 'This reservation cannot be cancelled anymore'], 400);
-            }
-
             DB::beginTransaction();
 
             $reservation->status = 'cancelled';
@@ -715,18 +671,11 @@ class ReservationController extends BaseController
 
             DB::commit();
 
-            return response()->json([
-                'message' => 'Reservation cancelled successfully',
-                'data' => new ReservationResource($reservation),
-            ]);
-        } catch (ValidationException $e) {
-            return response()->json(['error' => $e->errors()], 400);
+            return $this->success(new ReservationResource($reservation), 'Reservation cancelled successfully');
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Failed to cancel reservation: ' . $e->getMessage());
-            return response()->json([
-                'message' => 'Failed to cancel reservation',
-            ], 500);
+            return $this->error('Failed to cancel reservation', [], 500);
         }
     }
 }

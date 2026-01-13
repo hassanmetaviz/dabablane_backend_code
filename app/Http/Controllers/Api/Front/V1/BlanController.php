@@ -6,7 +6,6 @@ use Illuminate\Http\Request;
 use App\Models\Blane;
 use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Api\BaseController;
-use Illuminate\Validation\ValidationException;
 use App\Http\Resources\Front\V1\BlaneResource;
 use App\Http\Resources\Front\V1\BlanImageResource;
 
@@ -20,36 +19,32 @@ class BlanController extends BaseController
 
     public function index(Request $request)
     {
-        try {
-            $request->validate([
-                'include' => [
-                    'nullable',
-                    'string',
-                    function ($attribute, $value, $fail) {
-                        $validIncludes = ['blaneImages', 'subcategory', 'category', 'ratings', 'vendor'];
-                        $includes = explode(',', $value);
-                        foreach ($includes as $include) {
-                            if (!in_array($include, $validIncludes)) {
-                                $fail('The selected ' . $attribute . ' is invalid.');
-                            }
+        $request->validate([
+            'include' => [
+                'nullable',
+                'string',
+                function ($attribute, $value, $fail) {
+                    $validIncludes = ['blaneImages', 'subcategory', 'category', 'ratings', 'vendor'];
+                    $includes = explode(',', $value);
+                    foreach ($includes as $include) {
+                        if (!in_array($include, $validIncludes)) {
+                            $fail('The selected ' . $attribute . ' is invalid.');
                         }
-                    },
-                ],
-                'sort_by' => 'nullable|string|in:created_at,name,price_current,ratings',
-                'sort_order' => 'nullable|string|in:asc,desc',
-                'search' => 'nullable|string',
-                'type' => 'nullable|string|in:order,reservation',
-                'status' => 'nullable|string|in:active,inactive,expired',
-                'category' => 'nullable|string|exists:categories,slug',
-                'city' => 'nullable|string',
-                'ratings' => 'nullable|numeric|between:1,5',
-                'pagination_size' => 'nullable|integer|min:1|max:100',
-                'token' => 'nullable|string|uuid',
-                'is_diamond' => 'nullable|boolean',
-            ]);
-        } catch (ValidationException $e) {
-            return response()->json(['error' => $e->errors()], 400);
-        }
+                    }
+                },
+            ],
+            'sort_by' => 'nullable|string|in:created_at,name,price_current,ratings',
+            'sort_order' => 'nullable|string|in:asc,desc',
+            'search' => 'nullable|string',
+            'type' => 'nullable|string|in:order,reservation',
+            'status' => 'nullable|string|in:active,inactive,expired',
+            'category' => 'nullable|string|exists:categories,slug',
+            'city' => 'nullable|string',
+            'ratings' => 'nullable|numeric|between:1,5',
+            'pagination_size' => 'nullable|integer|min:1|max:100',
+            'token' => 'nullable|string|uuid',
+            'is_diamond' => 'nullable|boolean',
+        ]);
 
         $query = Blane::query()
             ->active()
@@ -113,26 +108,22 @@ class BlanController extends BaseController
      */
     public function show($slug, Request $request)
     {
-        try {
-            $request->validate([
-                'include' => [
-                    'nullable',
-                    'string',
-                    function ($attribute, $value, $fail) {
-                        $validIncludes = ['blaneImages', 'subcategory', 'category', 'ratings', 'vendor'];
-                        $includes = explode(',', $value);
-                        foreach ($includes as $include) {
-                            if (!in_array($include, $validIncludes)) {
-                                $fail('The selected ' . $attribute . ' is invalid.');
-                            }
+        $request->validate([
+            'include' => [
+                'nullable',
+                'string',
+                function ($attribute, $value, $fail) {
+                    $validIncludes = ['blaneImages', 'subcategory', 'category', 'ratings', 'vendor'];
+                    $includes = explode(',', $value);
+                    foreach ($includes as $include) {
+                        if (!in_array($include, $validIncludes)) {
+                            $fail('The selected ' . $attribute . ' is invalid.');
                         }
-                    },
-                ],
-                'token' => 'nullable|string|uuid',
-            ]);
-        } catch (ValidationException $e) {
-            return response()->json(['error' => $e->errors()], 400);
-        }
+                    }
+                },
+            ],
+            'token' => 'nullable|string|uuid',
+        ]);
 
         $query = Blane::query()
             ->whereHas('category', function ($q) {
@@ -161,17 +152,17 @@ class BlanController extends BaseController
         $blane = $query->where('slug', $slug)->first();
 
         if (!$blane) {
-            return response()->json(['message' => 'Blane not found'], 404);
+            return $this->notFound('Blane not found');
         }
 
         if ($blane->visibility === 'private') {
-            return response()->json(['message' => 'This Blane is private and not accessible'], 403);
+            return $this->forbidden('This Blane is private and not accessible');
         }
 
         if ($blane->visibility === 'link') {
             $token = $request->input('token');
             if (!$token || $token !== $blane->share_token) {
-                return response()->json(['message' => 'Access denied. Valid share token required.'], 403);
+                return $this->forbidden('Access denied. Valid share token required.');
             }
         }
 
@@ -272,11 +263,7 @@ class BlanController extends BaseController
         $blaneImages = $blane->blaneImages;
 
         if ($blaneImages->isEmpty()) {
-            return response()->json([
-                'status' => false,
-                'code' => 404,
-                'message' => 'Blane images not found'
-            ], 404);
+            return $this->notFound('Blane images not found');
         }
 
         return BlanImageResource::collection($blaneImages);
@@ -311,10 +298,9 @@ class BlanController extends BaseController
         ])->first();
 
         if (!$blane) {
-            return response()->json(['message' => 'Blane not found'], 404);
+            return $this->notFound('Blane not found');
         }
 
         return new BlaneResource($blane);
     }
-
 }
