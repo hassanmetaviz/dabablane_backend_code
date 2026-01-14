@@ -9,10 +9,39 @@ use App\Http\Controllers\Api\BaseController;
 use Illuminate\Validation\ValidationException;
 use App\Http\Resources\Front\V1\BannerResource;
 
+/**
+ * @OA\Schema(
+ *     schema="Banner",
+ *     type="object",
+ *     @OA\Property(property="id", type="integer", example=1),
+ *     @OA\Property(property="title", type="string", example="Welcome to Dabablane"),
+ *     @OA\Property(property="subtitle", type="string", example="Discover amazing services"),
+ *     @OA\Property(property="image", type="string", example="https://example.com/banner.jpg"),
+ *     @OA\Property(property="link", type="string", example="https://dabablane.com/offers"),
+ *     @OA\Property(property="is_active", type="boolean", example=true),
+ *     @OA\Property(property="created_at", type="string", format="date-time"),
+ *     @OA\Property(property="updated_at", type="string", format="date-time")
+ * )
+ */
 class BannerController extends BaseController
 {
     /**
      * Display a listing of the Banner.
+     *
+     * @OA\Get(
+     *     path="/front/v1/banners",
+     *     tags={"Banners"},
+     *     summary="Get banner",
+     *     description="Retrieve the main banner for the homepage",
+     *     operationId="getBanner",
+     *     @OA\Response(
+     *         response=200,
+     *         description="Banner retrieved successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="data", ref="#/components/schemas/Banner")
+     *         )
+     *     )
+     * )
      *
      * @param Request $request
      */

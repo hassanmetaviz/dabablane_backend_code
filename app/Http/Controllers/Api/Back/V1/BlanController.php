@@ -25,6 +25,85 @@ use Illuminate\Support\Facades\Validator;
 use App\Services\BlaneQueryService;
 use Illuminate\Support\Facades\Gate;
 
+/**
+ * @OA\Schema(
+ *     schema="BackBlane",
+ *     type="object",
+ *     @OA\Property(property="id", type="integer", example=1),
+ *     @OA\Property(property="name", type="string", example="Spa Package"),
+ *     @OA\Property(property="slug", type="string", example="spa-package"),
+ *     @OA\Property(property="description", type="string", example="Relaxing spa treatment"),
+ *     @OA\Property(property="commerce_name", type="string", example="Wellness Center"),
+ *     @OA\Property(property="commerce_phone", type="string", example="+212600000000"),
+ *     @OA\Property(property="price_current", type="number", format="float", example=299.99),
+ *     @OA\Property(property="price_old", type="number", format="float", example=399.99),
+ *     @OA\Property(property="city", type="string", example="Casablanca"),
+ *     @OA\Property(property="district", type="string", example="Maarif"),
+ *     @OA\Property(property="subdistricts", type="string", example="Center"),
+ *     @OA\Property(property="status", type="string", enum={"active", "inactive", "expired", "waiting"}, example="active"),
+ *     @OA\Property(property="type", type="string", enum={"reservation", "order"}, example="reservation"),
+ *     @OA\Property(property="visibility", type="string", enum={"private", "public", "link"}, example="public"),
+ *     @OA\Property(property="on_top", type="boolean", example=false),
+ *     @OA\Property(property="is_digital", type="boolean", example=false),
+ *     @OA\Property(property="stock", type="integer", example=100),
+ *     @OA\Property(property="views", type="integer", example=150),
+ *     @OA\Property(property="start_date", type="string", format="date", example="2024-01-01"),
+ *     @OA\Property(property="expiration_date", type="string", format="date", example="2024-12-31"),
+ *     @OA\Property(property="vendor_id", type="integer", example=1),
+ *     @OA\Property(property="categories_id", type="integer", example=1),
+ *     @OA\Property(property="subcategories_id", type="integer", example=1),
+ *     @OA\Property(property="created_at", type="string", format="date-time"),
+ *     @OA\Property(property="updated_at", type="string", format="date-time")
+ * )
+ *
+ * @OA\Schema(
+ *     schema="BlaneCreateRequest",
+ *     type="object",
+ *     required={"name"},
+ *     @OA\Property(property="name", type="string", maxLength=255, example="Spa Package"),
+ *     @OA\Property(property="description", type="string", example="Relaxing spa treatment"),
+ *     @OA\Property(property="subcategories_id", type="integer", example=1),
+ *     @OA\Property(property="categories_id", type="integer", example=1),
+ *     @OA\Property(property="commerce_name", type="string", maxLength=255, example="Wellness Center"),
+ *     @OA\Property(property="commerce_phone", type="string", maxLength=20, example="+212600000000"),
+ *     @OA\Property(property="price_current", type="number", format="float", example=299.99),
+ *     @OA\Property(property="price_old", type="number", format="float", example=399.99),
+ *     @OA\Property(property="advantages", type="string", example="Free parking, WiFi"),
+ *     @OA\Property(property="conditions", type="string", example="Valid for 6 months"),
+ *     @OA\Property(property="city", type="string", example="Casablanca"),
+ *     @OA\Property(property="district", type="string", maxLength=255, example="Maarif"),
+ *     @OA\Property(property="subdistricts", type="string", maxLength=255, example="Center"),
+ *     @OA\Property(property="status", type="string", enum={"active", "inactive", "expired", "waiting"}, example="active"),
+ *     @OA\Property(property="type", type="string", enum={"reservation", "order"}, example="reservation"),
+ *     @OA\Property(property="reservation_type", type="string", example="hourly"),
+ *     @OA\Property(property="online", type="boolean", example=true),
+ *     @OA\Property(property="partiel", type="boolean", example=false),
+ *     @OA\Property(property="cash", type="boolean", example=true),
+ *     @OA\Property(property="partiel_field", type="integer", example=50),
+ *     @OA\Property(property="on_top", type="boolean", example=false),
+ *     @OA\Property(property="is_digital", type="boolean", example=false),
+ *     @OA\Property(property="stock", type="integer", example=100),
+ *     @OA\Property(property="nombre_personnes", type="integer", example=2),
+ *     @OA\Property(property="max_orders", type="integer", example=50),
+ *     @OA\Property(property="livraison_in_city", type="number", format="float", example=20.00),
+ *     @OA\Property(property="livraison_out_city", type="number", format="float", example=50.00),
+ *     @OA\Property(property="allow_out_of_city", type="boolean", example=true),
+ *     @OA\Property(property="start_date", type="string", format="date", example="2024-01-01"),
+ *     @OA\Property(property="expiration_date", type="string", format="date", example="2024-12-31"),
+ *     @OA\Property(property="jours_creneaux", type="array", @OA\Items(type="string"), example={"monday", "tuesday"}),
+ *     @OA\Property(property="type_time", type="string", enum={"time", "date"}, example="time"),
+ *     @OA\Property(property="heure_debut", type="string", format="time", example="09:00"),
+ *     @OA\Property(property="heure_fin", type="string", format="time", example="18:00"),
+ *     @OA\Property(property="intervale_reservation", type="integer", example=30),
+ *     @OA\Property(property="personnes_prestation", type="integer", example=4),
+ *     @OA\Property(property="nombre_max_reservation", type="integer", example=10),
+ *     @OA\Property(property="availability_per_day", type="integer", example=20),
+ *     @OA\Property(property="tva", type="integer", example=20),
+ *     @OA\Property(property="max_reservation_par_creneau", type="integer", example=5),
+ *     @OA\Property(property="visibility", type="string", enum={"private", "public", "link"}, example="public"),
+ *     @OA\Property(property="images", type="array", @OA\Items(type="string", format="binary"), description="Array of image files")
+ * )
+ */
 class BlanController extends BaseController
 {
     protected $queryService;
@@ -33,8 +112,38 @@ class BlanController extends BaseController
     {
         $this->queryService = $queryService;
     }
+
     /**
      * Display a listing of the Blanes.
+     *
+     * @OA\Get(
+     *     path="/back/v1/blanes",
+     *     tags={"Back - Blanes"},
+     *     summary="List all blanes",
+     *     description="Get a paginated list of blanes with optional filtering, sorting, and includes",
+     *     operationId="backBlanesIndex",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(name="include", in="query", description="Comma-separated relationships to include (blaneImages,subcategory,category,ratings)", @OA\Schema(type="string")),
+     *     @OA\Parameter(name="paginationSize", in="query", description="Number of items per page", @OA\Schema(type="integer", default=10)),
+     *     @OA\Parameter(name="sort_by", in="query", description="Sort field", @OA\Schema(type="string", enum={"created_at", "name", "price_current"})),
+     *     @OA\Parameter(name="sort_order", in="query", description="Sort direction", @OA\Schema(type="string", enum={"asc", "desc"})),
+     *     @OA\Parameter(name="search", in="query", description="Search term", @OA\Schema(type="string")),
+     *     @OA\Parameter(name="status", in="query", description="Filter by status", @OA\Schema(type="string")),
+     *     @OA\Parameter(name="city", in="query", description="Filter by city", @OA\Schema(type="string")),
+     *     @OA\Parameter(name="district", in="query", description="Filter by district", @OA\Schema(type="string")),
+     *     @OA\Parameter(name="commerce_name", in="query", description="Filter by vendor/commerce name", @OA\Schema(type="string")),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Blanes retrieved successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="data", type="array", @OA\Items(ref="#/components/schemas/BackBlane")),
+     *             @OA\Property(property="links", ref="#/components/schemas/PaginationLinks"),
+     *             @OA\Property(property="meta", ref="#/components/schemas/PaginationMeta")
+     *         )
+     *     ),
+     *     @OA\Response(response=400, description="Validation error", @OA\JsonContent(ref="#/components/schemas/ValidationErrorResponse")),
+     *     @OA\Response(response=401, description="Unauthenticated", @OA\JsonContent(ref="#/components/schemas/UnauthorizedResponse"))
+     * )
      *
      * @param Request $request
      */
@@ -108,6 +217,28 @@ class BlanController extends BaseController
 
     /**
      * Display the specified Blane.
+     *
+     * @OA\Get(
+     *     path="/back/v1/blanes/{id}",
+     *     tags={"Back - Blanes"},
+     *     summary="Get a specific blane",
+     *     description="Retrieve a single blane by ID with optional relationship includes",
+     *     operationId="backBlanesShow",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(name="id", in="path", required=true, description="Blane ID", @OA\Schema(type="integer")),
+     *     @OA\Parameter(name="include", in="query", description="Comma-separated relationships to include (blaneImages,subcategory,category,ratings)", @OA\Schema(type="string")),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Blane retrieved successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="data", ref="#/components/schemas/BackBlane")
+     *         )
+     *     ),
+     *     @OA\Response(response=400, description="Validation error", @OA\JsonContent(ref="#/components/schemas/ValidationErrorResponse")),
+     *     @OA\Response(response=401, description="Unauthenticated", @OA\JsonContent(ref="#/components/schemas/UnauthorizedResponse")),
+     *     @OA\Response(response=403, description="Forbidden", @OA\JsonContent(ref="#/components/schemas/ForbiddenResponse")),
+     *     @OA\Response(response=404, description="Blane not found", @OA\JsonContent(ref="#/components/schemas/NotFoundResponse"))
+     * )
      *
      * @param int $id
      * @param Request $request
@@ -211,6 +342,34 @@ class BlanController extends BaseController
 
     /**
      * Store a newly created Blane.
+     *
+     * @OA\Post(
+     *     path="/back/v1/blanes",
+     *     tags={"Back - Blanes"},
+     *     summary="Create a new blane",
+     *     description="Create a new blane/product/service with optional images",
+     *     operationId="backBlanesStore",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\MediaType(
+     *             mediaType="multipart/form-data",
+     *             @OA\Schema(ref="#/components/schemas/BlaneCreateRequest")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=201,
+     *         description="Blane created successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Blane created successfully"),
+     *             @OA\Property(property="data", ref="#/components/schemas/BackBlane")
+     *         )
+     *     ),
+     *     @OA\Response(response=400, description="Validation error", @OA\JsonContent(ref="#/components/schemas/ValidationErrorResponse")),
+     *     @OA\Response(response=401, description="Unauthenticated", @OA\JsonContent(ref="#/components/schemas/UnauthorizedResponse")),
+     *     @OA\Response(response=403, description="Forbidden", @OA\JsonContent(ref="#/components/schemas/ForbiddenResponse")),
+     *     @OA\Response(response=500, description="Server error", @OA\JsonContent(ref="#/components/schemas/ErrorResponse"))
+     * )
      *
      * @param Request $request
      * @return JsonResponse
@@ -361,6 +520,43 @@ class BlanController extends BaseController
 
     /**
      * Update the specified Blane.
+     *
+     * @OA\Put(
+     *     path="/back/v1/blanes/{id}",
+     *     tags={"Back - Blanes"},
+     *     summary="Update a blane",
+     *     description="Update an existing blane with all fields, can add/delete images",
+     *     operationId="backBlanesUpdate",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(name="id", in="path", required=true, description="Blane ID", @OA\Schema(type="integer")),
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\MediaType(
+     *             mediaType="multipart/form-data",
+     *             @OA\Schema(
+     *                 allOf={
+     *                     @OA\Schema(ref="#/components/schemas/BlaneCreateRequest"),
+     *                     @OA\Schema(
+     *                         @OA\Property(property="delete_images", type="array", @OA\Items(type="integer"), description="Array of image IDs to delete")
+     *                     )
+     *                 }
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Blane updated successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Blane updated successfully"),
+     *             @OA\Property(property="data", ref="#/components/schemas/BackBlane")
+     *         )
+     *     ),
+     *     @OA\Response(response=401, description="Unauthenticated", @OA\JsonContent(ref="#/components/schemas/UnauthorizedResponse")),
+     *     @OA\Response(response=403, description="Forbidden", @OA\JsonContent(ref="#/components/schemas/ForbiddenResponse")),
+     *     @OA\Response(response=404, description="Blane not found", @OA\JsonContent(ref="#/components/schemas/NotFoundResponse")),
+     *     @OA\Response(response=422, description="Validation error", @OA\JsonContent(ref="#/components/schemas/ValidationErrorResponse")),
+     *     @OA\Response(response=500, description="Server error", @OA\JsonContent(ref="#/components/schemas/ErrorResponse"))
+     * )
      *
      * @param Request $request
      * @param int $id
@@ -547,6 +743,33 @@ class BlanController extends BaseController
     /**
      * Update specific fields of a Blane.
      *
+     * @OA\Patch(
+     *     path="/back/v1/blanes/{id}",
+     *     tags={"Back - Blanes"},
+     *     summary="Partially update a blane",
+     *     description="Update specific fields of an existing blane (without image handling)",
+     *     operationId="backBlanesUpdateBlane",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(name="id", in="path", required=true, description="Blane ID", @OA\Schema(type="integer")),
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(ref="#/components/schemas/BlaneCreateRequest")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Blane updated successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Blane updated successfully"),
+     *             @OA\Property(property="data", ref="#/components/schemas/BackBlane")
+     *         )
+     *     ),
+     *     @OA\Response(response=401, description="Unauthenticated", @OA\JsonContent(ref="#/components/schemas/UnauthorizedResponse")),
+     *     @OA\Response(response=403, description="Forbidden", @OA\JsonContent(ref="#/components/schemas/ForbiddenResponse")),
+     *     @OA\Response(response=404, description="Blane not found", @OA\JsonContent(ref="#/components/schemas/NotFoundResponse")),
+     *     @OA\Response(response=422, description="Validation error", @OA\JsonContent(ref="#/components/schemas/ValidationErrorResponse")),
+     *     @OA\Response(response=500, description="Server error", @OA\JsonContent(ref="#/components/schemas/ErrorResponse"))
+     * )
+     *
      * @param Request $request
      * @param int $id
      * @return JsonResponse
@@ -688,6 +911,24 @@ class BlanController extends BaseController
     /**
      * Remove the specified Blane.
      *
+     * @OA\Delete(
+     *     path="/back/v1/blanes/{id}",
+     *     tags={"Back - Blanes"},
+     *     summary="Delete a blane",
+     *     description="Delete a blane by ID",
+     *     operationId="backBlanesDestroy",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(name="id", in="path", required=true, description="Blane ID", @OA\Schema(type="integer")),
+     *     @OA\Response(
+     *         response=204,
+     *         description="Blane deleted successfully"
+     *     ),
+     *     @OA\Response(response=401, description="Unauthenticated", @OA\JsonContent(ref="#/components/schemas/UnauthorizedResponse")),
+     *     @OA\Response(response=403, description="Forbidden", @OA\JsonContent(ref="#/components/schemas/ForbiddenResponse")),
+     *     @OA\Response(response=404, description="Blane not found", @OA\JsonContent(ref="#/components/schemas/NotFoundResponse")),
+     *     @OA\Response(response=500, description="Server error", @OA\JsonContent(ref="#/components/schemas/ErrorResponse"))
+     * )
+     *
      * @param int $id
      * @return JsonResponse
      */
@@ -743,6 +984,34 @@ class BlanController extends BaseController
     /**
      * Remove multiple Blanes in bulk.
      *
+     * @OA\Delete(
+     *     path="/back/v1/blanes/bulk",
+     *     tags={"Back - Blanes"},
+     *     summary="Bulk delete blanes",
+     *     description="Delete multiple blanes by providing an array of IDs",
+     *     operationId="backBlanesBulkDestroy",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"ids"},
+     *             @OA\Property(property="ids", type="array", @OA\Items(type="integer"), example={1, 2, 3})
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Blanes deleted successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="3 blanes deleted successfully"),
+     *             @OA\Property(property="deleted_count", type="integer", example=3)
+     *         )
+     *     ),
+     *     @OA\Response(response=401, description="Unauthenticated", @OA\JsonContent(ref="#/components/schemas/UnauthorizedResponse")),
+     *     @OA\Response(response=404, description="No valid blanes found", @OA\JsonContent(ref="#/components/schemas/NotFoundResponse")),
+     *     @OA\Response(response=422, description="Validation error", @OA\JsonContent(ref="#/components/schemas/ValidationErrorResponse")),
+     *     @OA\Response(response=500, description="Server error", @OA\JsonContent(ref="#/components/schemas/ErrorResponse"))
+     * )
+     *
      * @param Request $request
      * @return JsonResponse
      */
@@ -790,6 +1059,33 @@ class BlanController extends BaseController
 
     /**
      * Change the status of a blane
+     *
+     * @OA\Patch(
+     *     path="/back/v1/blanes/{id}/status",
+     *     tags={"Back - Blanes"},
+     *     summary="Update blane status",
+     *     description="Change the status of a blane (active, inactive, expired, waiting)",
+     *     operationId="backBlanesUpdateStatus",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(name="id", in="path", required=true, description="Blane ID", @OA\Schema(type="integer")),
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"status"},
+     *             @OA\Property(property="status", type="string", enum={"active", "inactive", "expired", "waiting"}, example="active")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Blane status updated successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Blane status updated successfully")
+     *         )
+     *     ),
+     *     @OA\Response(response=401, description="Unauthenticated", @OA\JsonContent(ref="#/components/schemas/UnauthorizedResponse")),
+     *     @OA\Response(response=403, description="Forbidden", @OA\JsonContent(ref="#/components/schemas/ForbiddenResponse")),
+     *     @OA\Response(response=404, description="Blane not found", @OA\JsonContent(ref="#/components/schemas/NotFoundResponse"))
+     * )
      *
      * @param Request $request
      */

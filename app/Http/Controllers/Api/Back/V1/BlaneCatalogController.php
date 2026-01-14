@@ -13,6 +13,9 @@ use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Validator;
 
+/**
+ * @OA\Tag(name="Back - Blane Catalog", description="Blane catalog search and filtering operations")
+ */
 class BlaneCatalogController extends BaseController
 {
     protected $queryService;
@@ -22,6 +25,31 @@ class BlaneCatalogController extends BaseController
         $this->queryService = $queryService;
     }
 
+    /**
+     * Search blanes with advanced filters.
+     *
+     * @OA\Get(
+     *     path="/back/v1/blanes/search",
+     *     tags={"Back - Blane Catalog"},
+     *     summary="Search blanes with advanced filters",
+     *     operationId="backBlaneSearch",
+     *     @OA\Parameter(name="query", in="query", @OA\Schema(type="string"), description="Search query"),
+     *     @OA\Parameter(name="include", in="query", @OA\Schema(type="string"), description="Relations to include (blaneImages,subcategory,category,ratings,vendor)"),
+     *     @OA\Parameter(name="paginationSize", in="query", @OA\Schema(type="integer"), description="Items per page"),
+     *     @OA\Parameter(name="sort_by", in="query", @OA\Schema(type="string", enum={"created_at","name","price_current","views"})),
+     *     @OA\Parameter(name="sort_order", in="query", @OA\Schema(type="string", enum={"asc","desc"})),
+     *     @OA\Parameter(name="status", in="query", @OA\Schema(type="string", enum={"active","inactive","expired","waiting"})),
+     *     @OA\Parameter(name="type", in="query", @OA\Schema(type="string", enum={"reservation","order"})),
+     *     @OA\Parameter(name="city", in="query", @OA\Schema(type="string")),
+     *     @OA\Parameter(name="district", in="query", @OA\Schema(type="string")),
+     *     @OA\Parameter(name="min_price", in="query", @OA\Schema(type="number")),
+     *     @OA\Parameter(name="max_price", in="query", @OA\Schema(type="number")),
+     *     @OA\Parameter(name="ratings", in="query", @OA\Schema(type="number")),
+     *     @OA\Parameter(name="is_diamond", in="query", @OA\Schema(type="boolean")),
+     *     @OA\Response(response=200, description="Search results"),
+     *     @OA\Response(response=400, description="Validation error")
+     * )
+     */
     public function search(Request $request): JsonResponse
     {
         try {
@@ -128,6 +156,23 @@ class BlaneCatalogController extends BaseController
     /**
      * Get featured Blanes.
      *
+     * @OA\Get(
+     *     path="/back/v1/blanes/featured",
+     *     tags={"Back - Blane Catalog"},
+     *     summary="Get featured blanes (on_top = true)",
+     *     operationId="backBlaneFeatured",
+     *     @OA\Parameter(name="category_id", in="query", @OA\Schema(type="integer")),
+     *     @OA\Parameter(name="subcategory_id", in="query", @OA\Schema(type="integer")),
+     *     @OA\Parameter(name="include", in="query", @OA\Schema(type="string")),
+     *     @OA\Parameter(name="paginationSize", in="query", @OA\Schema(type="integer")),
+     *     @OA\Parameter(name="sort_by", in="query", @OA\Schema(type="string", enum={"created_at","name","price_current"})),
+     *     @OA\Parameter(name="sort_order", in="query", @OA\Schema(type="string", enum={"asc","desc"})),
+     *     @OA\Parameter(name="city", in="query", @OA\Schema(type="string")),
+     *     @OA\Parameter(name="is_diamond", in="query", @OA\Schema(type="boolean")),
+     *     @OA\Response(response=200, description="Featured blanes list"),
+     *     @OA\Response(response=400, description="Validation error")
+     * )
+     *
      * @param Request $request
      * @return JsonResponse
      */
@@ -224,6 +269,24 @@ class BlaneCatalogController extends BaseController
         return BlaneResource::collection($blanes);
     }
 
+    /**
+     * Get blanes sorted by start date.
+     *
+     * @OA\Get(
+     *     path="/back/v1/blanes/by-start-date",
+     *     tags={"Back - Blane Catalog"},
+     *     summary="Get blanes sorted by start date",
+     *     operationId="backBlaneByStartDate",
+     *     @OA\Parameter(name="category_id", in="query", @OA\Schema(type="integer")),
+     *     @OA\Parameter(name="subcategory_id", in="query", @OA\Schema(type="integer")),
+     *     @OA\Parameter(name="include", in="query", @OA\Schema(type="string")),
+     *     @OA\Parameter(name="paginationSize", in="query", @OA\Schema(type="integer")),
+     *     @OA\Parameter(name="city", in="query", @OA\Schema(type="string")),
+     *     @OA\Parameter(name="is_diamond", in="query", @OA\Schema(type="boolean")),
+     *     @OA\Response(response=200, description="Blanes sorted by start date"),
+     *     @OA\Response(response=400, description="Validation error")
+     * )
+     */
     public function getBlanesByStartDate(Request $request)
     {
         try {
@@ -318,6 +381,23 @@ class BlaneCatalogController extends BaseController
 
     /**
      * Get Blanes by vendor.
+     *
+     * @OA\Get(
+     *     path="/back/v1/blanes/by-vendor",
+     *     tags={"Back - Blane Catalog"},
+     *     summary="Get blanes by vendor (authenticated)",
+     *     operationId="backBlaneByVendor",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(name="vendor_id", in="query", @OA\Schema(type="integer")),
+     *     @OA\Parameter(name="commerce_name", in="query", @OA\Schema(type="string")),
+     *     @OA\Parameter(name="include", in="query", @OA\Schema(type="string")),
+     *     @OA\Parameter(name="paginationSize", in="query", @OA\Schema(type="integer")),
+     *     @OA\Parameter(name="include_expired", in="query", @OA\Schema(type="boolean")),
+     *     @OA\Response(response=200, description="Vendor blanes list"),
+     *     @OA\Response(response=400, description="Validation error"),
+     *     @OA\Response(response=404, description="Vendor not found"),
+     *     @OA\Response(response=422, description="Missing vendor identifier")
+     * )
      *
      * @param Request $request
      * @return JsonResponse
@@ -441,6 +521,25 @@ class BlaneCatalogController extends BaseController
         return BlaneResource::collection($blanes);
     }
 
+    /**
+     * Get blanes by vendor (public).
+     *
+     * @OA\Get(
+     *     path="/back/v1/blanes/by-vendor-public",
+     *     tags={"Back - Blane Catalog"},
+     *     summary="Get blanes by vendor (public access)",
+     *     operationId="backBlaneByVendorPublic",
+     *     @OA\Parameter(name="id", in="query", @OA\Schema(type="integer"), description="Vendor ID"),
+     *     @OA\Parameter(name="commerce_name", in="query", @OA\Schema(type="string")),
+     *     @OA\Parameter(name="include", in="query", @OA\Schema(type="string")),
+     *     @OA\Parameter(name="paginationSize", in="query", @OA\Schema(type="integer")),
+     *     @OA\Parameter(name="include_expired", in="query", @OA\Schema(type="boolean")),
+     *     @OA\Response(response=200, description="Vendor blanes list"),
+     *     @OA\Response(response=400, description="Validation error"),
+     *     @OA\Response(response=404, description="Vendor not found"),
+     *     @OA\Response(response=422, description="Missing vendor identifier")
+     * )
+     */
     public function getBlanesByVendorPublic(Request $request)
     {
         try {
@@ -571,6 +670,25 @@ class BlaneCatalogController extends BaseController
         return BlaneResource::collection($blanes);
     }
 
+    /**
+     * Get blanes by category.
+     *
+     * @OA\Get(
+     *     path="/back/v1/blanes/by-category",
+     *     tags={"Back - Blane Catalog"},
+     *     summary="Get blanes by category",
+     *     operationId="backBlaneByCategory",
+     *     @OA\Parameter(name="category_id", in="query", @OA\Schema(type="integer")),
+     *     @OA\Parameter(name="subcategory_id", in="query", @OA\Schema(type="integer")),
+     *     @OA\Parameter(name="include", in="query", @OA\Schema(type="string")),
+     *     @OA\Parameter(name="paginationSize", in="query", @OA\Schema(type="integer")),
+     *     @OA\Parameter(name="search", in="query", @OA\Schema(type="string")),
+     *     @OA\Parameter(name="city", in="query", @OA\Schema(type="string")),
+     *     @OA\Parameter(name="is_diamond", in="query", @OA\Schema(type="boolean")),
+     *     @OA\Response(response=200, description="Blanes by category"),
+     *     @OA\Response(response=400, description="Validation error")
+     * )
+     */
     public function getBlanesByCategory(Request $request)
     {
         try {
@@ -676,6 +794,23 @@ class BlaneCatalogController extends BaseController
     /**
      * Get Blanes with all filters.
      *
+     * @OA\Get(
+     *     path="/back/v1/blanes/filter",
+     *     tags={"Back - Blane Catalog"},
+     *     summary="Get blanes with all available filters",
+     *     operationId="backBlaneAllFilter",
+     *     @OA\Parameter(name="category_id", in="query", @OA\Schema(type="integer")),
+     *     @OA\Parameter(name="subcategory_id", in="query", @OA\Schema(type="integer")),
+     *     @OA\Parameter(name="include", in="query", @OA\Schema(type="string")),
+     *     @OA\Parameter(name="paginationSize", in="query", @OA\Schema(type="integer")),
+     *     @OA\Parameter(name="search", in="query", @OA\Schema(type="string")),
+     *     @OA\Parameter(name="city", in="query", @OA\Schema(type="string")),
+     *     @OA\Parameter(name="district", in="query", @OA\Schema(type="string")),
+     *     @OA\Parameter(name="ratings", in="query", @OA\Schema(type="number")),
+     *     @OA\Response(response=200, description="Filtered blanes list"),
+     *     @OA\Response(response=400, description="Validation error")
+     * )
+     *
      * @param Request $request
      * @return JsonResponse
      */
@@ -764,6 +899,29 @@ class BlaneCatalogController extends BaseController
         return BlaneResource::collection($blanes);
     }
 
+    /**
+     * Get vendor information by blane.
+     *
+     * @OA\Get(
+     *     path="/back/v1/blanes/vendor-by-blane",
+     *     tags={"Back - Blane Catalog"},
+     *     summary="Get vendor information by blane ID or commerce name",
+     *     operationId="backGetVendorByBlane",
+     *     @OA\Parameter(name="blane_id", in="query", @OA\Schema(type="integer")),
+     *     @OA\Parameter(name="commerce_name", in="query", @OA\Schema(type="string")),
+     *     @OA\Response(response=200, description="Vendor data retrieved", @OA\JsonContent(
+     *         @OA\Property(property="success", type="boolean"),
+     *         @OA\Property(property="message", type="string"),
+     *         @OA\Property(property="data", type="object",
+     *             @OA\Property(property="blane", type="object"),
+     *             @OA\Property(property="vendor", type="object")
+     *         )
+     *     )),
+     *     @OA\Response(response=404, description="Blane or vendor not found"),
+     *     @OA\Response(response=422, description="Missing identifier"),
+     *     @OA\Response(response=500, description="Server error")
+     * )
+     */
     public function getVendorByBlane(Request $request)
     {
         $validator = Validator::make($request->all(), [

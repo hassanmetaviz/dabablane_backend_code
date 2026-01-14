@@ -12,10 +12,40 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 
+/**
+ * @OA\Schema(
+ *     schema="TermsCondition",
+ *     type="object",
+ *     @OA\Property(property="id", type="integer"),
+ *     @OA\Property(property="type", type="string", enum={"user", "vendor"}),
+ *     @OA\Property(property="title", type="string"),
+ *     @OA\Property(property="file_name", type="string"),
+ *     @OA\Property(property="file_path", type="string"),
+ *     @OA\Property(property="file_size", type="string"),
+ *     @OA\Property(property="version", type="string"),
+ *     @OA\Property(property="is_active", type="boolean"),
+ *     @OA\Property(property="created_at", type="string", format="date-time"),
+ *     @OA\Property(property="updated_at", type="string", format="date-time")
+ * )
+ */
 class TermsConditionController extends BaseController
 {
     /**
      * Display a listing of the terms & conditions.
+     *
+     * @OA\Get(
+     *     path="/back/v1/terms-conditions",
+     *     tags={"Back - Terms & Conditions"},
+     *     summary="List all terms & conditions",
+     *     operationId="backTermsConditionsIndex",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(name="per_page", in="query", @OA\Schema(type="integer")),
+     *     @OA\Parameter(name="is_active", in="query", @OA\Schema(type="boolean")),
+     *     @OA\Parameter(name="type", in="query", @OA\Schema(type="string", enum={"user", "vendor"})),
+     *     @OA\Response(response=200, description="Terms retrieved", @OA\JsonContent(@OA\Property(property="data", type="array", @OA\Items(ref="#/components/schemas/TermsCondition")))),
+     *     @OA\Response(response=422, description="Validation error"),
+     *     @OA\Response(response=500, description="Server error")
+     * )
      */
     public function index(Request $request)
     {
@@ -78,6 +108,29 @@ class TermsConditionController extends BaseController
 
     /**
      * Store a newly created terms & conditions.
+     *
+     * @OA\Post(
+     *     path="/back/v1/terms-conditions",
+     *     tags={"Back - Terms & Conditions"},
+     *     summary="Upload new terms & conditions PDF",
+     *     operationId="backTermsConditionsStore",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\RequestBody(required=true, @OA\MediaType(
+     *         mediaType="multipart/form-data",
+     *         @OA\Schema(
+     *             required={"type", "title", "pdf_file"},
+     *             @OA\Property(property="type", type="string", enum={"user", "vendor"}),
+     *             @OA\Property(property="title", type="string"),
+     *             @OA\Property(property="pdf_file", type="string", format="binary"),
+     *             @OA\Property(property="description", type="string"),
+     *             @OA\Property(property="version", type="string"),
+     *             @OA\Property(property="is_active", type="boolean")
+     *         )
+     *     )),
+     *     @OA\Response(response=201, description="Terms created"),
+     *     @OA\Response(response=422, description="Validation error"),
+     *     @OA\Response(response=500, description="Server error")
+     * )
      */
     public function store(StoreTermsConditionRequest $request)
     {
@@ -120,6 +173,18 @@ class TermsConditionController extends BaseController
 
     /**
      * Display the specified terms & conditions.
+     *
+     * @OA\Get(
+     *     path="/back/v1/terms-conditions/{id}",
+     *     tags={"Back - Terms & Conditions"},
+     *     summary="Get specific terms & conditions",
+     *     operationId="backTermsConditionsShow",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
+     *     @OA\Response(response=200, description="Terms retrieved"),
+     *     @OA\Response(response=404, description="Not found"),
+     *     @OA\Response(response=500, description="Server error")
+     * )
      */
     public function show($id)
     {
@@ -154,6 +219,30 @@ class TermsConditionController extends BaseController
 
     /**
      * Update the specified terms & conditions.
+     *
+     * @OA\Put(
+     *     path="/back/v1/terms-conditions/{id}",
+     *     tags={"Back - Terms & Conditions"},
+     *     summary="Update terms & conditions",
+     *     operationId="backTermsConditionsUpdate",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
+     *     @OA\RequestBody(required=true, @OA\MediaType(
+     *         mediaType="multipart/form-data",
+     *         @OA\Schema(
+     *             @OA\Property(property="type", type="string", enum={"user", "vendor"}),
+     *             @OA\Property(property="title", type="string"),
+     *             @OA\Property(property="pdf_file", type="string", format="binary"),
+     *             @OA\Property(property="description", type="string"),
+     *             @OA\Property(property="version", type="string"),
+     *             @OA\Property(property="is_active", type="boolean")
+     *         )
+     *     )),
+     *     @OA\Response(response=200, description="Terms updated"),
+     *     @OA\Response(response=404, description="Not found"),
+     *     @OA\Response(response=422, description="Validation error"),
+     *     @OA\Response(response=500, description="Server error")
+     * )
      */
     public function update(UpdateTermsConditionRequest $request, $id)
     {
@@ -209,6 +298,18 @@ class TermsConditionController extends BaseController
 
     /**
      * Remove the specified terms & conditions.
+     *
+     * @OA\Delete(
+     *     path="/back/v1/terms-conditions/{id}",
+     *     tags={"Back - Terms & Conditions"},
+     *     summary="Delete terms & conditions",
+     *     operationId="backTermsConditionsDestroy",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
+     *     @OA\Response(response=200, description="Terms deleted"),
+     *     @OA\Response(response=404, description="Not found"),
+     *     @OA\Response(response=500, description="Server error")
+     * )
      */
     public function destroy($id)
     {
@@ -247,6 +348,18 @@ class TermsConditionController extends BaseController
 
     /**
      * Get active terms & conditions.
+     *
+     * @OA\Get(
+     *     path="/back/v1/terms-conditions/active",
+     *     tags={"Back - Terms & Conditions"},
+     *     summary="Get active terms & conditions",
+     *     operationId="backTermsConditionsGetActive",
+     *     @OA\Parameter(name="type", in="query", @OA\Schema(type="string", enum={"user", "vendor"})),
+     *     @OA\Response(response=200, description="Active terms retrieved"),
+     *     @OA\Response(response=404, description="No active terms found"),
+     *     @OA\Response(response=422, description="Validation error"),
+     *     @OA\Response(response=500, description="Server error")
+     * )
      */
     public function getActiveTerms(Request $request)
     {
@@ -297,6 +410,18 @@ class TermsConditionController extends BaseController
 
     /**
      * Toggle active status of terms & conditions.
+     *
+     * @OA\Patch(
+     *     path="/back/v1/terms-conditions/{id}/toggle-status",
+     *     tags={"Back - Terms & Conditions"},
+     *     summary="Toggle terms & conditions active status",
+     *     operationId="backTermsConditionsToggleStatus",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
+     *     @OA\Response(response=200, description="Status toggled"),
+     *     @OA\Response(response=404, description="Not found"),
+     *     @OA\Response(response=500, description="Server error")
+     * )
      */
     public function toggleStatus($id)
     {

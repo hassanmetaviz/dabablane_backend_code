@@ -9,10 +9,44 @@ use App\Http\Controllers\Api\BaseController;
 use Illuminate\Validation\ValidationException;
 use App\Http\Resources\Back\V1\ContactResource;
 
+/**
+ * @OA\Schema(
+ *     schema="BackContact",
+ *     type="object",
+ *     @OA\Property(property="id", type="integer", example=1),
+ *     @OA\Property(property="fullName", type="string", example="John Doe"),
+ *     @OA\Property(property="email", type="string", format="email", example="john@example.com"),
+ *     @OA\Property(property="phone", type="string", example="+212612345678"),
+ *     @OA\Property(property="subject", type="string", example="General Inquiry"),
+ *     @OA\Property(property="type", type="string", enum={"client", "commercant"}, example="client"),
+ *     @OA\Property(property="message", type="string", example="I have a question about..."),
+ *     @OA\Property(property="status", type="string", example="pending"),
+ *     @OA\Property(property="created_at", type="string", format="date-time"),
+ *     @OA\Property(property="updated_at", type="string", format="date-time")
+ * )
+ */
 class ContactController extends BaseController
 {
     /**
      * Display a listing of the Contact.
+     *
+     * @OA\Get(
+     *     path="/back/v1/contacts",
+     *     tags={"Back - Contacts"},
+     *     summary="List all contacts",
+     *     operationId="backContactsIndex",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(name="paginationSize", in="query", @OA\Schema(type="integer", default=10)),
+     *     @OA\Parameter(name="status", in="query", @OA\Schema(type="string")),
+     *     @OA\Parameter(name="email", in="query", @OA\Schema(type="string")),
+     *     @OA\Parameter(name="search", in="query", @OA\Schema(type="string")),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Contacts retrieved",
+     *         @OA\JsonContent(@OA\Property(property="data", type="array", @OA\Items(ref="#/components/schemas/BackContact")), @OA\Property(property="links", ref="#/components/schemas/PaginationLinks"), @OA\Property(property="meta", ref="#/components/schemas/PaginationMeta"))
+     *     ),
+     *     @OA\Response(response=401, description="Unauthenticated", @OA\JsonContent(ref="#/components/schemas/UnauthorizedResponse"))
+     * )
      *
      * @param Request $request
      */
@@ -34,6 +68,18 @@ class ContactController extends BaseController
     /**
      * Display the specified contact.
      *
+     * @OA\Get(
+     *     path="/back/v1/contacts/{id}",
+     *     tags={"Back - Contacts"},
+     *     summary="Get a specific contact",
+     *     operationId="backContactsShow",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
+     *     @OA\Response(response=200, description="Contact retrieved", @OA\JsonContent(@OA\Property(property="data", ref="#/components/schemas/BackContact"))),
+     *     @OA\Response(response=401, description="Unauthenticated", @OA\JsonContent(ref="#/components/schemas/UnauthorizedResponse")),
+     *     @OA\Response(response=404, description="Not found", @OA\JsonContent(ref="#/components/schemas/NotFoundResponse"))
+     * )
+     *
      * @param int $id
      * @param Request $request
      * @return JsonResponse|ContactResource
@@ -53,6 +99,28 @@ class ContactController extends BaseController
 
     /**
      * Store a newly created contact.
+     *
+     * @OA\Post(
+     *     path="/back/v1/contacts",
+     *     tags={"Back - Contacts"},
+     *     summary="Create a new contact",
+     *     operationId="backContactsStore",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\RequestBody(required=true, @OA\JsonContent(
+     *         required={"fullName", "email", "subject", "type", "message", "status"},
+     *         @OA\Property(property="fullName", type="string", maxLength=255, example="John Doe"),
+     *         @OA\Property(property="email", type="string", maxLength=255, example="john@example.com"),
+     *         @OA\Property(property="phone", type="string", maxLength=255),
+     *         @OA\Property(property="subject", type="string", maxLength=255, example="General Inquiry"),
+     *         @OA\Property(property="type", type="string", enum={"client", "commercant"}, example="client"),
+     *         @OA\Property(property="message", type="string", example="I have a question..."),
+     *         @OA\Property(property="status", type="string", example="pending")
+     *     )),
+     *     @OA\Response(response=201, description="Contact created", @OA\JsonContent(@OA\Property(property="message", type="string"), @OA\Property(property="data", ref="#/components/schemas/BackContact"))),
+     *     @OA\Response(response=400, description="Validation error", @OA\JsonContent(ref="#/components/schemas/ValidationErrorResponse")),
+     *     @OA\Response(response=401, description="Unauthenticated", @OA\JsonContent(ref="#/components/schemas/UnauthorizedResponse")),
+     *     @OA\Response(response=500, description="Server error", @OA\JsonContent(ref="#/components/schemas/ErrorResponse"))
+     * )
      *
      * @param Request $request
      * @return JsonResponse
@@ -88,6 +156,30 @@ class ContactController extends BaseController
 
     /**
      * Update the specified contact.
+     *
+     * @OA\Put(
+     *     path="/back/v1/contacts/{id}",
+     *     tags={"Back - Contacts"},
+     *     summary="Update a contact",
+     *     operationId="backContactsUpdate",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
+     *     @OA\RequestBody(required=true, @OA\JsonContent(
+     *         required={"fullName", "email", "type", "subject", "message", "status"},
+     *         @OA\Property(property="fullName", type="string", maxLength=255),
+     *         @OA\Property(property="email", type="string", maxLength=255),
+     *         @OA\Property(property="phone", type="string", maxLength=255),
+     *         @OA\Property(property="type", type="string", enum={"client", "commercant"}),
+     *         @OA\Property(property="subject", type="string", maxLength=255),
+     *         @OA\Property(property="message", type="string"),
+     *         @OA\Property(property="status", type="string")
+     *     )),
+     *     @OA\Response(response=200, description="Contact updated", @OA\JsonContent(@OA\Property(property="message", type="string"), @OA\Property(property="data", ref="#/components/schemas/BackContact"))),
+     *     @OA\Response(response=400, description="Validation error", @OA\JsonContent(ref="#/components/schemas/ValidationErrorResponse")),
+     *     @OA\Response(response=401, description="Unauthenticated", @OA\JsonContent(ref="#/components/schemas/UnauthorizedResponse")),
+     *     @OA\Response(response=404, description="Not found", @OA\JsonContent(ref="#/components/schemas/NotFoundResponse")),
+     *     @OA\Response(response=500, description="Server error", @OA\JsonContent(ref="#/components/schemas/ErrorResponse"))
+     * )
      *
      * @param Request $request
      * @param int $id
@@ -130,6 +222,19 @@ class ContactController extends BaseController
 
     /**
      * Remove the specified contact.
+     *
+     * @OA\Delete(
+     *     path="/back/v1/contacts/{id}",
+     *     tags={"Back - Contacts"},
+     *     summary="Delete a contact",
+     *     operationId="backContactsDestroy",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
+     *     @OA\Response(response=204, description="Contact deleted"),
+     *     @OA\Response(response=401, description="Unauthenticated", @OA\JsonContent(ref="#/components/schemas/UnauthorizedResponse")),
+     *     @OA\Response(response=404, description="Not found", @OA\JsonContent(ref="#/components/schemas/NotFoundResponse")),
+     *     @OA\Response(response=500, description="Server error", @OA\JsonContent(ref="#/components/schemas/ErrorResponse"))
+     * )
      *
      * @param int $id
      * @return JsonResponse

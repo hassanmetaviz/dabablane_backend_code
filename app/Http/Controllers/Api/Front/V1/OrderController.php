@@ -17,7 +17,43 @@ use App\Services\CmiService;
 use App\Http\Traits\WebhookNotifiable;
 use Carbon\Carbon;
 
-
+/**
+ * @OA\Schema(
+ *     schema="Order",
+ *     type="object",
+ *     @OA\Property(property="id", type="integer", example=1),
+ *     @OA\Property(property="NUM_ORD", type="string", example="ORDER-AB123456"),
+ *     @OA\Property(property="blane_id", type="integer", example=1),
+ *     @OA\Property(property="customers_id", type="integer", example=1),
+ *     @OA\Property(property="quantity", type="integer", example=2),
+ *     @OA\Property(property="total_price", type="number", format="float", example=199.99),
+ *     @OA\Property(property="partiel_price", type="number", format="float", example=50.00),
+ *     @OA\Property(property="delivery_address", type="string", example="123 Main St"),
+ *     @OA\Property(property="status", type="string", enum={"pending", "confirmed", "paid", "shipped", "cancelled"}, example="pending"),
+ *     @OA\Property(property="payment_method", type="string", enum={"cash", "online", "partiel"}, example="cash"),
+ *     @OA\Property(property="source", type="string", enum={"web", "mobile", "agent"}, example="web"),
+ *     @OA\Property(property="created_at", type="string", format="date-time"),
+ *     @OA\Property(property="updated_at", type="string", format="date-time")
+ * )
+ *
+ * @OA\Schema(
+ *     schema="OrderCreateRequest",
+ *     type="object",
+ *     required={"blane_id", "name", "email", "phone", "quantity", "payment_method", "total_price"},
+ *     @OA\Property(property="blane_id", type="integer", example=1, description="ID of the blane to order"),
+ *     @OA\Property(property="name", type="string", example="John Doe", description="Customer name"),
+ *     @OA\Property(property="email", type="string", format="email", example="john@example.com", description="Customer email"),
+ *     @OA\Property(property="phone", type="string", example="+212612345678", description="Customer phone"),
+ *     @OA\Property(property="quantity", type="integer", minimum=1, example=1, description="Order quantity"),
+ *     @OA\Property(property="delivery_address", type="string", example="123 Main St", description="Delivery address (required for non-digital products)"),
+ *     @OA\Property(property="city", type="string", example="Casablanca", description="City (required for non-digital products)"),
+ *     @OA\Property(property="payment_method", type="string", enum={"cash", "online", "partiel"}, example="cash"),
+ *     @OA\Property(property="total_price", type="number", format="float", example=199.99),
+ *     @OA\Property(property="partiel_price", type="number", format="float", example=50.00, description="Partial payment amount (required if payment_method is partiel)"),
+ *     @OA\Property(property="comments", type="string", example="Please deliver after 6 PM"),
+ *     @OA\Property(property="source", type="string", enum={"web", "mobile", "agent"}, example="web")
+ * )
+ */
 class OrderController extends BaseController
 {
     use WebhookNotifiable;
@@ -91,8 +127,56 @@ class OrderController extends BaseController
     /**
      * Store a newly created Order.
      *
-     * @param Request $request
-     * @return JsonResponse
+     * @OA\Post(
+     *     path="/front/v1/orders",
+     *     tags={"Orders"},
+     *     summary="Create a new order",
+     *     description="Create a new order for a blane (product/service). Returns order details and payment information if applicable.",
+     *     operationId="createOrder",
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(ref="#/components/schemas/OrderCreateRequest")
+     *     ),
+     *     @OA\Response(
+     *         response=201,
+     *         description="Order created successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="boolean", example=true),
+     *             @OA\Property(property="code", type="integer", example=201),
+     *             @OA\Property(property="message", type="string", example="Order created successfully"),
+     *             @OA\Property(
+     *                 property="data",
+     *                 type="object",
+     *                 @OA\Property(property="order", ref="#/components/schemas/Order"),
+     *                 @OA\Property(
+     *                     property="cancellation",
+     *                     type="object",
+     *                     @OA\Property(property="url", type="string"),
+     *                     @OA\Property(property="token", type="string"),
+     *                     @OA\Property(property="timestamp", type="integer")
+     *                 ),
+     *                 @OA\Property(
+     *                     property="payment_info",
+     *                     type="object",
+     *                     description="Only returned for online/partiel payment methods",
+     *                     @OA\Property(property="payment_url", type="string"),
+     *                     @OA\Property(property="method", type="string", example="post"),
+     *                     @OA\Property(property="inputs", type="object")
+     *                 )
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Bad request (stock exceeded, etc.)",
+     *         @OA\JsonContent(ref="#/components/schemas/ErrorResponse")
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Validation error or daily limit reached",
+     *         @OA\JsonContent(ref="#/components/schemas/ValidationErrorResponse")
+     *     )
+     * )
      */
     public function store(Request $request): JsonResponse
     {
@@ -262,8 +346,38 @@ class OrderController extends BaseController
     /**
      * Display the specified Order.
      *
-     * @param int $id
-     * @param Request $request
+     * @OA\Get(
+     *     path="/front/v1/orders/{id}",
+     *     tags={"Orders"},
+     *     summary="Get order details",
+     *     description="Retrieve details of a specific order by its order number (NUM_ORD)",
+     *     operationId="getOrder",
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="Order number (NUM_ORD)",
+     *         @OA\Schema(type="string", example="ORDER-AB123456")
+     *     ),
+     *     @OA\Parameter(
+     *         name="include",
+     *         in="query",
+     *         description="Include related resources (comma-separated)",
+     *         @OA\Schema(type="string", example="blane,customer,shippingDetails")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Order retrieved successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="data", ref="#/components/schemas/Order")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Order not found",
+     *         @OA\JsonContent(ref="#/components/schemas/NotFoundResponse")
+     *     )
+     * )
      */
     public function show($id, Request $request)
     {
@@ -302,9 +416,42 @@ class OrderController extends BaseController
     /**
      * Change the status of the specified Order.
      *
-     * @param int $id
-     * @param Request $request
-     * @return JsonResponse
+     * @OA\Patch(
+     *     path="/front/v1/orders/{id}/status",
+     *     tags={"Orders"},
+     *     summary="Update order status",
+     *     description="Change the status of a pending order (used after payment callbacks)",
+     *     operationId="changeOrderStatus",
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="Order number (NUM_ORD)",
+     *         @OA\Schema(type="string", example="ORDER-AB123456")
+     *     ),
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"status"},
+     *             @OA\Property(property="status", type="string", enum={"pending", "failed"}, example="pending")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Order status updated successfully",
+     *         @OA\JsonContent(ref="#/components/schemas/SuccessResponse")
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Order not found",
+     *         @OA\JsonContent(ref="#/components/schemas/NotFoundResponse")
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Validation error",
+     *         @OA\JsonContent(ref="#/components/schemas/ValidationErrorResponse")
+     *     )
+     * )
      */
     public function changeStatus($id, Request $request): JsonResponse
     {
@@ -327,8 +474,40 @@ class OrderController extends BaseController
     /**
      * Delete the specified Order if status is pending.
      *
-     * @param int $id
-     * @return JsonResponse
+     * @OA\Delete(
+     *     path="/front/v1/orders/{id}",
+     *     tags={"Orders"},
+     *     summary="Delete an order",
+     *     description="Delete a pending order. Only orders with 'pending' status can be deleted.",
+     *     operationId="deleteOrder",
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="Order ID",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Order deleted successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="boolean", example=true),
+     *             @OA\Property(property="code", type="integer", example=200),
+     *             @OA\Property(property="message", type="string", example="Order deleted successfully"),
+     *             @OA\Property(property="data", type="null")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=403,
+     *         description="Cannot delete non-pending order",
+     *         @OA\JsonContent(ref="#/components/schemas/ForbiddenResponse")
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Order not found",
+     *         @OA\JsonContent(ref="#/components/schemas/NotFoundResponse")
+     *     )
+     * )
      */
     public function destroy($id): JsonResponse
     {
@@ -429,8 +608,42 @@ class OrderController extends BaseController
     /**
      * Cancel an order using a secure token.
      *
-     * @param Request $request
-     * @return JsonResponse
+     * @OA\Post(
+     *     path="/front/v1/orders/cancel",
+     *     tags={"Orders"},
+     *     summary="Cancel order by token",
+     *     description="Cancel a pending order using a secure cancellation token. The token is provided when the order is created.",
+     *     operationId="cancelOrderByToken",
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"id", "token", "timestamp"},
+     *             @OA\Property(property="id", type="string", example="ORDER-AB123456", description="Order number"),
+     *             @OA\Property(property="token", type="string", example="abc123...", description="Cancellation token"),
+     *             @OA\Property(property="timestamp", type="integer", example=1704067200, description="Timestamp from cancellation params")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Order cancelled successfully",
+     *         @OA\JsonContent(ref="#/components/schemas/SuccessResponse")
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Order cannot be cancelled (not pending)",
+     *         @OA\JsonContent(ref="#/components/schemas/ErrorResponse")
+     *     ),
+     *     @OA\Response(
+     *         response=403,
+     *         description="Invalid or expired cancellation token",
+     *         @OA\JsonContent(ref="#/components/schemas/ForbiddenResponse")
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Order not found",
+     *         @OA\JsonContent(ref="#/components/schemas/NotFoundResponse")
+     *     )
+     * )
      */
     public function cancelByToken(Request $request): JsonResponse
     {

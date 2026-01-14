@@ -8,8 +8,72 @@ use App\Http\Resources\Front\V1\SubcategoryResource;
 use App\Models\Category;
 use Illuminate\Http\Request;
 
+/**
+ * @OA\Schema(
+ *     schema="Category",
+ *     type="object",
+ *     @OA\Property(property="id", type="integer", example=1),
+ *     @OA\Property(property="name", type="string", example="Electronics"),
+ *     @OA\Property(property="slug", type="string", example="electronics"),
+ *     @OA\Property(property="description", type="string", example="Electronic devices and accessories"),
+ *     @OA\Property(property="image", type="string", example="https://example.com/image.jpg"),
+ *     @OA\Property(property="status", type="string", enum={"active", "inactive"}, example="active"),
+ *     @OA\Property(property="created_at", type="string", format="date-time"),
+ *     @OA\Property(property="updated_at", type="string", format="date-time")
+ * )
+ *
+ * @OA\Schema(
+ *     schema="Subcategory",
+ *     type="object",
+ *     @OA\Property(property="id", type="integer", example=1),
+ *     @OA\Property(property="name", type="string", example="Smartphones"),
+ *     @OA\Property(property="slug", type="string", example="smartphones"),
+ *     @OA\Property(property="category_id", type="integer", example=1),
+ *     @OA\Property(property="status", type="string", enum={"active", "inactive"}, example="active")
+ * )
+ */
 class CategoryController extends BaseController
 {
+    /**
+     * @OA\Get(
+     *     path="/front/v1/categories",
+     *     tags={"Categories"},
+     *     summary="Get all categories",
+     *     description="Retrieve a list of all active categories with optional subcategories",
+     *     operationId="getCategories",
+     *     @OA\Parameter(
+     *         name="include",
+     *         in="query",
+     *         description="Include related resources (e.g., subcategories)",
+     *         @OA\Schema(type="string", enum={"subcategories"})
+     *     ),
+     *     @OA\Parameter(
+     *         name="sort_by",
+     *         in="query",
+     *         description="Sort field",
+     *         @OA\Schema(type="string", enum={"created_at", "name"})
+     *     ),
+     *     @OA\Parameter(
+     *         name="sort_order",
+     *         in="query",
+     *         description="Sort order",
+     *         @OA\Schema(type="string", enum={"asc", "desc"})
+     *     ),
+     *     @OA\Parameter(
+     *         name="search",
+     *         in="query",
+     *         description="Search term",
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Categories retrieved successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="data", type="array", @OA\Items(ref="#/components/schemas/Category"))
+     *         )
+     *     )
+     * )
+     */
     public function index(Request $request)
     {
         $request->validate([
@@ -64,6 +128,40 @@ class CategoryController extends BaseController
         }
     }
 
+    /**
+     * @OA\Get(
+     *     path="/front/v1/categories/{id}",
+     *     tags={"Categories"},
+     *     summary="Get a specific category",
+     *     description="Retrieve a single category by ID with optional subcategories",
+     *     operationId="getCategory",
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="Category ID",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Parameter(
+     *         name="include",
+     *         in="query",
+     *         description="Include related resources",
+     *         @OA\Schema(type="string", enum={"subcategories"})
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Category retrieved successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="data", ref="#/components/schemas/Category")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Category not found",
+     *         @OA\JsonContent(ref="#/components/schemas/NotFoundResponse")
+     *     )
+     * )
+     */
     public function show($id, Request $request)
     {
         $request->validate([
@@ -86,6 +184,34 @@ class CategoryController extends BaseController
         return new CategoryResource($category);
     }
 
+    /**
+     * @OA\Get(
+     *     path="/front/v1/categories/{category_id}/subcategories",
+     *     tags={"Categories"},
+     *     summary="Get subcategories of a category",
+     *     description="Retrieve all subcategories belonging to a specific category",
+     *     operationId="getCategorySubcategories",
+     *     @OA\Parameter(
+     *         name="category_id",
+     *         in="path",
+     *         required=true,
+     *         description="Category ID",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Subcategories retrieved successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="data", type="array", @OA\Items(ref="#/components/schemas/Subcategory"))
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Category not found",
+     *         @OA\JsonContent(ref="#/components/schemas/NotFoundResponse")
+     *     )
+     * )
+     */
     public function subCategories($category_id)
     {
         $category = Category::where('status', 'active')->findOrFail($category_id);

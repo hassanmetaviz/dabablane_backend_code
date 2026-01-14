@@ -12,6 +12,37 @@ class SocialAuthController extends BaseController
     /**
      * Social login (Firebase-based)
      *
+     * @OA\Post(
+     *     path="/back/v1/auth/social-login",
+     *     tags={"Back - Social Auth"},
+     *     summary="Social login using Firebase",
+     *     operationId="socialLogin",
+     *     @OA\RequestBody(required=true, @OA\JsonContent(
+     *         required={"email", "firebase_uid"},
+     *         @OA\Property(property="email", type="string", format="email", example="user@example.com"),
+     *         @OA\Property(property="firebase_uid", type="string", example="abc123firebase"),
+     *         @OA\Property(property="name", type="string", example="John Doe")
+     *     )),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Login successful",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="boolean"),
+     *             @OA\Property(property="code", type="integer"),
+     *             @OA\Property(property="message", type="string"),
+     *             @OA\Property(property="data", type="object",
+     *                 @OA\Property(property="user_token", type="string"),
+     *                 @OA\Property(property="user", type="object"),
+     *                 @OA\Property(property="roles", type="array", @OA\Items(type="string")),
+     *                 @OA\Property(property="token_type", type="string", example="Bearer")
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(response=201, description="User registered and logged in"),
+     *     @OA\Response(response=422, description="Validation error"),
+     *     @OA\Response(response=500, description="Server error")
+     * )
+     *
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */

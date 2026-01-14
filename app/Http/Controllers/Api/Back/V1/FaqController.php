@@ -9,10 +9,40 @@ use App\Http\Controllers\Api\BaseController;
 use Illuminate\Validation\ValidationException;
 use App\Http\Resources\Back\V1\FAQResource;
 
+/**
+ * @OA\Schema(
+ *     schema="BackFAQ",
+ *     type="object",
+ *     @OA\Property(property="id", type="integer", example=1),
+ *     @OA\Property(property="question", type="string", example="How do I place an order?"),
+ *     @OA\Property(property="answer", type="string", example="You can place an order by..."),
+ *     @OA\Property(property="created_at", type="string", format="date-time"),
+ *     @OA\Property(property="updated_at", type="string", format="date-time")
+ * )
+ */
 class FAQController extends BaseController
 {
     /**
      * Display a listing of the FAQs.
+     *
+     * @OA\Get(
+     *     path="/back/v1/faqs",
+     *     tags={"Back - FAQs"},
+     *     summary="List all FAQs",
+     *     operationId="backFaqsIndex",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(name="paginationSize", in="query", @OA\Schema(type="integer", default=10)),
+     *     @OA\Parameter(name="sort_by", in="query", @OA\Schema(type="string", enum={"created_at", "question"})),
+     *     @OA\Parameter(name="sort_order", in="query", @OA\Schema(type="string", enum={"asc", "desc"})),
+     *     @OA\Parameter(name="search", in="query", @OA\Schema(type="string")),
+     *     @OA\Response(
+     *         response=200,
+     *         description="FAQs retrieved",
+     *         @OA\JsonContent(@OA\Property(property="data", type="array", @OA\Items(ref="#/components/schemas/BackFAQ")), @OA\Property(property="links", ref="#/components/schemas/PaginationLinks"), @OA\Property(property="meta", ref="#/components/schemas/PaginationMeta"))
+     *     ),
+     *     @OA\Response(response=400, description="Validation error", @OA\JsonContent(ref="#/components/schemas/ValidationErrorResponse")),
+     *     @OA\Response(response=401, description="Unauthenticated", @OA\JsonContent(ref="#/components/schemas/UnauthorizedResponse"))
+     * )
      *
      * @param Request $request
      */
@@ -44,6 +74,18 @@ class FAQController extends BaseController
     /**
      * Display the specified FAQ.
      *
+     * @OA\Get(
+     *     path="/back/v1/faqs/{id}",
+     *     tags={"Back - FAQs"},
+     *     summary="Get a specific FAQ",
+     *     operationId="backFaqsShow",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
+     *     @OA\Response(response=200, description="FAQ retrieved", @OA\JsonContent(@OA\Property(property="data", ref="#/components/schemas/BackFAQ"))),
+     *     @OA\Response(response=401, description="Unauthenticated", @OA\JsonContent(ref="#/components/schemas/UnauthorizedResponse")),
+     *     @OA\Response(response=404, description="Not found", @OA\JsonContent(ref="#/components/schemas/NotFoundResponse"))
+     * )
+     *
      * @param int $id
      * @param Request $request
      */
@@ -60,6 +102,23 @@ class FAQController extends BaseController
 
     /**
      * Store a newly created FAQ.
+     *
+     * @OA\Post(
+     *     path="/back/v1/faqs",
+     *     tags={"Back - FAQs"},
+     *     summary="Create a new FAQ",
+     *     operationId="backFaqsStore",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\RequestBody(required=true, @OA\JsonContent(
+     *         required={"question", "answer"},
+     *         @OA\Property(property="question", type="string", maxLength=255, example="How do I place an order?"),
+     *         @OA\Property(property="answer", type="string", example="You can place an order by...")
+     *     )),
+     *     @OA\Response(response=201, description="FAQ created", @OA\JsonContent(@OA\Property(property="message", type="string"), @OA\Property(property="data", ref="#/components/schemas/BackFAQ"))),
+     *     @OA\Response(response=400, description="Validation error", @OA\JsonContent(ref="#/components/schemas/ValidationErrorResponse")),
+     *     @OA\Response(response=401, description="Unauthenticated", @OA\JsonContent(ref="#/components/schemas/UnauthorizedResponse")),
+     *     @OA\Response(response=500, description="Server error", @OA\JsonContent(ref="#/components/schemas/ErrorResponse"))
+     * )
      *
      * @param Request $request
      * @return JsonResponse
@@ -90,6 +149,25 @@ class FAQController extends BaseController
 
     /**
      * Update the specified FAQ.
+     *
+     * @OA\Put(
+     *     path="/back/v1/faqs/{id}",
+     *     tags={"Back - FAQs"},
+     *     summary="Update a FAQ",
+     *     operationId="backFaqsUpdate",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
+     *     @OA\RequestBody(required=true, @OA\JsonContent(
+     *         required={"question", "answer"},
+     *         @OA\Property(property="question", type="string", maxLength=255),
+     *         @OA\Property(property="answer", type="string")
+     *     )),
+     *     @OA\Response(response=200, description="FAQ updated", @OA\JsonContent(@OA\Property(property="message", type="string"), @OA\Property(property="data", ref="#/components/schemas/BackFAQ"))),
+     *     @OA\Response(response=400, description="Validation error", @OA\JsonContent(ref="#/components/schemas/ValidationErrorResponse")),
+     *     @OA\Response(response=401, description="Unauthenticated", @OA\JsonContent(ref="#/components/schemas/UnauthorizedResponse")),
+     *     @OA\Response(response=404, description="Not found", @OA\JsonContent(ref="#/components/schemas/NotFoundResponse")),
+     *     @OA\Response(response=500, description="Server error", @OA\JsonContent(ref="#/components/schemas/ErrorResponse"))
+     * )
      *
      * @param Request $request
      * @param int $id
@@ -127,6 +205,19 @@ class FAQController extends BaseController
 
     /**
      * Remove the specified FAQ.
+     *
+     * @OA\Delete(
+     *     path="/back/v1/faqs/{id}",
+     *     tags={"Back - FAQs"},
+     *     summary="Delete a FAQ",
+     *     operationId="backFaqsDestroy",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
+     *     @OA\Response(response=204, description="FAQ deleted"),
+     *     @OA\Response(response=401, description="Unauthenticated", @OA\JsonContent(ref="#/components/schemas/UnauthorizedResponse")),
+     *     @OA\Response(response=404, description="Not found", @OA\JsonContent(ref="#/components/schemas/NotFoundResponse")),
+     *     @OA\Response(response=500, description="Server error", @OA\JsonContent(ref="#/components/schemas/ErrorResponse"))
+     * )
      *
      * @param int $id
      * @return JsonResponse

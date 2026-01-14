@@ -9,10 +9,75 @@ use App\Http\Controllers\Api\BaseController;
 use Illuminate\Validation\ValidationException;
 use App\Http\Resources\Back\V1\RatingResource;
 
+/**
+ * @OA\Schema(
+ *     schema="Rating",
+ *     type="object",
+ *     @OA\Property(property="id", type="integer", example=1),
+ *     @OA\Property(property="blane_id", type="integer", example=1),
+ *     @OA\Property(property="user_id", type="integer", example=1),
+ *     @OA\Property(property="rating", type="integer", minimum=1, maximum=5, example=5),
+ *     @OA\Property(property="comment", type="string", example="Great experience!"),
+ *     @OA\Property(property="status", type="string", enum={"pending", "approved", "rejected"}, example="approved"),
+ *     @OA\Property(property="created_at", type="string", format="date-time"),
+ *     @OA\Property(property="updated_at", type="string", format="date-time")
+ * )
+ */
 class RatingController extends BaseController
 {
     /**
      * Display a listing of the Ratings.
+     *
+     * @OA\Get(
+     *     path="/front/v1/ratings",
+     *     tags={"Ratings"},
+     *     summary="Get all ratings",
+     *     description="Retrieve a list of all ratings with optional filters",
+     *     operationId="getRatings",
+     *     @OA\Parameter(
+     *         name="include",
+     *         in="query",
+     *         description="Include related resources (user, blane)",
+     *         @OA\Schema(type="string", example="user,blane")
+     *     ),
+     *     @OA\Parameter(
+     *         name="sort_by",
+     *         in="query",
+     *         description="Sort field",
+     *         @OA\Schema(type="string", enum={"created_at", "rating", "status"})
+     *     ),
+     *     @OA\Parameter(
+     *         name="sort_order",
+     *         in="query",
+     *         description="Sort order",
+     *         @OA\Schema(type="string", enum={"asc", "desc"})
+     *     ),
+     *     @OA\Parameter(
+     *         name="search",
+     *         in="query",
+     *         description="Search term",
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Parameter(
+     *         name="status",
+     *         in="query",
+     *         description="Filter by status",
+     *         @OA\Schema(type="string", enum={"pending", "approved", "rejected"})
+     *     ),
+     *     @OA\Parameter(
+     *         name="blane_id",
+     *         in="query",
+     *         description="Filter by blane ID",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Ratings retrieved successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="data", type="array", @OA\Items(ref="#/components/schemas/Rating"))
+     *         )
+     *     )
+     * )
      *
      * @param Request $request
      */
@@ -62,6 +127,38 @@ class RatingController extends BaseController
 
     /**
      * Store a newly created Rating.
+     *
+     * @OA\Post(
+     *     path="/front/v1/ratings",
+     *     tags={"Ratings"},
+     *     summary="Create a new rating",
+     *     description="Create a new rating for a blane",
+     *     operationId="createRating",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"blane_id", "user_id", "rating"},
+     *             @OA\Property(property="blane_id", type="integer", example=1),
+     *             @OA\Property(property="user_id", type="integer", example=1),
+     *             @OA\Property(property="rating", type="integer", minimum=1, maximum=5, example=5),
+     *             @OA\Property(property="comment", type="string", maxLength=500, example="Great experience!")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=201,
+     *         description="Rating created successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Rating created successfully"),
+     *             @OA\Property(property="data", ref="#/components/schemas/Rating")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Validation error",
+     *         @OA\JsonContent(ref="#/components/schemas/ValidationErrorResponse")
+     *     )
+     * )
      *
      * @param Request $request
      * @return JsonResponse

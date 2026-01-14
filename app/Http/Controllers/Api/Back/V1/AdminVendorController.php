@@ -17,12 +17,41 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Spatie\Permission\Models\Role;
 
+/**
+ * @OA\Tag(name="Back - Admin Vendor", description="Admin vendor management endpoints")
+ */
 class AdminVendorController extends BaseController
 {
     private const VIDEO_EXTENSIONS = ['mp4', 'mov', 'avi', 'mkv', 'wmv', 'flv', 'webm'];
 
     /**
      * Update vendor by admin
+     *
+     * @OA\Put(
+     *     path="/back/v1/admin/vendors/{vendorId}",
+     *     tags={"Back - Admin Vendor"},
+     *     summary="Update vendor by admin",
+     *     operationId="adminUpdateVendor",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(name="vendorId", in="path", required=true, @OA\Schema(type="integer")),
+     *     @OA\RequestBody(required=true, @OA\MediaType(
+     *         mediaType="multipart/form-data",
+     *         @OA\Schema(
+     *             @OA\Property(property="name", type="string"),
+     *             @OA\Property(property="email", type="string", format="email"),
+     *             @OA\Property(property="phone", type="string"),
+     *             @OA\Property(property="city", type="string"),
+     *             @OA\Property(property="status", type="string", enum={"active", "inactive", "pending", "suspended", "blocked"}),
+     *             @OA\Property(property="blane_limit", type="integer"),
+     *             @OA\Property(property="custom_commission_rate", type="number"),
+     *             @OA\Property(property="cover_files[]", type="array", @OA\Items(type="string", format="binary"))
+     *         )
+     *     )),
+     *     @OA\Response(response=200, description="Vendor updated"),
+     *     @OA\Response(response=403, description="Unauthorized"),
+     *     @OA\Response(response=404, description="Vendor not found"),
+     *     @OA\Response(response=422, description="Validation error")
+     * )
      *
      * @param Request $request
      * @param int|null $vendorId
@@ -238,6 +267,28 @@ class AdminVendorController extends BaseController
     /**
      * Create vendor by admin
      *
+     * @OA\Post(
+     *     path="/back/v1/admin/vendors",
+     *     tags={"Back - Admin Vendor"},
+     *     summary="Create vendor by admin",
+     *     operationId="adminCreateVendor",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\RequestBody(required=true, @OA\JsonContent(
+     *         required={"email"},
+     *         @OA\Property(property="email", type="string", format="email"),
+     *         @OA\Property(property="name", type="string"),
+     *         @OA\Property(property="company_name", type="string"),
+     *         @OA\Property(property="phone", type="string"),
+     *         @OA\Property(property="city", type="string"),
+     *         @OA\Property(property="address", type="string"),
+     *         @OA\Property(property="status", type="string", enum={"pending", "active", "inactive"})
+     *     )),
+     *     @OA\Response(response=201, description="Vendor created"),
+     *     @OA\Response(response=403, description="Unauthorized"),
+     *     @OA\Response(response=422, description="Validation error"),
+     *     @OA\Response(response=500, description="Server error")
+     * )
+     *
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
@@ -383,6 +434,24 @@ class AdminVendorController extends BaseController
     /**
      * Change vendor status
      *
+     * @OA\Patch(
+     *     path="/back/v1/admin/vendors/{id}/status",
+     *     tags={"Back - Admin Vendor"},
+     *     summary="Change vendor status",
+     *     operationId="adminChangeVendorStatus",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
+     *     @OA\RequestBody(required=true, @OA\JsonContent(
+     *         required={"status"},
+     *         @OA\Property(property="status", type="string", enum={"active", "inactive", "pending", "suspended", "waiting"}),
+     *         @OA\Property(property="comment", type="string")
+     *     )),
+     *     @OA\Response(response=200, description="Status updated"),
+     *     @OA\Response(response=404, description="Vendor not found"),
+     *     @OA\Response(response=422, description="Validation error"),
+     *     @OA\Response(response=500, description="Server error")
+     * )
+     *
      * @param Request $request
      * @param int $id
      * @return \Illuminate\Http\JsonResponse
@@ -449,6 +518,19 @@ class AdminVendorController extends BaseController
 
     /**
      * Reset vendor password by admin
+     *
+     * @OA\Post(
+     *     path="/back/v1/admin/vendors/{vendorId}/reset-password",
+     *     tags={"Back - Admin Vendor"},
+     *     summary="Reset vendor password by admin",
+     *     operationId="adminResetVendorPassword",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(name="vendorId", in="path", required=true, @OA\Schema(type="integer")),
+     *     @OA\Response(response=200, description="Password reset successful"),
+     *     @OA\Response(response=403, description="Unauthorized"),
+     *     @OA\Response(response=404, description="Vendor not found"),
+     *     @OA\Response(response=500, description="Server error")
+     * )
      *
      * @param Request $request
      * @param int|null $vendorId
@@ -549,6 +631,21 @@ class AdminVendorController extends BaseController
     /**
      * Get all vendors (with filters)
      *
+     * @OA\Get(
+     *     path="/back/v1/admin/vendors",
+     *     tags={"Back - Admin Vendor"},
+     *     summary="Get all vendors with filters",
+     *     operationId="adminGetAllVendors",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(name="status", in="query", @OA\Schema(type="string", enum={"pending", "active", "suspended", "blocked", "inactive"})),
+     *     @OA\Parameter(name="search", in="query", @OA\Schema(type="string")),
+     *     @OA\Parameter(name="paginationSize", in="query", @OA\Schema(type="integer")),
+     *     @OA\Parameter(name="include", in="query", @OA\Schema(type="string")),
+     *     @OA\Response(response=200, description="Vendors retrieved"),
+     *     @OA\Response(response=422, description="Validation error"),
+     *     @OA\Response(response=500, description="Server error")
+     * )
+     *
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
@@ -644,6 +741,21 @@ class AdminVendorController extends BaseController
     /**
      * Get vendor by ID or company name (admin)
      *
+     * @OA\Get(
+     *     path="/back/v1/admin/vendor",
+     *     tags={"Back - Admin Vendor"},
+     *     summary="Get vendor by ID or company name",
+     *     operationId="adminGetVendorByIdOrCompanyName",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(name="id", in="query", @OA\Schema(type="integer")),
+     *     @OA\Parameter(name="company_name", in="query", @OA\Schema(type="string")),
+     *     @OA\Parameter(name="include", in="query", @OA\Schema(type="string")),
+     *     @OA\Response(response=200, description="Vendor retrieved"),
+     *     @OA\Response(response=404, description="Vendor not found"),
+     *     @OA\Response(response=422, description="Validation error"),
+     *     @OA\Response(response=500, description="Server error")
+     * )
+     *
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
@@ -721,6 +833,20 @@ class AdminVendorController extends BaseController
 
     /**
      * Get vendor by ID or company name (public - no auth required)
+     *
+     * @OA\Get(
+     *     path="/back/v1/vendor-public",
+     *     tags={"Back - Admin Vendor"},
+     *     summary="Get vendor by ID or company name (public)",
+     *     operationId="getVendorByIdOrCompanyNamePublic",
+     *     @OA\Parameter(name="id", in="query", @OA\Schema(type="integer")),
+     *     @OA\Parameter(name="company_name", in="query", @OA\Schema(type="string")),
+     *     @OA\Parameter(name="include", in="query", @OA\Schema(type="string")),
+     *     @OA\Response(response=200, description="Vendor retrieved"),
+     *     @OA\Response(response=404, description="Vendor not found"),
+     *     @OA\Response(response=422, description="Validation error"),
+     *     @OA\Response(response=500, description="Server error")
+     * )
      *
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse

@@ -17,8 +17,40 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
+/**
+ * @OA\Schema(
+ *     schema="HomePageData",
+ *     type="object",
+ *     @OA\Property(property="cities", type="array", @OA\Items(ref="#/components/schemas/City")),
+ *     @OA\Property(property="categories", type="array", @OA\Items(ref="#/components/schemas/Category")),
+ *     @OA\Property(property="new_blanes", type="array", @OA\Items(ref="#/components/schemas/Blane")),
+ *     @OA\Property(property="popular_blanes", type="array", @OA\Items(ref="#/components/schemas/Blane")),
+ *     @OA\Property(property="banner", ref="#/components/schemas/Banner"),
+ *     @OA\Property(property="menu_items", type="array", @OA\Items(type="object")),
+ *     @OA\Property(property="featured_blane", type="array", @OA\Items(ref="#/components/schemas/Blane"))
+ * )
+ */
 class HomeController extends BaseController
 {
+    /**
+     * Get homepage data
+     *
+     * @OA\Get(
+     *     path="/front/v1/home",
+     *     tags={"Home"},
+     *     summary="Get homepage data",
+     *     description="Retrieve all data needed for the homepage including cities, categories, new/popular blanes, banners, and menu items",
+     *     operationId="getHomeData",
+     *     @OA\Response(
+     *         response=200,
+     *         description="Homepage data retrieved successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="data", ref="#/components/schemas/HomePageData")
+     *         )
+     *     )
+     * )
+     */
     public function index(): JsonResponse
     {
         return response()->json([

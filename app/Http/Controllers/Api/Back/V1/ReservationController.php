@@ -22,10 +22,104 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth;
 
+/**
+ * @OA\Schema(
+ *     schema="BackReservation",
+ *     type="object",
+ *     @OA\Property(property="id", type="integer", example=1),
+ *     @OA\Property(property="NUM_RES", type="string", example="RES-AB123456"),
+ *     @OA\Property(property="blane_id", type="integer", example=1),
+ *     @OA\Property(property="customers_id", type="integer", example=1),
+ *     @OA\Property(property="vendor_id", type="integer", example=1),
+ *     @OA\Property(property="date", type="string", format="date", example="2024-03-15"),
+ *     @OA\Property(property="end_date", type="string", format="date", example="2024-03-16"),
+ *     @OA\Property(property="time", type="string", format="time", example="14:00"),
+ *     @OA\Property(property="number_persons", type="integer", example=2),
+ *     @OA\Property(property="quantity", type="integer", example=1),
+ *     @OA\Property(property="total_price", type="number", format="float", example=299.99),
+ *     @OA\Property(property="partiel_price", type="number", format="float", example=100.00),
+ *     @OA\Property(property="payment_method", type="string", enum={"cash", "online", "partiel"}, example="online"),
+ *     @OA\Property(property="status", type="string", example="confirmed"),
+ *     @OA\Property(property="source", type="string", enum={"web", "mobile", "agent"}, example="web"),
+ *     @OA\Property(property="comments", type="string", example="Special request"),
+ *     @OA\Property(property="created_at", type="string", format="date-time"),
+ *     @OA\Property(property="updated_at", type="string", format="date-time")
+ * )
+ *
+ * @OA\Schema(
+ *     schema="BackReservationCreateRequest",
+ *     type="object",
+ *     required={"blane_id", "name", "email", "date", "phone", "city", "total_price", "status"},
+ *     @OA\Property(property="blane_id", type="integer", example=1),
+ *     @OA\Property(property="name", type="string", example="John Doe"),
+ *     @OA\Property(property="email", type="string", format="email", example="john@example.com"),
+ *     @OA\Property(property="date", type="string", format="date", example="2024-03-15"),
+ *     @OA\Property(property="phone", type="string", maxLength=20, example="+212600000000"),
+ *     @OA\Property(property="city", type="string", example="Casablanca"),
+ *     @OA\Property(property="time", type="string", format="time", example="14:00"),
+ *     @OA\Property(property="end_date", type="string", format="date", example="2024-03-16"),
+ *     @OA\Property(property="total_price", type="number", format="float", example=299.99),
+ *     @OA\Property(property="partiel_price", type="number", format="float", example=100.00),
+ *     @OA\Property(property="number_persons", type="integer", example=2),
+ *     @OA\Property(property="payment_method", type="string", enum={"cash", "online", "partiel"}, example="online"),
+ *     @OA\Property(property="quantity", type="integer", example=1),
+ *     @OA\Property(property="status", type="string", enum={"confirmed", "pending", "shipped", "cancelled", "paid", "failed"}, example="pending"),
+ *     @OA\Property(property="comments", type="string", example="Special request"),
+ *     @OA\Property(property="source", type="string", enum={"web", "mobile", "agent"}, example="web")
+ * )
+ *
+ * @OA\Schema(
+ *     schema="VendorReservationsOrdersResponse",
+ *     type="object",
+ *     @OA\Property(property="total_reservations", type="integer", example=50),
+ *     @OA\Property(property="total_orders", type="integer", example=30),
+ *     @OA\Property(property="total_revenue", type="number", format="float", example=15000.00),
+ *     @OA\Property(property="average_basket", type="number", format="float", example=187.50),
+ *     @OA\Property(property="reservation_status_distribution", type="array", @OA\Items(
+ *         type="object",
+ *         @OA\Property(property="status", type="string"),
+ *         @OA\Property(property="count", type="integer"),
+ *         @OA\Property(property="percentage", type="number")
+ *     )),
+ *     @OA\Property(property="past_reservations", type="array", @OA\Items(ref="#/components/schemas/BackReservation")),
+ *     @OA\Property(property="future_reservations", type="array", @OA\Items(ref="#/components/schemas/BackReservation")),
+ *     @OA\Property(property="orders", type="array", @OA\Items(ref="#/components/schemas/BackOrder"))
+ * )
+ */
 class ReservationController extends BaseController
 {
     /**
      * Display a listing of the Reservations.
+     *
+     * @OA\Get(
+     *     path="/back/v1/reservations",
+     *     tags={"Back - Reservations"},
+     *     summary="List all reservations",
+     *     description="Get a paginated list of reservations with optional filtering, sorting, and includes",
+     *     operationId="backReservationsIndex",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(name="include", in="query", description="Comma-separated relationships (blane,user,customer)", @OA\Schema(type="string")),
+     *     @OA\Parameter(name="paginationSize", in="query", description="Items per page", @OA\Schema(type="integer", default=10)),
+     *     @OA\Parameter(name="sort_by", in="query", @OA\Schema(type="string", enum={"created_at", "date", "time", "status", "source"})),
+     *     @OA\Parameter(name="sort_order", in="query", @OA\Schema(type="string", enum={"asc", "desc"})),
+     *     @OA\Parameter(name="search", in="query", @OA\Schema(type="string")),
+     *     @OA\Parameter(name="status", in="query", @OA\Schema(type="string")),
+     *     @OA\Parameter(name="blane_id", in="query", @OA\Schema(type="integer")),
+     *     @OA\Parameter(name="date", in="query", @OA\Schema(type="string", format="date")),
+     *     @OA\Parameter(name="email", in="query", @OA\Schema(type="string", format="email")),
+     *     @OA\Parameter(name="source", in="query", @OA\Schema(type="string", enum={"web", "mobile", "agent"})),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Reservations retrieved successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="data", type="array", @OA\Items(ref="#/components/schemas/BackReservation")),
+     *             @OA\Property(property="links", ref="#/components/schemas/PaginationLinks"),
+     *             @OA\Property(property="meta", ref="#/components/schemas/PaginationMeta")
+     *         )
+     *     ),
+     *     @OA\Response(response=400, description="Validation error", @OA\JsonContent(ref="#/components/schemas/ValidationErrorResponse")),
+     *     @OA\Response(response=401, description="Unauthenticated", @OA\JsonContent(ref="#/components/schemas/UnauthorizedResponse"))
+     * )
      *
      * @param Request $request
      */
@@ -83,6 +177,25 @@ class ReservationController extends BaseController
 
     /**
      * Display the specified Reservation.
+     *
+     * @OA\Get(
+     *     path="/back/v1/reservations/{id}",
+     *     tags={"Back - Reservations"},
+     *     summary="Get a specific reservation",
+     *     description="Retrieve a single reservation by ID",
+     *     operationId="backReservationsShow",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
+     *     @OA\Parameter(name="include", in="query", description="Comma-separated relationships (blane,user,customer)", @OA\Schema(type="string")),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Reservation retrieved successfully",
+     *         @OA\JsonContent(@OA\Property(property="data", ref="#/components/schemas/BackReservation"))
+     *     ),
+     *     @OA\Response(response=400, description="Validation error", @OA\JsonContent(ref="#/components/schemas/ValidationErrorResponse")),
+     *     @OA\Response(response=401, description="Unauthenticated", @OA\JsonContent(ref="#/components/schemas/UnauthorizedResponse")),
+     *     @OA\Response(response=404, description="Reservation not found", @OA\JsonContent(ref="#/components/schemas/NotFoundResponse"))
+     * )
      *
      * @param int $id
      * @param Request $request
@@ -184,6 +297,30 @@ class ReservationController extends BaseController
 
     /**
      * Store a newly created Reservation.
+     *
+     * @OA\Post(
+     *     path="/back/v1/reservations",
+     *     tags={"Back - Reservations"},
+     *     summary="Create a new reservation",
+     *     description="Create a new reservation (admin/agent creation)",
+     *     operationId="backReservationsStore",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(ref="#/components/schemas/BackReservationCreateRequest")
+     *     ),
+     *     @OA\Response(
+     *         response=201,
+     *         description="Reservation created successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Reservation created successfully"),
+     *             @OA\Property(property="data", ref="#/components/schemas/BackReservation")
+     *         )
+     *     ),
+     *     @OA\Response(response=400, description="Validation error or daily limit reached", @OA\JsonContent(ref="#/components/schemas/ValidationErrorResponse")),
+     *     @OA\Response(response=401, description="Unauthenticated", @OA\JsonContent(ref="#/components/schemas/UnauthorizedResponse")),
+     *     @OA\Response(response=500, description="Server error", @OA\JsonContent(ref="#/components/schemas/ErrorResponse"))
+     * )
      *
      * @param Request $request
      * @return JsonResponse
@@ -290,6 +427,32 @@ class ReservationController extends BaseController
     /**
      * Update the specified Reservation.
      *
+     * @OA\Put(
+     *     path="/back/v1/reservations/{id}",
+     *     tags={"Back - Reservations"},
+     *     summary="Update a reservation",
+     *     description="Update an existing reservation",
+     *     operationId="backReservationsUpdate",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(ref="#/components/schemas/BackReservationCreateRequest")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Reservation updated successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Reservation updated successfully"),
+     *             @OA\Property(property="data", ref="#/components/schemas/BackReservation")
+     *         )
+     *     ),
+     *     @OA\Response(response=400, description="Validation error or daily limit reached", @OA\JsonContent(ref="#/components/schemas/ValidationErrorResponse")),
+     *     @OA\Response(response=401, description="Unauthenticated", @OA\JsonContent(ref="#/components/schemas/UnauthorizedResponse")),
+     *     @OA\Response(response=404, description="Reservation not found", @OA\JsonContent(ref="#/components/schemas/NotFoundResponse")),
+     *     @OA\Response(response=500, description="Server error", @OA\JsonContent(ref="#/components/schemas/ErrorResponse"))
+     * )
+     *
      * @param Request $request
      * @param int $id
      * @return JsonResponse
@@ -392,6 +555,20 @@ class ReservationController extends BaseController
     /**
      * Remove the specified Reservation.
      *
+     * @OA\Delete(
+     *     path="/back/v1/reservations/{id}",
+     *     tags={"Back - Reservations"},
+     *     summary="Delete a reservation",
+     *     description="Delete a reservation by ID",
+     *     operationId="backReservationsDestroy",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
+     *     @OA\Response(response=204, description="Reservation deleted successfully"),
+     *     @OA\Response(response=401, description="Unauthenticated", @OA\JsonContent(ref="#/components/schemas/UnauthorizedResponse")),
+     *     @OA\Response(response=404, description="Reservation not found", @OA\JsonContent(ref="#/components/schemas/NotFoundResponse")),
+     *     @OA\Response(response=500, description="Server error", @OA\JsonContent(ref="#/components/schemas/ErrorResponse"))
+     * )
+     *
      * @param int $id
      * @return JsonResponse
      */
@@ -484,11 +661,37 @@ class ReservationController extends BaseController
         }
     }
     /**
-     * change the status of a reservation
+     * Change the status of a reservation
+     *
+     * @OA\Patch(
+     *     path="/back/v1/reservations/{id}/status",
+     *     tags={"Back - Reservations"},
+     *     summary="Update reservation status",
+     *     description="Change the status of a reservation",
+     *     operationId="backReservationsUpdateStatus",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"status"},
+     *             @OA\Property(property="status", type="string", example="confirmed", description="Status: waiting, client_confirmed, retailer_confirmed, admin_confirmed, client_cancelled, retailer_cancelled, admin_cancelled, confirmed, pending, shipped, cancelled, paid, failed")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Reservation status updated successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Reservation status updated successfully"),
+     *             @OA\Property(property="data", ref="#/components/schemas/BackReservation")
+     *         )
+     *     ),
+     *     @OA\Response(response=401, description="Unauthenticated", @OA\JsonContent(ref="#/components/schemas/UnauthorizedResponse")),
+     *     @OA\Response(response=404, description="Reservation not found", @OA\JsonContent(ref="#/components/schemas/NotFoundResponse"))
+     * )
      *
      * @param Request $request
      */
-
     public function updateStatus(Request $request, $id): JsonResponse
     {
         $reservation = Reservation::find($id);
@@ -544,6 +747,39 @@ class ReservationController extends BaseController
         ], 200);
     }
 
+    /**
+     * List reservations (alternative endpoint)
+     *
+     * @OA\Get(
+     *     path="/back/v1/reservations/list",
+     *     tags={"Back - Reservations"},
+     *     summary="List reservations with blane images",
+     *     description="Get a paginated list of reservations with optional blane image includes",
+     *     operationId="backReservationsList",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(name="include", in="query", description="Comma-separated relationships (blane,user,customer,blaneImage)", @OA\Schema(type="string")),
+     *     @OA\Parameter(name="paginationSize", in="query", @OA\Schema(type="integer", default=10)),
+     *     @OA\Parameter(name="sort_by", in="query", @OA\Schema(type="string", enum={"created_at", "date", "time", "status", "source"})),
+     *     @OA\Parameter(name="sort_order", in="query", @OA\Schema(type="string", enum={"asc", "desc"})),
+     *     @OA\Parameter(name="search", in="query", @OA\Schema(type="string")),
+     *     @OA\Parameter(name="status", in="query", @OA\Schema(type="string")),
+     *     @OA\Parameter(name="blane_id", in="query", @OA\Schema(type="integer")),
+     *     @OA\Parameter(name="date", in="query", @OA\Schema(type="string", format="date")),
+     *     @OA\Parameter(name="email", in="query", @OA\Schema(type="string", format="email")),
+     *     @OA\Parameter(name="source", in="query", @OA\Schema(type="string", enum={"web", "mobile", "agent"})),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Reservations retrieved successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="data", type="array", @OA\Items(ref="#/components/schemas/BackReservation")),
+     *             @OA\Property(property="links", ref="#/components/schemas/PaginationLinks"),
+     *             @OA\Property(property="meta", ref="#/components/schemas/PaginationMeta")
+     *         )
+     *     ),
+     *     @OA\Response(response=400, description="Validation error", @OA\JsonContent(ref="#/components/schemas/ValidationErrorResponse")),
+     *     @OA\Response(response=401, description="Unauthenticated", @OA\JsonContent(ref="#/components/schemas/UnauthorizedResponse"))
+     * )
+     */
     public function reservationlist(Request $request)
     {
         try {
@@ -600,6 +836,44 @@ class ReservationController extends BaseController
         return ReservationResource::collection($reservations);
     }
 
+    /**
+     * Get user's reservations and orders
+     *
+     * @OA\Get(
+     *     path="/back/v1/reservations-orders",
+     *     tags={"Back - Reservations"},
+     *     summary="Get user reservations and orders",
+     *     description="Get paginated past and future reservations/orders for the authenticated user",
+     *     operationId="backGetReservationsAndOrders",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(name="include", in="query", description="Comma-separated relationships (blane,user,customer,shippingDetails,blaneImage,ratings)", @OA\Schema(type="string")),
+     *     @OA\Parameter(name="paginationSize", in="query", @OA\Schema(type="integer", default=10)),
+     *     @OA\Parameter(name="sort_by", in="query", @OA\Schema(type="string", enum={"created_at", "date", "time", "status", "total_price", "source"})),
+     *     @OA\Parameter(name="sort_order", in="query", @OA\Schema(type="string", enum={"asc", "desc"})),
+     *     @OA\Parameter(name="search", in="query", @OA\Schema(type="string")),
+     *     @OA\Parameter(name="status", in="query", @OA\Schema(type="string")),
+     *     @OA\Parameter(name="blane_id", in="query", @OA\Schema(type="integer")),
+     *     @OA\Parameter(name="date", in="query", @OA\Schema(type="string", format="date")),
+     *     @OA\Parameter(name="email", in="query", @OA\Schema(type="string", format="email")),
+     *     @OA\Parameter(name="source", in="query", @OA\Schema(type="string", enum={"web", "mobile", "agent"})),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Reservations and orders retrieved successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="past_reservations", type="array", @OA\Items(ref="#/components/schemas/BackReservation")),
+     *             @OA\Property(property="past_reservations_meta", ref="#/components/schemas/PaginationMeta"),
+     *             @OA\Property(property="future_reservations", type="array", @OA\Items(ref="#/components/schemas/BackReservation")),
+     *             @OA\Property(property="future_reservations_meta", ref="#/components/schemas/PaginationMeta"),
+     *             @OA\Property(property="past_orders", type="array", @OA\Items(ref="#/components/schemas/BackOrder")),
+     *             @OA\Property(property="past_orders_meta", ref="#/components/schemas/PaginationMeta"),
+     *             @OA\Property(property="future_orders", type="array", @OA\Items(ref="#/components/schemas/BackOrder")),
+     *             @OA\Property(property="future_orders_meta", ref="#/components/schemas/PaginationMeta")
+     *         )
+     *     ),
+     *     @OA\Response(response=400, description="Validation error", @OA\JsonContent(ref="#/components/schemas/ValidationErrorResponse")),
+     *     @OA\Response(response=401, description="Unauthenticated", @OA\JsonContent(ref="#/components/schemas/UnauthorizedResponse"))
+     * )
+     */
     public function getReservationsAndOrders(Request $request)
     {
 
@@ -864,6 +1138,40 @@ class ReservationController extends BaseController
         ]);
     }
 
+    /**
+     * Get vendor's reservations and orders with statistics
+     *
+     * @OA\Get(
+     *     path="/back/v1/vendor/reservations-orders",
+     *     tags={"Back - Reservations"},
+     *     summary="Get vendor reservations and orders",
+     *     description="Get vendor's reservations, orders with statistics including revenue and status distribution",
+     *     operationId="backGetVendorReservationsAndOrders",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(name="commerce_name", in="query", description="Vendor commerce name", @OA\Schema(type="string")),
+     *     @OA\Parameter(name="vendor_id", in="query", description="Vendor user ID", @OA\Schema(type="integer")),
+     *     @OA\Parameter(name="include", in="query", description="Comma-separated relationships (blane,user,customer,shippingDetails,blaneImage,ratings)", @OA\Schema(type="string")),
+     *     @OA\Parameter(name="paginationSize", in="query", @OA\Schema(type="integer", default=10)),
+     *     @OA\Parameter(name="sort_by", in="query", @OA\Schema(type="string", enum={"created_at", "date", "time", "status", "total_price", "source"})),
+     *     @OA\Parameter(name="sort_order", in="query", @OA\Schema(type="string", enum={"asc", "desc"})),
+     *     @OA\Parameter(name="search", in="query", @OA\Schema(type="string")),
+     *     @OA\Parameter(name="status", in="query", @OA\Schema(type="string")),
+     *     @OA\Parameter(name="blane_id", in="query", @OA\Schema(type="integer")),
+     *     @OA\Parameter(name="date", in="query", @OA\Schema(type="string", format="date")),
+     *     @OA\Parameter(name="email", in="query", @OA\Schema(type="string", format="email")),
+     *     @OA\Parameter(name="include_expired", in="query", @OA\Schema(type="boolean")),
+     *     @OA\Parameter(name="period", in="query", @OA\Schema(type="string", enum={"1_month", "3_months", "6_months"})),
+     *     @OA\Parameter(name="source", in="query", @OA\Schema(type="string", enum={"web", "mobile", "agent"})),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Vendor data retrieved successfully",
+     *         @OA\JsonContent(ref="#/components/schemas/VendorReservationsOrdersResponse")
+     *     ),
+     *     @OA\Response(response=400, description="Validation error", @OA\JsonContent(ref="#/components/schemas/ValidationErrorResponse")),
+     *     @OA\Response(response=401, description="Unauthenticated", @OA\JsonContent(ref="#/components/schemas/UnauthorizedResponse")),
+     *     @OA\Response(response=422, description="Vendor identification required", @OA\JsonContent(ref="#/components/schemas/ValidationErrorResponse"))
+     * )
+     */
     public function getVendorReservationsAndOrders(Request $request)
     {
         try {
@@ -1331,6 +1639,36 @@ class ReservationController extends BaseController
     }
 
 
+    /**
+     * Get vendor's pending reservations
+     *
+     * @OA\Get(
+     *     path="/back/v1/vendor/pending-reservations",
+     *     tags={"Back - Reservations"},
+     *     summary="Get vendor pending reservations",
+     *     description="Get pending reservations older than 48 hours for a vendor",
+     *     operationId="backGetVendorPendingReservations",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(name="commerce_name", in="query", required=true, description="Vendor commerce name", @OA\Schema(type="string")),
+     *     @OA\Parameter(name="include", in="query", description="Comma-separated relationships (blane,user,customer,blaneImage)", @OA\Schema(type="string")),
+     *     @OA\Parameter(name="paginationSize", in="query", @OA\Schema(type="integer", default=10)),
+     *     @OA\Parameter(name="sort_by", in="query", @OA\Schema(type="string", enum={"created_at", "date", "time", "status", "source"})),
+     *     @OA\Parameter(name="sort_order", in="query", @OA\Schema(type="string", enum={"asc", "desc"})),
+     *     @OA\Parameter(name="source", in="query", @OA\Schema(type="string", enum={"web", "mobile", "agent"})),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Pending reservations retrieved successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Pending reservations retrieved successfully."),
+     *             @OA\Property(property="data", type="array", @OA\Items(ref="#/components/schemas/BackReservation"))
+     *         )
+     *     ),
+     *     @OA\Response(response=400, description="Validation error", @OA\JsonContent(ref="#/components/schemas/ValidationErrorResponse")),
+     *     @OA\Response(response=401, description="Unauthenticated", @OA\JsonContent(ref="#/components/schemas/UnauthorizedResponse")),
+     *     @OA\Response(response=404, description="No blanes found for vendor", @OA\JsonContent(ref="#/components/schemas/NotFoundResponse"))
+     * )
+     */
     public function getVendorPendingReservations(Request $request): JsonResponse
     {
         try {
@@ -1416,6 +1754,29 @@ class ReservationController extends BaseController
         ], 200);
     }
 
+    /**
+     * Get reservation ID by reservation number
+     *
+     * @OA\Get(
+     *     path="/back/v1/reservations/by-number/{num_res}",
+     *     tags={"Back - Reservations"},
+     *     summary="Get reservation ID by number",
+     *     description="Retrieve reservation ID using the reservation number (NUM_RES)",
+     *     operationId="backGetReservationIdByNumber",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(name="num_res", in="path", required=true, description="Reservation number (e.g., RES-AB123456)", @OA\Schema(type="string")),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Reservation found",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="id", type="integer", example=1),
+     *             @OA\Property(property="NUM_RES", type="string", example="RES-AB123456")
+     *         )
+     *     ),
+     *     @OA\Response(response=401, description="Unauthenticated", @OA\JsonContent(ref="#/components/schemas/UnauthorizedResponse")),
+     *     @OA\Response(response=404, description="Reservation not found", @OA\JsonContent(ref="#/components/schemas/NotFoundResponse"))
+     * )
+     */
     public function getIdByNumber(string $num_res): JsonResponse
     {
         $reservation = Reservation::where('NUM_RES', $num_res)->first();

@@ -16,12 +16,44 @@ use Illuminate\Support\Facades\Log;
 use App\Services\BunnyService;
 use Illuminate\Http\UploadedFile;
 
+/**
+ * @OA\Tag(name="Back - Blane Images", description="Blane image and media management")
+ *
+ * @OA\Schema(
+ *     schema="BlaneImage",
+ *     type="object",
+ *     @OA\Property(property="id", type="integer"),
+ *     @OA\Property(property="blane_id", type="integer"),
+ *     @OA\Property(property="image_url", type="string"),
+ *     @OA\Property(property="media_type", type="string", enum={"image","video"}),
+ *     @OA\Property(property="is_cloudinary", type="boolean"),
+ *     @OA\Property(property="cloudinary_public_id", type="string"),
+ *     @OA\Property(property="created_at", type="string", format="date-time"),
+ *     @OA\Property(property="updated_at", type="string", format="date-time")
+ * )
+ */
 class BlanImageController extends BaseController
 {
     private const VIDEO_EXTENSIONS = ['mp4', 'mov', 'avi', 'mkv', 'wmv', 'flv', 'webm'];
 
     /**
      * Display a listing of the BlaneImages.
+     *
+     * @OA\Get(
+     *     path="/back/v1/blane-images",
+     *     tags={"Back - Blane Images"},
+     *     summary="List all blane images",
+     *     operationId="backBlaneImageIndex",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(name="include", in="query", @OA\Schema(type="string"), description="Relations to include (blane)"),
+     *     @OA\Parameter(name="paginationSize", in="query", @OA\Schema(type="integer")),
+     *     @OA\Parameter(name="sort_by", in="query", @OA\Schema(type="string", enum={"created_at","blane_id"})),
+     *     @OA\Parameter(name="sort_order", in="query", @OA\Schema(type="string", enum={"asc","desc"})),
+     *     @OA\Parameter(name="search", in="query", @OA\Schema(type="string")),
+     *     @OA\Parameter(name="blane_id", in="query", @OA\Schema(type="integer")),
+     *     @OA\Response(response=200, description="Blane images list"),
+     *     @OA\Response(response=400, description="Validation error")
+     * )
      *
      * @param Request $request
      */
@@ -72,6 +104,19 @@ class BlanImageController extends BaseController
     /**
      * Display the specified BlaneImage.
      *
+     * @OA\Get(
+     *     path="/back/v1/blane-images/{id}",
+     *     tags={"Back - Blane Images"},
+     *     summary="Get single blane image",
+     *     operationId="backBlaneImageShow",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
+     *     @OA\Parameter(name="include", in="query", @OA\Schema(type="string")),
+     *     @OA\Response(response=200, description="Blane image details"),
+     *     @OA\Response(response=400, description="Validation error"),
+     *     @OA\Response(response=404, description="Blane image not found")
+     * )
+     *
      * @param int $id
      * @param Request $request
      */
@@ -116,6 +161,23 @@ class BlanImageController extends BaseController
     /**
      * Store a newly created BlaneImage.
      *
+     * @OA\Post(
+     *     path="/back/v1/blane-images",
+     *     tags={"Back - Blane Images"},
+     *     summary="Create a new blane image",
+     *     operationId="backBlaneImageStore",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\RequestBody(required=true, @OA\MediaType(
+     *         mediaType="multipart/form-data",
+     *         @OA\Schema(
+     *             @OA\Property(property="blane_id", type="integer"),
+     *             @OA\Property(property="image_file", type="string", format="binary", description="Image file (jpeg,png,jpg,gif,heic,heif)")
+     *         )
+     *     )),
+     *     @OA\Response(response=201, description="Blane image created"),
+     *     @OA\Response(response=500, description="Server error")
+     * )
+     *
      * @param Request $request
      * @return JsonResponse
      */
@@ -155,6 +217,24 @@ class BlanImageController extends BaseController
     /**
      * Update the specified BlaneImage.
      *
+     * @OA\Put(
+     *     path="/back/v1/blane-images/{id}",
+     *     tags={"Back - Blane Images"},
+     *     summary="Update blane image",
+     *     operationId="backBlaneImageUpdate",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
+     *     @OA\RequestBody(required=true, @OA\JsonContent(
+     *         required={"blane_id", "image_url"},
+     *         @OA\Property(property="blane_id", type="integer"),
+     *         @OA\Property(property="image_url", type="string")
+     *     )),
+     *     @OA\Response(response=200, description="Blane image updated"),
+     *     @OA\Response(response=400, description="Validation error"),
+     *     @OA\Response(response=404, description="Blane image not found"),
+     *     @OA\Response(response=500, description="Server error")
+     * )
+     *
      * @param Request $request
      * @param int $id
      * @return JsonResponse
@@ -191,6 +271,18 @@ class BlanImageController extends BaseController
 
     /**
      * Remove the specified BlaneImage.
+     *
+     * @OA\Delete(
+     *     path="/back/v1/blane-images/{id}",
+     *     tags={"Back - Blane Images"},
+     *     summary="Delete blane image",
+     *     operationId="backBlaneImageDestroy",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
+     *     @OA\Response(response=204, description="Blane image deleted"),
+     *     @OA\Response(response=404, description="Blane image not found"),
+     *     @OA\Response(response=500, description="Server error")
+     * )
      *
      * @param int $id
      * @return JsonResponse
@@ -263,6 +355,29 @@ class BlanImageController extends BaseController
         }
     }
 
+    /**
+     * Upload vendor images (logo, cover, certificates).
+     *
+     * @OA\Post(
+     *     path="/back/v1/vendor/images",
+     *     tags={"Back - Blane Images"},
+     *     summary="Upload vendor images",
+     *     operationId="backVendorImageUpload",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\RequestBody(required=true, @OA\MediaType(
+     *         mediaType="multipart/form-data",
+     *         @OA\Schema(
+     *             required={"type", "image_files"},
+     *             @OA\Property(property="type", type="string", enum={"logo","cover","rcCertificate","RIB"}),
+     *             @OA\Property(property="image_files", type="array", @OA\Items(type="string", format="binary"))
+     *         )
+     *     )),
+     *     @OA\Response(response=200, description="Images uploaded successfully"),
+     *     @OA\Response(response=401, description="Unauthenticated"),
+     *     @OA\Response(response=422, description="Validation error"),
+     *     @OA\Response(response=500, description="Server error")
+     * )
+     */
     public function uploadVendorImages(Request $request)
     {
         $user = auth()->user();
@@ -372,6 +487,29 @@ class BlanImageController extends BaseController
         }
     }
 
+    /**
+     * Upload blane media (images and videos).
+     *
+     * @OA\Post(
+     *     path="/back/v1/blane-images/upload",
+     *     tags={"Back - Blane Images"},
+     *     summary="Upload blane media files",
+     *     operationId="backBlaneMediaUpload",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\RequestBody(required=true, @OA\MediaType(
+     *         mediaType="multipart/form-data",
+     *         @OA\Schema(
+     *             required={"image_file"},
+     *             @OA\Property(property="blane_id", type="integer"),
+     *             @OA\Property(property="image_file", type="array", @OA\Items(type="string", format="binary"), description="Image/video files")
+     *         )
+     *     )),
+     *     @OA\Response(response=201, description="Media uploaded successfully"),
+     *     @OA\Response(response=400, description="Validation error"),
+     *     @OA\Response(response=422, description="Upload failed"),
+     *     @OA\Response(response=500, description="Server error")
+     * )
+     */
     public function uploadBlaneMedia(Request $request): JsonResponse
     {
         try {
@@ -474,6 +612,31 @@ class BlanImageController extends BaseController
         ];
     }
 
+    /**
+     * Update blane images with new uploads and existing image management.
+     *
+     * @OA\Post(
+     *     path="/back/v1/blane-images/{id}/update",
+     *     tags={"Back - Blane Images"},
+     *     summary="Update blane images",
+     *     operationId="backBlaneImageUpdateMedia",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
+     *     @OA\RequestBody(required=true, @OA\MediaType(
+     *         mediaType="multipart/form-data",
+     *         @OA\Schema(
+     *             @OA\Property(property="blane_id", type="integer"),
+     *             @OA\Property(property="image_file", type="array", @OA\Items(type="string", format="binary")),
+     *             @OA\Property(property="existing_images", type="array", @OA\Items(type="string"), description="URLs of images to keep"),
+     *             @OA\Property(property="image_ids_to_update", type="array", @OA\Items(type="integer"), description="IDs of images to replace")
+     *         )
+     *     )),
+     *     @OA\Response(response=200, description="Blane images updated"),
+     *     @OA\Response(response=404, description="Blane not found"),
+     *     @OA\Response(response=422, description="Validation error"),
+     *     @OA\Response(response=500, description="Server error")
+     * )
+     */
     public function updateBlaneImage(Request $request, $id): JsonResponse
     {
         try {

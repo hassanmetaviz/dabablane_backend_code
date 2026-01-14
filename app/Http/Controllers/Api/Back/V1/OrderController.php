@@ -16,12 +16,112 @@ use App\Mail\OrderUpdated;
 use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 
+/**
+ * @OA\Schema(
+ *     schema="BackOrder",
+ *     type="object",
+ *     @OA\Property(property="id", type="integer", example=1),
+ *     @OA\Property(property="NUM_ORD", type="string", example="ORDER-AB123456"),
+ *     @OA\Property(property="blane_id", type="integer", example=1),
+ *     @OA\Property(property="customers_id", type="integer", example=1),
+ *     @OA\Property(property="quantity", type="integer", example=2),
+ *     @OA\Property(property="total_price", type="number", format="float", example=199.99),
+ *     @OA\Property(property="partiel_price", type="number", format="float", example=50.00),
+ *     @OA\Property(property="delivery_address", type="string", example="123 Main St"),
+ *     @OA\Property(property="status", type="string", enum={"pending", "confirmed", "paid", "shipped", "cancelled"}, example="pending"),
+ *     @OA\Property(property="payment_method", type="string", enum={"cash", "online"}, example="cash"),
+ *     @OA\Property(property="source", type="string", enum={"web", "mobile", "agent"}, example="web"),
+ *     @OA\Property(property="blane", ref="#/components/schemas/Blane"),
+ *     @OA\Property(property="customer", ref="#/components/schemas/Customer"),
+ *     @OA\Property(property="created_at", type="string", format="date-time"),
+ *     @OA\Property(property="updated_at", type="string", format="date-time")
+ * )
+ *
+ * @OA\Schema(
+ *     schema="Customer",
+ *     type="object",
+ *     @OA\Property(property="id", type="integer", example=1),
+ *     @OA\Property(property="name", type="string", example="John Doe"),
+ *     @OA\Property(property="email", type="string", format="email", example="john@example.com"),
+ *     @OA\Property(property="phone", type="string", example="+212612345678"),
+ *     @OA\Property(property="city", type="string", example="Casablanca")
+ * )
+ */
 class OrderController extends BaseController
 {
     /**
      * Display a listing of the Orders.
      *
-     * @param Request $request
+     * @OA\Get(
+     *     path="/back/v1/orders",
+     *     tags={"Orders"},
+     *     summary="Get all orders (Admin)",
+     *     description="Retrieve a paginated list of all orders with optional filtering, sorting, and related resources",
+     *     operationId="getBackOrders",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="include",
+     *         in="query",
+     *         description="Include related resources (comma-separated: blane,user,shippingDetails,customer)",
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Parameter(
+     *         name="paginationSize",
+     *         in="query",
+     *         description="Number of items per page",
+     *         @OA\Schema(type="integer", minimum=1, default=10)
+     *     ),
+     *     @OA\Parameter(
+     *         name="sort_by",
+     *         in="query",
+     *         description="Sort field",
+     *         @OA\Schema(type="string", enum={"created_at", "total_price", "status", "source"})
+     *     ),
+     *     @OA\Parameter(
+     *         name="sort_order",
+     *         in="query",
+     *         description="Sort order",
+     *         @OA\Schema(type="string", enum={"asc", "desc"})
+     *     ),
+     *     @OA\Parameter(
+     *         name="status",
+     *         in="query",
+     *         description="Filter by order status",
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Parameter(
+     *         name="blane_id",
+     *         in="query",
+     *         description="Filter by blane ID",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Parameter(
+     *         name="source",
+     *         in="query",
+     *         description="Filter by order source",
+     *         @OA\Schema(type="string", enum={"web", "mobile", "agent"})
+     *     ),
+     *     @OA\Parameter(
+     *         name="search",
+     *         in="query",
+     *         description="Search term",
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Orders retrieved successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="data", type="array", @OA\Items(ref="#/components/schemas/BackOrder")),
+     *             @OA\Property(property="links", ref="#/components/schemas/PaginationLinks"),
+     *             @OA\Property(property="meta", ref="#/components/schemas/PaginationMeta")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Unauthenticated",
+     *         @OA\JsonContent(ref="#/components/schemas/UnauthorizedResponse")
+     *     )
+     * )
      */
     public function index(Request $request)
     {

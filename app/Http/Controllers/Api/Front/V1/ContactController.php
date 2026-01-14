@@ -14,10 +14,65 @@ use App\Mail\ContactFormSubmission;
 use App\Notifications\ContactFormNotification;
 use App\Models\User;
 
+/**
+ * @OA\Schema(
+ *     schema="Contact",
+ *     type="object",
+ *     @OA\Property(property="id", type="integer", example=1),
+ *     @OA\Property(property="fullName", type="string", example="John Doe"),
+ *     @OA\Property(property="email", type="string", format="email", example="john@example.com"),
+ *     @OA\Property(property="phone", type="string", example="+212612345678"),
+ *     @OA\Property(property="type", type="string", enum={"client", "commercant"}, example="client"),
+ *     @OA\Property(property="subject", type="string", example="General Inquiry"),
+ *     @OA\Property(property="message", type="string", example="I would like to know more about..."),
+ *     @OA\Property(property="status", type="string", enum={"pending", "responded", "closed"}, example="pending"),
+ *     @OA\Property(property="created_at", type="string", format="date-time"),
+ *     @OA\Property(property="updated_at", type="string", format="date-time")
+ * )
+ */
 class ContactController extends BaseController
 {
     /**
      * Store a newly created contact message from guest users.
+     *
+     * @OA\Post(
+     *     path="/front/v1/contact",
+     *     tags={"Contact"},
+     *     summary="Submit contact form",
+     *     description="Submit a contact form message from guest users",
+     *     operationId="submitContact",
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"fullName", "email", "subject", "message"},
+     *             @OA\Property(property="fullName", type="string", maxLength=255, example="John Doe"),
+     *             @OA\Property(property="email", type="string", format="email", maxLength=255, example="john@example.com"),
+     *             @OA\Property(property="phone", type="string", maxLength=20, example="+212612345678"),
+     *             @OA\Property(property="type", type="string", enum={"client", "commercant"}, example="client"),
+     *             @OA\Property(property="subject", type="string", maxLength=255, example="General Inquiry"),
+     *             @OA\Property(property="message", type="string", maxLength=1000, example="I would like to know more about your services...")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=201,
+     *         description="Contact message submitted successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Thank you for your message. We will contact you soon."),
+     *             @OA\Property(property="data", ref="#/components/schemas/Contact")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Validation error",
+     *         @OA\JsonContent(ref="#/components/schemas/ValidationErrorResponse")
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Server error",
+     *         @OA\JsonContent(ref="#/components/schemas/ErrorResponse")
+     *     )
+     * )
      *
      * @param Request $request
      * @return JsonResponse

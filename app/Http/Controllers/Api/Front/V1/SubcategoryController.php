@@ -11,6 +11,54 @@ use Illuminate\Validation\ValidationException;
 
 class SubcategoryController extends BaseController
 {
+    /**
+     * Display a listing of the subcategories.
+     *
+     * @OA\Get(
+     *     path="/front/v1/subcategories",
+     *     tags={"Subcategories"},
+     *     summary="Get all subcategories",
+     *     description="Retrieve a list of all active subcategories",
+     *     operationId="getSubcategories",
+     *     @OA\Parameter(
+     *         name="include",
+     *         in="query",
+     *         description="Include related resources (category)",
+     *         @OA\Schema(type="string", enum={"category"})
+     *     ),
+     *     @OA\Parameter(
+     *         name="sort_by",
+     *         in="query",
+     *         description="Sort field",
+     *         @OA\Schema(type="string", enum={"created_at", "name"})
+     *     ),
+     *     @OA\Parameter(
+     *         name="sort_order",
+     *         in="query",
+     *         description="Sort order",
+     *         @OA\Schema(type="string", enum={"asc", "desc"})
+     *     ),
+     *     @OA\Parameter(
+     *         name="category_id",
+     *         in="query",
+     *         description="Filter by category ID",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Parameter(
+     *         name="search",
+     *         in="query",
+     *         description="Search term",
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Subcategories retrieved successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="data", type="array", @OA\Items(ref="#/components/schemas/Subcategory"))
+     *         )
+     *     )
+     * )
+     */
     public function index(Request $request)
     {
         // Validate input parameters
@@ -76,16 +124,52 @@ class SubcategoryController extends BaseController
         }
     }
 
+    /**
+     * Display the specified subcategory.
+     *
+     * @OA\Get(
+     *     path="/front/v1/subcategories/{id}",
+     *     tags={"Subcategories"},
+     *     summary="Get a specific subcategory",
+     *     description="Retrieve a single subcategory by ID",
+     *     operationId="getSubcategory",
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="Subcategory ID",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Parameter(
+     *         name="include",
+     *         in="query",
+     *         description="Include related resources (category)",
+     *         @OA\Schema(type="string", enum={"category"})
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Subcategory retrieved successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="data", ref="#/components/schemas/Subcategory")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Subcategory not found",
+     *         @OA\JsonContent(ref="#/components/schemas/NotFoundResponse")
+     *     )
+     * )
+     */
     public function show($id, Request $request)
     {
         try {
             $request->validate([
-                'include' => 'nullable|string|in:category',  
+                'include' => 'nullable|string|in:category',
             ]);
         } catch (ValidationException $e) {
             return response()->json(['error' => $e->errors()], 400);
         }
-    
+
         $query = Subcategory::query();
     
         // Only show active subcategories in frontend

@@ -10,10 +10,42 @@ use App\Http\Resources\Back\V1\UserResource;
 use Illuminate\Validation\ValidationException;
 use Spatie\Permission\Models\Role;
 
+/**
+ * @OA\Schema(
+ *     schema="BackUser",
+ *     type="object",
+ *     @OA\Property(property="id", type="integer", example=1),
+ *     @OA\Property(property="name", type="string", example="John Doe"),
+ *     @OA\Property(property="email", type="string", format="email", example="john@example.com"),
+ *     @OA\Property(property="roles", type="array", @OA\Items(type="string"), example={"admin", "user"}),
+ *     @OA\Property(property="created_at", type="string", format="date-time"),
+ *     @OA\Property(property="updated_at", type="string", format="date-time")
+ * )
+ */
 class UserController extends BaseController
 {
     /**
      * Display a listing of the users.
+     *
+     * @OA\Get(
+     *     path="/back/v1/users",
+     *     tags={"Back - Users"},
+     *     summary="List all users",
+     *     operationId="backUsersIndex",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(name="paginationSize", in="query", @OA\Schema(type="integer", default=10)),
+     *     @OA\Parameter(name="sort_by", in="query", @OA\Schema(type="string", enum={"created_at", "name", "email"})),
+     *     @OA\Parameter(name="sort_order", in="query", @OA\Schema(type="string", enum={"asc", "desc"})),
+     *     @OA\Parameter(name="search", in="query", @OA\Schema(type="string")),
+     *     @OA\Parameter(name="role", in="query", description="Filter by role", @OA\Schema(type="string")),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Users retrieved",
+     *         @OA\JsonContent(@OA\Property(property="data", type="array", @OA\Items(ref="#/components/schemas/BackUser")), @OA\Property(property="links", ref="#/components/schemas/PaginationLinks"), @OA\Property(property="meta", ref="#/components/schemas/PaginationMeta"))
+     *     ),
+     *     @OA\Response(response=400, description="Validation error", @OA\JsonContent(ref="#/components/schemas/ValidationErrorResponse")),
+     *     @OA\Response(response=401, description="Unauthenticated", @OA\JsonContent(ref="#/components/schemas/UnauthorizedResponse"))
+     * )
      *
      * @param Request $request
      */
@@ -46,6 +78,18 @@ class UserController extends BaseController
     /**
      * Display the specified user.
      *
+     * @OA\Get(
+     *     path="/back/v1/users/{id}",
+     *     tags={"Back - Users"},
+     *     summary="Get a specific user",
+     *     operationId="backUsersShow",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
+     *     @OA\Response(response=200, description="User retrieved", @OA\JsonContent(@OA\Property(property="message", type="string"), @OA\Property(property="data", ref="#/components/schemas/BackUser"))),
+     *     @OA\Response(response=401, description="Unauthenticated", @OA\JsonContent(ref="#/components/schemas/UnauthorizedResponse")),
+     *     @OA\Response(response=404, description="Not found", @OA\JsonContent(ref="#/components/schemas/NotFoundResponse"))
+     * )
+     *
      * @param int $id
      * @return JsonResponse
      */
@@ -65,6 +109,26 @@ class UserController extends BaseController
 
     /**
      * Store a newly created user.
+     *
+     * @OA\Post(
+     *     path="/back/v1/users",
+     *     tags={"Back - Users"},
+     *     summary="Create a new user",
+     *     operationId="backUsersStore",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\RequestBody(required=true, @OA\JsonContent(
+     *         required={"name", "email", "password", "password_confirmation"},
+     *         @OA\Property(property="name", type="string", maxLength=255, example="John Doe"),
+     *         @OA\Property(property="email", type="string", format="email", maxLength=255, example="john@example.com"),
+     *         @OA\Property(property="password", type="string", minLength=6, example="password123"),
+     *         @OA\Property(property="password_confirmation", type="string", example="password123"),
+     *         @OA\Property(property="roles", type="array", @OA\Items(type="string"), example={"admin"})
+     *     )),
+     *     @OA\Response(response=201, description="User created", @OA\JsonContent(@OA\Property(property="message", type="string"), @OA\Property(property="data", ref="#/components/schemas/BackUser"))),
+     *     @OA\Response(response=400, description="Validation error", @OA\JsonContent(ref="#/components/schemas/ValidationErrorResponse")),
+     *     @OA\Response(response=401, description="Unauthenticated", @OA\JsonContent(ref="#/components/schemas/UnauthorizedResponse")),
+     *     @OA\Response(response=500, description="Server error", @OA\JsonContent(ref="#/components/schemas/ErrorResponse"))
+     * )
      *
      * @param Request $request
      * @return JsonResponse
@@ -105,6 +169,27 @@ class UserController extends BaseController
 
     /**
      * Update the specified user.
+     *
+     * @OA\Put(
+     *     path="/back/v1/users/{id}",
+     *     tags={"Back - Users"},
+     *     summary="Update a user",
+     *     operationId="backUsersUpdate",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
+     *     @OA\RequestBody(required=true, @OA\JsonContent(
+     *         @OA\Property(property="name", type="string", maxLength=255),
+     *         @OA\Property(property="email", type="string", format="email", maxLength=255),
+     *         @OA\Property(property="password", type="string", minLength=6),
+     *         @OA\Property(property="password_confirmation", type="string"),
+     *         @OA\Property(property="roles", type="array", @OA\Items(type="string"))
+     *     )),
+     *     @OA\Response(response=200, description="User updated", @OA\JsonContent(@OA\Property(property="message", type="string"), @OA\Property(property="data", ref="#/components/schemas/BackUser"))),
+     *     @OA\Response(response=400, description="Validation error", @OA\JsonContent(ref="#/components/schemas/ValidationErrorResponse")),
+     *     @OA\Response(response=401, description="Unauthenticated", @OA\JsonContent(ref="#/components/schemas/UnauthorizedResponse")),
+     *     @OA\Response(response=404, description="Not found", @OA\JsonContent(ref="#/components/schemas/NotFoundResponse")),
+     *     @OA\Response(response=500, description="Server error", @OA\JsonContent(ref="#/components/schemas/ErrorResponse"))
+     * )
      *
      * @param Request $request
      * @param int $id
@@ -156,6 +241,19 @@ class UserController extends BaseController
     /**
      * Remove the specified user.
      *
+     * @OA\Delete(
+     *     path="/back/v1/users/{id}",
+     *     tags={"Back - Users"},
+     *     summary="Delete a user",
+     *     operationId="backUsersDestroy",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
+     *     @OA\Response(response=204, description="User deleted"),
+     *     @OA\Response(response=401, description="Unauthenticated", @OA\JsonContent(ref="#/components/schemas/UnauthorizedResponse")),
+     *     @OA\Response(response=404, description="Not found", @OA\JsonContent(ref="#/components/schemas/NotFoundResponse")),
+     *     @OA\Response(response=500, description="Server error", @OA\JsonContent(ref="#/components/schemas/ErrorResponse"))
+     * )
+     *
      * @param int $id
      * @return JsonResponse
      */
@@ -181,6 +279,24 @@ class UserController extends BaseController
 
     /**
      * Assign roles to a user.
+     *
+     * @OA\Post(
+     *     path="/back/v1/users/{id}/roles",
+     *     tags={"Back - Users"},
+     *     summary="Assign roles to a user",
+     *     operationId="backUsersAssignRoles",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
+     *     @OA\RequestBody(required=true, @OA\JsonContent(
+     *         required={"roles"},
+     *         @OA\Property(property="roles", type="array", @OA\Items(type="string"), example={"admin", "user"})
+     *     )),
+     *     @OA\Response(response=200, description="Roles assigned", @OA\JsonContent(@OA\Property(property="message", type="string"), @OA\Property(property="data", ref="#/components/schemas/BackUser"))),
+     *     @OA\Response(response=400, description="Validation error", @OA\JsonContent(ref="#/components/schemas/ValidationErrorResponse")),
+     *     @OA\Response(response=401, description="Unauthenticated", @OA\JsonContent(ref="#/components/schemas/UnauthorizedResponse")),
+     *     @OA\Response(response=404, description="Not found", @OA\JsonContent(ref="#/components/schemas/NotFoundResponse")),
+     *     @OA\Response(response=500, description="Server error", @OA\JsonContent(ref="#/components/schemas/ErrorResponse"))
+     * )
      *
      * @param Request $request
      * @param int $id

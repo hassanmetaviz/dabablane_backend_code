@@ -9,10 +9,45 @@ use App\Http\Controllers\Api\BaseController;
 use Illuminate\Validation\ValidationException;
 use App\Http\Resources\Back\V1\AddressResource;
 
+/**
+ * @OA\Schema(
+ *     schema="BackAddress",
+ *     type="object",
+ *     @OA\Property(property="id", type="integer", example=1),
+ *     @OA\Property(property="user_id", type="integer", example=1),
+ *     @OA\Property(property="city", type="string", example="Casablanca"),
+ *     @OA\Property(property="address", type="string", example="123 Main Street"),
+ *     @OA\Property(property="zip_code", type="string", example="20000"),
+ *     @OA\Property(property="created_at", type="string", format="date-time"),
+ *     @OA\Property(property="updated_at", type="string", format="date-time")
+ * )
+ */
 class AddressController extends BaseController
 {
     /**
      * Display a listing of the Addresses.
+     *
+     * @OA\Get(
+     *     path="/back/v1/addresses",
+     *     tags={"Back - Addresses"},
+     *     summary="List all addresses",
+     *     operationId="backAddressesIndex",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(name="include", in="query", description="Include relationships (user, city, shippingDetails)", @OA\Schema(type="string")),
+     *     @OA\Parameter(name="paginationSize", in="query", @OA\Schema(type="integer", default=10)),
+     *     @OA\Parameter(name="sort_by", in="query", @OA\Schema(type="string", enum={"created_at", "city", "zip_code"})),
+     *     @OA\Parameter(name="sort_order", in="query", @OA\Schema(type="string", enum={"asc", "desc"})),
+     *     @OA\Parameter(name="search", in="query", @OA\Schema(type="string")),
+     *     @OA\Parameter(name="city", in="query", @OA\Schema(type="string")),
+     *     @OA\Parameter(name="zip_code", in="query", @OA\Schema(type="string")),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Addresses retrieved",
+     *         @OA\JsonContent(@OA\Property(property="data", type="array", @OA\Items(ref="#/components/schemas/BackAddress")), @OA\Property(property="links", ref="#/components/schemas/PaginationLinks"), @OA\Property(property="meta", ref="#/components/schemas/PaginationMeta"))
+     *     ),
+     *     @OA\Response(response=400, description="Validation error", @OA\JsonContent(ref="#/components/schemas/ValidationErrorResponse")),
+     *     @OA\Response(response=401, description="Unauthenticated", @OA\JsonContent(ref="#/components/schemas/UnauthorizedResponse"))
+     * )
      *
      * @param Request $request
      */
@@ -64,6 +99,20 @@ class AddressController extends BaseController
     /**
      * Display the specified Address.
      *
+     * @OA\Get(
+     *     path="/back/v1/addresses/{id}",
+     *     tags={"Back - Addresses"},
+     *     summary="Get a specific address",
+     *     operationId="backAddressesShow",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
+     *     @OA\Parameter(name="include", in="query", @OA\Schema(type="string")),
+     *     @OA\Response(response=200, description="Address retrieved", @OA\JsonContent(@OA\Property(property="data", ref="#/components/schemas/BackAddress"))),
+     *     @OA\Response(response=400, description="Validation error", @OA\JsonContent(ref="#/components/schemas/ValidationErrorResponse")),
+     *     @OA\Response(response=401, description="Unauthenticated", @OA\JsonContent(ref="#/components/schemas/UnauthorizedResponse")),
+     *     @OA\Response(response=404, description="Not found", @OA\JsonContent(ref="#/components/schemas/NotFoundResponse"))
+     * )
+     *
      * @param int $id
      * @param Request $request
      */
@@ -99,6 +148,25 @@ class AddressController extends BaseController
     /**
      * Store a newly created Address.
      *
+     * @OA\Post(
+     *     path="/back/v1/addresses",
+     *     tags={"Back - Addresses"},
+     *     summary="Create a new address",
+     *     operationId="backAddressesStore",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\RequestBody(required=true, @OA\JsonContent(
+     *         required={"city", "user_id", "address", "zip_code"},
+     *         @OA\Property(property="city", type="string", maxLength=255, example="Casablanca"),
+     *         @OA\Property(property="user_id", type="integer", example=1),
+     *         @OA\Property(property="address", type="string", maxLength=255, example="123 Main Street"),
+     *         @OA\Property(property="zip_code", type="string", maxLength=10, example="20000")
+     *     )),
+     *     @OA\Response(response=201, description="Address created", @OA\JsonContent(@OA\Property(property="message", type="string"), @OA\Property(property="data", ref="#/components/schemas/BackAddress"))),
+     *     @OA\Response(response=400, description="Validation error", @OA\JsonContent(ref="#/components/schemas/ValidationErrorResponse")),
+     *     @OA\Response(response=401, description="Unauthenticated", @OA\JsonContent(ref="#/components/schemas/UnauthorizedResponse")),
+     *     @OA\Response(response=500, description="Server error", @OA\JsonContent(ref="#/components/schemas/ErrorResponse"))
+     * )
+     *
      * @param Request $request
      * @return JsonResponse
      */
@@ -130,6 +198,27 @@ class AddressController extends BaseController
 
     /**
      * Update the specified Address.
+     *
+     * @OA\Put(
+     *     path="/back/v1/addresses/{id}",
+     *     tags={"Back - Addresses"},
+     *     summary="Update an address",
+     *     operationId="backAddressesUpdate",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
+     *     @OA\RequestBody(required=true, @OA\JsonContent(
+     *         required={"city", "user_id", "address", "zip_code"},
+     *         @OA\Property(property="city", type="string", maxLength=255),
+     *         @OA\Property(property="user_id", type="integer"),
+     *         @OA\Property(property="address", type="string", maxLength=255),
+     *         @OA\Property(property="zip_code", type="string", maxLength=10)
+     *     )),
+     *     @OA\Response(response=200, description="Address updated", @OA\JsonContent(@OA\Property(property="message", type="string"), @OA\Property(property="data", ref="#/components/schemas/BackAddress"))),
+     *     @OA\Response(response=400, description="Validation error", @OA\JsonContent(ref="#/components/schemas/ValidationErrorResponse")),
+     *     @OA\Response(response=401, description="Unauthenticated", @OA\JsonContent(ref="#/components/schemas/UnauthorizedResponse")),
+     *     @OA\Response(response=404, description="Not found", @OA\JsonContent(ref="#/components/schemas/NotFoundResponse")),
+     *     @OA\Response(response=500, description="Server error", @OA\JsonContent(ref="#/components/schemas/ErrorResponse"))
+     * )
      *
      * @param Request $request
      * @param int $id
@@ -169,6 +258,19 @@ class AddressController extends BaseController
 
     /**
      * Remove the specified Address.
+     *
+     * @OA\Delete(
+     *     path="/back/v1/addresses/{id}",
+     *     tags={"Back - Addresses"},
+     *     summary="Delete an address",
+     *     operationId="backAddressesDestroy",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
+     *     @OA\Response(response=204, description="Address deleted"),
+     *     @OA\Response(response=401, description="Unauthenticated", @OA\JsonContent(ref="#/components/schemas/UnauthorizedResponse")),
+     *     @OA\Response(response=404, description="Not found", @OA\JsonContent(ref="#/components/schemas/NotFoundResponse")),
+     *     @OA\Response(response=500, description="Server error", @OA\JsonContent(ref="#/components/schemas/ErrorResponse"))
+     * )
      *
      * @param int $id
      * @return JsonResponse

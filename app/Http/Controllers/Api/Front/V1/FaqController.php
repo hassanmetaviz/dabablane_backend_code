@@ -9,10 +9,54 @@ use App\Http\Controllers\Api\BaseController;
 use Illuminate\Validation\ValidationException;
 use App\Http\Resources\Front\V1\FAQResource;
 
+/**
+ * @OA\Schema(
+ *     schema="FAQ",
+ *     type="object",
+ *     @OA\Property(property="id", type="integer", example=1),
+ *     @OA\Property(property="question", type="string", example="How do I make a reservation?"),
+ *     @OA\Property(property="answer", type="string", example="To make a reservation, simply select your desired service..."),
+ *     @OA\Property(property="created_at", type="string", format="date-time"),
+ *     @OA\Property(property="updated_at", type="string", format="date-time")
+ * )
+ */
 class FAQController extends BaseController
 {
     /**
      * Display a listing of the FAQs.
+     *
+     * @OA\Get(
+     *     path="/front/v1/faqs",
+     *     tags={"FAQs"},
+     *     summary="Get all FAQs",
+     *     description="Retrieve a list of all frequently asked questions",
+     *     operationId="getFaqs",
+     *     @OA\Parameter(
+     *         name="sort_by",
+     *         in="query",
+     *         description="Sort field",
+     *         @OA\Schema(type="string", enum={"created_at", "question"})
+     *     ),
+     *     @OA\Parameter(
+     *         name="sort_order",
+     *         in="query",
+     *         description="Sort order",
+     *         @OA\Schema(type="string", enum={"asc", "desc"})
+     *     ),
+     *     @OA\Parameter(
+     *         name="search",
+     *         in="query",
+     *         description="Search term",
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="FAQs retrieved successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="data", type="array", @OA\Items(ref="#/components/schemas/FAQ"))
+     *         )
+     *     )
+     * )
      *
      * @param Request $request
      */
@@ -41,6 +85,33 @@ class FAQController extends BaseController
 
     /**
      * Display the specified FAQ.
+     *
+     * @OA\Get(
+     *     path="/front/v1/faqs/{id}",
+     *     tags={"FAQs"},
+     *     summary="Get a specific FAQ",
+     *     description="Retrieve a single FAQ by ID",
+     *     operationId="getFaq",
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="FAQ ID",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="FAQ retrieved successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="data", ref="#/components/schemas/FAQ")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="FAQ not found",
+     *         @OA\JsonContent(ref="#/components/schemas/NotFoundResponse")
+     *     )
+     * )
      *
      * @param int $id
      * @param Request $request

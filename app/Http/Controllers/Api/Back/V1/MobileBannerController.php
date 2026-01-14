@@ -11,10 +11,42 @@ use App\Http\Resources\Back\V1\MobileBannerResource;
 use App\Services\BunnyService;
 use Illuminate\Support\Facades\Validator;
 
+/**
+ * @OA\Schema(
+ *     schema="MobileBanner",
+ *     type="object",
+ *     @OA\Property(property="id", type="integer"),
+ *     @OA\Property(property="title", type="string"),
+ *     @OA\Property(property="description", type="string"),
+ *     @OA\Property(property="image_url", type="string"),
+ *     @OA\Property(property="link", type="string"),
+ *     @OA\Property(property="order", type="integer"),
+ *     @OA\Property(property="is_active", type="boolean"),
+ *     @OA\Property(property="start_date", type="string", format="date"),
+ *     @OA\Property(property="end_date", type="string", format="date"),
+ *     @OA\Property(property="created_at", type="string", format="date-time"),
+ *     @OA\Property(property="updated_at", type="string", format="date-time")
+ * )
+ */
 class MobileBannerController extends BaseController
 {
     /**
      * Display a listing of the MobileBanners.
+     *
+     * @OA\Get(
+     *     path="/back/v1/mobile-banners",
+     *     tags={"Back - Mobile Banners"},
+     *     summary="List all mobile banners",
+     *     operationId="backMobileBannersIndex",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(name="paginationSize", in="query", @OA\Schema(type="integer")),
+     *     @OA\Parameter(name="sort_by", in="query", @OA\Schema(type="string", enum={"created_at", "order", "title"})),
+     *     @OA\Parameter(name="sort_order", in="query", @OA\Schema(type="string", enum={"asc", "desc"})),
+     *     @OA\Parameter(name="search", in="query", @OA\Schema(type="string")),
+     *     @OA\Parameter(name="is_active", in="query", @OA\Schema(type="boolean")),
+     *     @OA\Response(response=200, description="Mobile banners retrieved", @OA\JsonContent(@OA\Property(property="data", type="array", @OA\Items(ref="#/components/schemas/MobileBanner")))),
+     *     @OA\Response(response=400, description="Validation error")
+     * )
      *
      * @param Request $request
      */
@@ -66,6 +98,17 @@ class MobileBannerController extends BaseController
     /**
      * Display the specified MobileBanner.
      *
+     * @OA\Get(
+     *     path="/back/v1/mobile-banners/{id}",
+     *     tags={"Back - Mobile Banners"},
+     *     summary="Get a specific mobile banner",
+     *     operationId="backMobileBannersShow",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
+     *     @OA\Response(response=200, description="Mobile banner retrieved"),
+     *     @OA\Response(response=404, description="Not found")
+     * )
+     *
      * @param int $id
      * @param Request $request
      */
@@ -102,6 +145,31 @@ class MobileBannerController extends BaseController
 
     /**
      * Store a newly created MobileBanner.
+     *
+     * @OA\Post(
+     *     path="/back/v1/mobile-banners",
+     *     tags={"Back - Mobile Banners"},
+     *     summary="Create a new mobile banner",
+     *     operationId="backMobileBannersStore",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\RequestBody(required=true, @OA\MediaType(
+     *         mediaType="multipart/form-data",
+     *         @OA\Schema(
+     *             required={"title", "image"},
+     *             @OA\Property(property="title", type="string"),
+     *             @OA\Property(property="description", type="string"),
+     *             @OA\Property(property="image", type="string", format="binary"),
+     *             @OA\Property(property="link", type="string"),
+     *             @OA\Property(property="order", type="integer"),
+     *             @OA\Property(property="is_active", type="boolean"),
+     *             @OA\Property(property="start_date", type="string", format="date"),
+     *             @OA\Property(property="end_date", type="string", format="date")
+     *         )
+     *     )),
+     *     @OA\Response(response=201, description="Mobile banner created"),
+     *     @OA\Response(response=422, description="Validation error"),
+     *     @OA\Response(response=500, description="Server error")
+     * )
      *
      * @param Request $request
      * @return JsonResponse
@@ -178,6 +246,32 @@ class MobileBannerController extends BaseController
 
     /**
      * Update the specified MobileBanner.
+     *
+     * @OA\Put(
+     *     path="/back/v1/mobile-banners/{id}",
+     *     tags={"Back - Mobile Banners"},
+     *     summary="Update a mobile banner",
+     *     operationId="backMobileBannersUpdate",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
+     *     @OA\RequestBody(required=true, @OA\MediaType(
+     *         mediaType="multipart/form-data",
+     *         @OA\Schema(
+     *             @OA\Property(property="title", type="string"),
+     *             @OA\Property(property="description", type="string"),
+     *             @OA\Property(property="image", type="string", format="binary"),
+     *             @OA\Property(property="link", type="string"),
+     *             @OA\Property(property="order", type="integer"),
+     *             @OA\Property(property="is_active", type="boolean"),
+     *             @OA\Property(property="start_date", type="string", format="date"),
+     *             @OA\Property(property="end_date", type="string", format="date")
+     *         )
+     *     )),
+     *     @OA\Response(response=200, description="Mobile banner updated"),
+     *     @OA\Response(response=404, description="Not found"),
+     *     @OA\Response(response=422, description="Validation error"),
+     *     @OA\Response(response=500, description="Server error")
+     * )
      *
      * @param Request $request
      * @param int $id
@@ -269,6 +363,18 @@ class MobileBannerController extends BaseController
 
     /**
      * Remove the specified MobileBanner.
+     *
+     * @OA\Delete(
+     *     path="/back/v1/mobile-banners/{id}",
+     *     tags={"Back - Mobile Banners"},
+     *     summary="Delete a mobile banner",
+     *     operationId="backMobileBannersDestroy",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
+     *     @OA\Response(response=200, description="Mobile banner deleted"),
+     *     @OA\Response(response=404, description="Not found"),
+     *     @OA\Response(response=500, description="Server error")
+     * )
      *
      * @param int $id
      * @return JsonResponse

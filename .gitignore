@@ -22,3 +22,19 @@ yarn-error.log
 /.vscode
 /.zed
 .zip
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+nul
+Thumbs.db
+
+# Claude Code
+.claude/
+
+# Temporary files
+tmp*
+tmpclaude*

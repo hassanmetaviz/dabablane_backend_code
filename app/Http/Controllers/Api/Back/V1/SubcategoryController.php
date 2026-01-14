@@ -8,10 +8,51 @@ use App\Models\Subcategory;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 
+/**
+ * @OA\Schema(
+ *     schema="BackSubcategory",
+ *     type="object",
+ *     @OA\Property(property="id", type="integer", example=1),
+ *     @OA\Property(property="category_id", type="integer", example=1),
+ *     @OA\Property(property="name", type="string", example="Smartphones"),
+ *     @OA\Property(property="description", type="string", example="Mobile phones and accessories"),
+ *     @OA\Property(property="status", type="string", enum={"active", "inactive"}, example="active"),
+ *     @OA\Property(property="category", ref="#/components/schemas/Category"),
+ *     @OA\Property(property="created_at", type="string", format="date-time"),
+ *     @OA\Property(property="updated_at", type="string", format="date-time")
+ * )
+ */
 class SubcategoryController extends BaseController
 {
     /**
      * Display a listing of the subcategories.
+     *
+     * @OA\Get(
+     *     path="/back/v1/subcategories",
+     *     tags={"Back - Subcategories"},
+     *     summary="List all subcategories",
+     *     description="Get a paginated list of subcategories with optional category include",
+     *     operationId="backSubcategoriesIndex",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(name="include", in="query", description="Include category", @OA\Schema(type="string", enum={"category"})),
+     *     @OA\Parameter(name="paginationSize", in="query", @OA\Schema(type="integer", default=10)),
+     *     @OA\Parameter(name="sort_by", in="query", @OA\Schema(type="string", enum={"created_at", "name"})),
+     *     @OA\Parameter(name="sort_order", in="query", @OA\Schema(type="string", enum={"asc", "desc"})),
+     *     @OA\Parameter(name="search", in="query", @OA\Schema(type="string")),
+     *     @OA\Parameter(name="category_id", in="query", @OA\Schema(type="integer")),
+     *     @OA\Parameter(name="status", in="query", @OA\Schema(type="string", enum={"active", "inactive"})),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Subcategories retrieved successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="data", type="array", @OA\Items(ref="#/components/schemas/BackSubcategory")),
+     *             @OA\Property(property="links", ref="#/components/schemas/PaginationLinks"),
+     *             @OA\Property(property="meta", ref="#/components/schemas/PaginationMeta")
+     *         )
+     *     ),
+     *     @OA\Response(response=400, description="Validation error", @OA\JsonContent(ref="#/components/schemas/ValidationErrorResponse")),
+     *     @OA\Response(response=401, description="Unauthenticated", @OA\JsonContent(ref="#/components/schemas/UnauthorizedResponse"))
+     * )
      *
      * @param Request $request
      */
@@ -51,6 +92,19 @@ class SubcategoryController extends BaseController
     /**
      * Display the specified subcategory.
      *
+     * @OA\Get(
+     *     path="/back/v1/subcategories/{id}",
+     *     tags={"Back - Subcategories"},
+     *     summary="Get a specific subcategory",
+     *     operationId="backSubcategoriesShow",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
+     *     @OA\Parameter(name="include", in="query", @OA\Schema(type="string", enum={"category"})),
+     *     @OA\Response(response=200, description="Subcategory retrieved", @OA\JsonContent(@OA\Property(property="data", ref="#/components/schemas/BackSubcategory"))),
+     *     @OA\Response(response=401, description="Unauthenticated", @OA\JsonContent(ref="#/components/schemas/UnauthorizedResponse")),
+     *     @OA\Response(response=404, description="Not found", @OA\JsonContent(ref="#/components/schemas/NotFoundResponse"))
+     * )
+     *
      * @param int $id
      * @param Request $request
      */
@@ -78,6 +132,25 @@ class SubcategoryController extends BaseController
 
     /**
      * Store a newly created subcategory.
+     *
+     * @OA\Post(
+     *     path="/back/v1/subcategories",
+     *     tags={"Back - Subcategories"},
+     *     summary="Create a new subcategory",
+     *     operationId="backSubcategoriesStore",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\RequestBody(required=true, @OA\JsonContent(
+     *         required={"category_id", "name"},
+     *         @OA\Property(property="category_id", type="integer", example=1),
+     *         @OA\Property(property="name", type="string", maxLength=255, example="Smartphones"),
+     *         @OA\Property(property="description", type="string"),
+     *         @OA\Property(property="status", type="string", enum={"active", "inactive"})
+     *     )),
+     *     @OA\Response(response=201, description="Subcategory created", @OA\JsonContent(@OA\Property(property="message", type="string"), @OA\Property(property="data", ref="#/components/schemas/BackSubcategory"))),
+     *     @OA\Response(response=400, description="Validation error", @OA\JsonContent(ref="#/components/schemas/ValidationErrorResponse")),
+     *     @OA\Response(response=401, description="Unauthenticated", @OA\JsonContent(ref="#/components/schemas/UnauthorizedResponse")),
+     *     @OA\Response(response=500, description="Server error", @OA\JsonContent(ref="#/components/schemas/ErrorResponse"))
+     * )
      *
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
@@ -117,6 +190,26 @@ class SubcategoryController extends BaseController
     /**
      * Update the specified subcategory.
      *
+     * @OA\Put(
+     *     path="/back/v1/subcategories/{id}",
+     *     tags={"Back - Subcategories"},
+     *     summary="Update a subcategory",
+     *     operationId="backSubcategoriesUpdate",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
+     *     @OA\RequestBody(required=true, @OA\JsonContent(
+     *         @OA\Property(property="category_id", type="integer"),
+     *         @OA\Property(property="name", type="string", maxLength=255),
+     *         @OA\Property(property="description", type="string"),
+     *         @OA\Property(property="status", type="string", enum={"active", "inactive"})
+     *     )),
+     *     @OA\Response(response=200, description="Subcategory updated", @OA\JsonContent(@OA\Property(property="message", type="string"), @OA\Property(property="data", ref="#/components/schemas/BackSubcategory"))),
+     *     @OA\Response(response=400, description="Validation error", @OA\JsonContent(ref="#/components/schemas/ValidationErrorResponse")),
+     *     @OA\Response(response=401, description="Unauthenticated", @OA\JsonContent(ref="#/components/schemas/UnauthorizedResponse")),
+     *     @OA\Response(response=404, description="Not found", @OA\JsonContent(ref="#/components/schemas/NotFoundResponse")),
+     *     @OA\Response(response=500, description="Server error", @OA\JsonContent(ref="#/components/schemas/ErrorResponse"))
+     * )
+     *
      * @param Request $request
      * @param int $id
      * @return \Illuminate\Http\JsonResponse
@@ -151,6 +244,19 @@ class SubcategoryController extends BaseController
 
     /**
      * Remove the specified subcategory.
+     *
+     * @OA\Delete(
+     *     path="/back/v1/subcategories/{id}",
+     *     tags={"Back - Subcategories"},
+     *     summary="Delete a subcategory",
+     *     operationId="backSubcategoriesDestroy",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
+     *     @OA\Response(response=204, description="Subcategory deleted"),
+     *     @OA\Response(response=401, description="Unauthenticated", @OA\JsonContent(ref="#/components/schemas/UnauthorizedResponse")),
+     *     @OA\Response(response=404, description="Not found", @OA\JsonContent(ref="#/components/schemas/NotFoundResponse")),
+     *     @OA\Response(response=500, description="Server error", @OA\JsonContent(ref="#/components/schemas/ErrorResponse"))
+     * )
      *
      * @param int $id
      * @return \Illuminate\Http\JsonResponse

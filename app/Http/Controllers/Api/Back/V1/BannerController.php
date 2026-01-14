@@ -10,10 +10,42 @@ use Illuminate\Validation\ValidationException;
 use App\Http\Resources\Back\V1\BannerResource;
 use App\Services\BunnyService;
 
+/**
+ * @OA\Schema(
+ *     schema="BackBanner",
+ *     type="object",
+ *     @OA\Property(property="id", type="integer", example=1),
+ *     @OA\Property(property="title", type="string", example="Summer Sale"),
+ *     @OA\Property(property="description", type="string", example="Get 50% off on all items"),
+ *     @OA\Property(property="image_url", type="string", example="https://cdn.example.com/banner1.jpg"),
+ *     @OA\Property(property="link", type="string", example="https://example.com/sale"),
+ *     @OA\Property(property="btname1", type="string", example="Shop Now"),
+ *     @OA\Property(property="title2", type="string", example="New Arrivals"),
+ *     @OA\Property(property="description2", type="string", example="Check out our latest products"),
+ *     @OA\Property(property="image_url2", type="string", example="https://cdn.example.com/banner2.jpg"),
+ *     @OA\Property(property="btname2", type="string", example="Explore"),
+ *     @OA\Property(property="link2", type="string", example="https://example.com/new"),
+ *     @OA\Property(property="created_at", type="string", format="date-time"),
+ *     @OA\Property(property="updated_at", type="string", format="date-time")
+ * )
+ */
 class BannerController extends BaseController
 {
     /**
      * Display a listing of the Banner.
+     *
+     * @OA\Get(
+     *     path="/back/v1/banners",
+     *     tags={"Back - Banners"},
+     *     summary="Get banner",
+     *     description="Retrieve the main banner",
+     *     operationId="backBannersIndex",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(name="include", in="query", @OA\Schema(type="string")),
+     *     @OA\Response(response=200, description="Banner retrieved", @OA\JsonContent(@OA\Property(property="data", ref="#/components/schemas/BackBanner"))),
+     *     @OA\Response(response=400, description="Validation error", @OA\JsonContent(ref="#/components/schemas/ValidationErrorResponse")),
+     *     @OA\Response(response=401, description="Unauthenticated", @OA\JsonContent(ref="#/components/schemas/UnauthorizedResponse"))
+     * )
      *
      * @param Request $request
      */
@@ -41,6 +73,19 @@ class BannerController extends BaseController
 
     /**
      * Display the specified Banner.
+     *
+     * @OA\Get(
+     *     path="/back/v1/banners/{id}",
+     *     tags={"Back - Banners"},
+     *     summary="Get a specific banner",
+     *     operationId="backBannersShow",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
+     *     @OA\Parameter(name="include", in="query", @OA\Schema(type="string")),
+     *     @OA\Response(response=200, description="Banner retrieved", @OA\JsonContent(@OA\Property(property="data", ref="#/components/schemas/BackBanner"))),
+     *     @OA\Response(response=401, description="Unauthenticated", @OA\JsonContent(ref="#/components/schemas/UnauthorizedResponse")),
+     *     @OA\Response(response=404, description="Not found", @OA\JsonContent(ref="#/components/schemas/NotFoundResponse"))
+     * )
      *
      * @param int $id
      * @param Request $request
@@ -76,6 +121,34 @@ class BannerController extends BaseController
 
     /**
      * Store a newly created Banner.
+     *
+     * @OA\Post(
+     *     path="/back/v1/banners",
+     *     tags={"Back - Banners"},
+     *     summary="Create a new banner",
+     *     operationId="backBannersStore",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\RequestBody(required=true, @OA\MediaType(
+     *         mediaType="multipart/form-data",
+     *         @OA\Schema(
+     *             @OA\Property(property="title", type="string", maxLength=255),
+     *             @OA\Property(property="description", type="string", maxLength=255),
+     *             @OA\Property(property="image", type="string", format="binary", description="Image or video file"),
+     *             @OA\Property(property="link", type="string", maxLength=255),
+     *             @OA\Property(property="btname1", type="string", maxLength=255),
+     *             @OA\Property(property="title2", type="string", maxLength=255),
+     *             @OA\Property(property="description2", type="string", maxLength=255),
+     *             @OA\Property(property="image2", type="string", format="binary", description="Second image or video"),
+     *             @OA\Property(property="btname2", type="string", maxLength=255),
+     *             @OA\Property(property="link2", type="string", maxLength=255)
+     *         )
+     *     )),
+     *     @OA\Response(response=201, description="Banner created", @OA\JsonContent(@OA\Property(property="message", type="string"), @OA\Property(property="data", ref="#/components/schemas/BackBanner"))),
+     *     @OA\Response(response=400, description="Validation error", @OA\JsonContent(ref="#/components/schemas/ValidationErrorResponse")),
+     *     @OA\Response(response=401, description="Unauthenticated", @OA\JsonContent(ref="#/components/schemas/UnauthorizedResponse")),
+     *     @OA\Response(response=422, description="Upload failed"),
+     *     @OA\Response(response=500, description="Server error", @OA\JsonContent(ref="#/components/schemas/ErrorResponse"))
+     * )
      *
      * @param Request $request
      * @return JsonResponse
@@ -164,6 +237,36 @@ class BannerController extends BaseController
 
     /**
      * Update the specified Banner.
+     *
+     * @OA\Post(
+     *     path="/back/v1/banners/{id}",
+     *     tags={"Back - Banners"},
+     *     summary="Update a banner",
+     *     operationId="backBannersUpdate",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
+     *     @OA\RequestBody(required=true, @OA\MediaType(
+     *         mediaType="multipart/form-data",
+     *         @OA\Schema(
+     *             @OA\Property(property="title", type="string", maxLength=255),
+     *             @OA\Property(property="description", type="string", maxLength=255),
+     *             @OA\Property(property="image", type="string", format="binary"),
+     *             @OA\Property(property="link", type="string", maxLength=255),
+     *             @OA\Property(property="btname1", type="string", maxLength=255),
+     *             @OA\Property(property="title2", type="string", maxLength=255),
+     *             @OA\Property(property="description2", type="string", maxLength=255),
+     *             @OA\Property(property="image2", type="string", format="binary"),
+     *             @OA\Property(property="btname2", type="string", maxLength=255),
+     *             @OA\Property(property="link2", type="string", maxLength=255)
+     *         )
+     *     )),
+     *     @OA\Response(response=200, description="Banner updated", @OA\JsonContent(@OA\Property(property="message", type="string"), @OA\Property(property="data", ref="#/components/schemas/BackBanner"))),
+     *     @OA\Response(response=400, description="Validation error", @OA\JsonContent(ref="#/components/schemas/ValidationErrorResponse")),
+     *     @OA\Response(response=401, description="Unauthenticated", @OA\JsonContent(ref="#/components/schemas/UnauthorizedResponse")),
+     *     @OA\Response(response=404, description="Not found", @OA\JsonContent(ref="#/components/schemas/NotFoundResponse")),
+     *     @OA\Response(response=422, description="Upload failed"),
+     *     @OA\Response(response=500, description="Server error", @OA\JsonContent(ref="#/components/schemas/ErrorResponse"))
+     * )
      *
      * @param Request $request
      * @param int $id
@@ -269,6 +372,19 @@ class BannerController extends BaseController
 
     /**
      * Remove the specified Banner.
+     *
+     * @OA\Delete(
+     *     path="/back/v1/banners/{id}",
+     *     tags={"Back - Banners"},
+     *     summary="Delete a banner",
+     *     operationId="backBannersDestroy",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
+     *     @OA\Response(response=204, description="Banner deleted"),
+     *     @OA\Response(response=401, description="Unauthenticated", @OA\JsonContent(ref="#/components/schemas/UnauthorizedResponse")),
+     *     @OA\Response(response=404, description="Not found", @OA\JsonContent(ref="#/components/schemas/NotFoundResponse")),
+     *     @OA\Response(response=500, description="Server error", @OA\JsonContent(ref="#/components/schemas/ErrorResponse"))
+     * )
      *
      * @param int $id
      * @return JsonResponse

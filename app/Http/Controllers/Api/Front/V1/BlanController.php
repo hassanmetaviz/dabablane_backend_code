@@ -9,14 +9,121 @@ use App\Http\Controllers\Api\BaseController;
 use App\Http\Resources\Front\V1\BlaneResource;
 use App\Http\Resources\Front\V1\BlanImageResource;
 
+/**
+ * @OA\Schema(
+ *     schema="Blane",
+ *     type="object",
+ *     @OA\Property(property="id", type="integer", example=1),
+ *     @OA\Property(property="name", type="string", example="Luxury Spa Treatment"),
+ *     @OA\Property(property="slug", type="string", example="luxury-spa-treatment"),
+ *     @OA\Property(property="description", type="string", example="Relaxing spa experience"),
+ *     @OA\Property(property="price", type="number", format="float", example=299.99),
+ *     @OA\Property(property="price_current", type="number", format="float", example=249.99),
+ *     @OA\Property(property="type", type="string", enum={"order", "reservation"}, example="reservation"),
+ *     @OA\Property(property="status", type="string", enum={"active", "inactive", "expired"}, example="active"),
+ *     @OA\Property(property="visibility", type="string", enum={"public", "private", "link"}, example="public"),
+ *     @OA\Property(property="stock", type="integer", example=100),
+ *     @OA\Property(property="views", type="integer", example=1250),
+ *     @OA\Property(property="city", type="string", example="Casablanca"),
+ *     @OA\Property(property="category_id", type="integer", example=1),
+ *     @OA\Property(property="vendor_id", type="integer", example=1),
+ *     @OA\Property(property="is_digital", type="boolean", example=false),
+ *     @OA\Property(property="availability_per_day", type="integer", example=10),
+ *     @OA\Property(property="created_at", type="string", format="date-time"),
+ *     @OA\Property(property="updated_at", type="string", format="date-time")
+ * )
+ *
+ * @OA\Schema(
+ *     schema="BlaneImage",
+ *     type="object",
+ *     @OA\Property(property="id", type="integer", example=1),
+ *     @OA\Property(property="blane_id", type="integer", example=1),
+ *     @OA\Property(property="image_url", type="string", example="https://example.com/image.jpg"),
+ *     @OA\Property(property="is_primary", type="boolean", example=true)
+ * )
+ */
 class BlanController extends BaseController
 {
     /**
      * Display a listing of the Blanes.
      *
-     * @param Request $request
+     * @OA\Get(
+     *     path="/front/v1/blanes",
+     *     tags={"Blanes"},
+     *     summary="Get all blanes",
+     *     description="Retrieve a paginated list of active blanes (products/services) with optional filtering, sorting, and related resources",
+     *     operationId="getBlanes",
+     *     @OA\Parameter(
+     *         name="include",
+     *         in="query",
+     *         description="Include related resources (comma-separated: blaneImages,subcategory,category,ratings,vendor)",
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Parameter(
+     *         name="sort_by",
+     *         in="query",
+     *         description="Sort field",
+     *         @OA\Schema(type="string", enum={"created_at", "name", "price_current", "ratings"})
+     *     ),
+     *     @OA\Parameter(
+     *         name="sort_order",
+     *         in="query",
+     *         description="Sort order",
+     *         @OA\Schema(type="string", enum={"asc", "desc"})
+     *     ),
+     *     @OA\Parameter(
+     *         name="search",
+     *         in="query",
+     *         description="Search term",
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Parameter(
+     *         name="type",
+     *         in="query",
+     *         description="Filter by blane type",
+     *         @OA\Schema(type="string", enum={"order", "reservation"})
+     *     ),
+     *     @OA\Parameter(
+     *         name="category",
+     *         in="query",
+     *         description="Filter by category slug",
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Parameter(
+     *         name="city",
+     *         in="query",
+     *         description="Filter by city",
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Parameter(
+     *         name="ratings",
+     *         in="query",
+     *         description="Filter by minimum rating (1-5)",
+     *         @OA\Schema(type="number", minimum=1, maximum=5)
+     *     ),
+     *     @OA\Parameter(
+     *         name="is_diamond",
+     *         in="query",
+     *         description="Filter by diamond vendor status",
+     *         @OA\Schema(type="boolean")
+     *     ),
+     *     @OA\Parameter(
+     *         name="pagination_size",
+     *         in="query",
+     *         description="Number of items per page",
+     *         @OA\Schema(type="integer", minimum=1, maximum=100, default=9)
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Blanes retrieved successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="data", type="array", @OA\Items(ref="#/components/schemas/Blane")),
+     *             @OA\Property(property="links", ref="#/components/schemas/PaginationLinks"),
+     *             @OA\Property(property="meta", ref="#/components/schemas/PaginationMeta")
+     *         )
+     *     )
+     * )
      */
-
     public function index(Request $request)
     {
         $request->validate([
@@ -103,8 +210,49 @@ class BlanController extends BaseController
     /**
      * Display the specified Blane.
      *
-     * @param int $slug
-     * @param Request $request
+     * @OA\Get(
+     *     path="/front/v1/blanes/{slug}",
+     *     tags={"Blanes"},
+     *     summary="Get a specific blane",
+     *     description="Retrieve details of a specific blane by its slug. Private blanes require a share token.",
+     *     operationId="getBlane",
+     *     @OA\Parameter(
+     *         name="slug",
+     *         in="path",
+     *         required=true,
+     *         description="Blane slug",
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Parameter(
+     *         name="include",
+     *         in="query",
+     *         description="Include related resources",
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Parameter(
+     *         name="token",
+     *         in="query",
+     *         description="Share token (required for link-visibility blanes)",
+     *         @OA\Schema(type="string", format="uuid")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Blane retrieved successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="data", ref="#/components/schemas/Blane")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=403,
+     *         description="Access denied (private blane or invalid token)",
+     *         @OA\JsonContent(ref="#/components/schemas/ForbiddenResponse")
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Blane not found",
+     *         @OA\JsonContent(ref="#/components/schemas/NotFoundResponse")
+     *     )
+     * )
      */
     public function show($slug, Request $request)
     {

@@ -22,9 +22,68 @@ use App\Models\User;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\DB;
 
+/**
+ * @OA\Schema(
+ *     schema="PromoCode",
+ *     type="object",
+ *     @OA\Property(property="id", type="integer"),
+ *     @OA\Property(property="code", type="string"),
+ *     @OA\Property(property="discount_percentage", type="number", format="float"),
+ *     @OA\Property(property="valid_from", type="string", format="date"),
+ *     @OA\Property(property="valid_until", type="string", format="date"),
+ *     @OA\Property(property="is_active", type="boolean")
+ * )
+ *
+ * @OA\Schema(
+ *     schema="Configuration",
+ *     type="object",
+ *     @OA\Property(property="billing_email", type="string", format="email"),
+ *     @OA\Property(property="contact_email", type="string", format="email"),
+ *     @OA\Property(property="contact_phone", type="string"),
+ *     @OA\Property(property="invoice_logo_path", type="string"),
+ *     @OA\Property(property="invoice_legal_mentions", type="string"),
+ *     @OA\Property(property="invoice_prefix", type="string")
+ * )
+ *
+ * @OA\Schema(
+ *     schema="CommissionChart",
+ *     type="object",
+ *     @OA\Property(property="id", type="integer"),
+ *     @OA\Property(property="filename", type="string"),
+ *     @OA\Property(property="original_filename", type="string"),
+ *     @OA\Property(property="category_id", type="integer"),
+ *     @OA\Property(property="file_path", type="string"),
+ *     @OA\Property(property="is_active", type="boolean")
+ * )
+ */
 class AdminSubscriptionController extends BaseController
 {
 
+    /**
+     * Create a new plan
+     *
+     * @OA\Post(
+     *     path="/back/v1/admin/subscriptions/plans",
+     *     tags={"Back - Admin Subscription"},
+     *     summary="Create a new subscription plan",
+     *     operationId="adminCreatePlan",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\RequestBody(required=true, @OA\JsonContent(
+     *         required={"title", "slug", "price_ht", "duration_days"},
+     *         @OA\Property(property="title", type="string", maxLength=255),
+     *         @OA\Property(property="slug", type="string", maxLength=255),
+     *         @OA\Property(property="price_ht", type="number", format="float"),
+     *         @OA\Property(property="original_price_ht", type="number", format="float"),
+     *         @OA\Property(property="duration_days", type="integer"),
+     *         @OA\Property(property="description", type="string"),
+     *         @OA\Property(property="is_recommended", type="boolean"),
+     *         @OA\Property(property="display_order", type="integer"),
+     *         @OA\Property(property="is_active", type="boolean")
+     *     )),
+     *     @OA\Response(response=201, description="Plan created", @OA\JsonContent(@OA\Property(property="data", ref="#/components/schemas/Plan"))),
+     *     @OA\Response(response=422, description="Validation error")
+     * )
+     */
     public function createPlan(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -48,6 +107,27 @@ class AdminSubscriptionController extends BaseController
         return $this->success($plan, 'Plan created', 201);
     }
 
+    /**
+     * Update plan
+     *
+     * @OA\Put(
+     *     path="/back/v1/admin/subscriptions/plans/{plan}",
+     *     tags={"Back - Admin Subscription"},
+     *     summary="Update a subscription plan",
+     *     operationId="adminUpdatePlan",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(name="plan", in="path", required=true, @OA\Schema(type="integer")),
+     *     @OA\RequestBody(required=true, @OA\JsonContent(
+     *         @OA\Property(property="title", type="string"),
+     *         @OA\Property(property="slug", type="string"),
+     *         @OA\Property(property="price_ht", type="number"),
+     *         @OA\Property(property="duration_days", type="integer"),
+     *         @OA\Property(property="is_active", type="boolean")
+     *     )),
+     *     @OA\Response(response=200, description="Plan updated"),
+     *     @OA\Response(response=422, description="Validation error")
+     * )
+     */
     public function updatePlan(Request $request, Plan $plan)
     {
         $validator = Validator::make($request->all(), [
@@ -71,6 +151,21 @@ class AdminSubscriptionController extends BaseController
         return $this->success($plan, 'Plan updated', 200);
     }
 
+    /**
+     * Delete plan
+     *
+     * @OA\Delete(
+     *     path="/back/v1/admin/subscriptions/plans/{plan}",
+     *     tags={"Back - Admin Subscription"},
+     *     summary="Delete a subscription plan",
+     *     operationId="adminDeletePlan",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(name="plan", in="path", required=true, @OA\Schema(type="integer")),
+     *     @OA\Response(response=200, description="Plan deleted"),
+     *     @OA\Response(response=422, description="Plan in use"),
+     *     @OA\Response(response=500, description="Server error")
+     * )
+     */
     public function deletePlan(Request $request, Plan $plan)
     {
         try {
@@ -97,6 +192,18 @@ class AdminSubscriptionController extends BaseController
         }
     }
 
+    /**
+     * List all plans
+     *
+     * @OA\Get(
+     *     path="/back/v1/admin/subscriptions/plans",
+     *     tags={"Back - Admin Subscription"},
+     *     summary="List all subscription plans",
+     *     operationId="adminListPlans",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Response(response=200, description="Plans retrieved", @OA\JsonContent(@OA\Property(property="data", type="array", @OA\Items(ref="#/components/schemas/Plan"))))
+     * )
+     */
     public function listPlans(Request $request)
     {
         $plans = Plan::orderBy('display_order')->get();
@@ -104,6 +211,27 @@ class AdminSubscriptionController extends BaseController
     }
 
     // Add-ons
+    /**
+     * Create add-on
+     *
+     * @OA\Post(
+     *     path="/back/v1/admin/subscriptions/add-ons",
+     *     tags={"Back - Admin Subscription"},
+     *     summary="Create a new add-on",
+     *     operationId="adminCreateAddOn",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\RequestBody(required=true, @OA\JsonContent(
+     *         required={"title", "price_ht", "max_quantity"},
+     *         @OA\Property(property="title", type="string"),
+     *         @OA\Property(property="price_ht", type="number"),
+     *         @OA\Property(property="tooltip", type="string"),
+     *         @OA\Property(property="max_quantity", type="integer"),
+     *         @OA\Property(property="is_active", type="boolean")
+     *     )),
+     *     @OA\Response(response=201, description="Add-on created"),
+     *     @OA\Response(response=422, description="Validation error")
+     * )
+     */
     public function createAddOn(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -123,6 +251,26 @@ class AdminSubscriptionController extends BaseController
         return $this->success($addOn, 'Add-on created', 201);
     }
 
+    /**
+     * Update add-on
+     *
+     * @OA\Put(
+     *     path="/back/v1/admin/subscriptions/add-ons/{addOn}",
+     *     tags={"Back - Admin Subscription"},
+     *     summary="Update an add-on",
+     *     operationId="adminUpdateAddOn",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(name="addOn", in="path", required=true, @OA\Schema(type="integer")),
+     *     @OA\RequestBody(required=true, @OA\JsonContent(
+     *         @OA\Property(property="title", type="string"),
+     *         @OA\Property(property="price_ht", type="number"),
+     *         @OA\Property(property="max_quantity", type="integer"),
+     *         @OA\Property(property="is_active", type="boolean")
+     *     )),
+     *     @OA\Response(response=200, description="Add-on updated"),
+     *     @OA\Response(response=422, description="Validation error")
+     * )
+     */
     public function updateAddOn(Request $request, AddOn $addOn)
     {
         $validator = Validator::make($request->all(), [
@@ -142,6 +290,21 @@ class AdminSubscriptionController extends BaseController
         return $this->success($addOn, 'Add-on updated', 200);
     }
 
+    /**
+     * Delete add-on
+     *
+     * @OA\Delete(
+     *     path="/back/v1/admin/subscriptions/add-ons/{addOn}",
+     *     tags={"Back - Admin Subscription"},
+     *     summary="Delete an add-on",
+     *     operationId="adminDeleteAddOn",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(name="addOn", in="path", required=true, @OA\Schema(type="integer")),
+     *     @OA\Response(response=200, description="Add-on deleted"),
+     *     @OA\Response(response=422, description="Add-on in use"),
+     *     @OA\Response(response=500, description="Server error")
+     * )
+     */
     public function deleteAddOn(Request $request, AddOn $addOn)
     {
         try {
@@ -170,12 +333,45 @@ class AdminSubscriptionController extends BaseController
         }
     }
 
+    /**
+     * List add-ons
+     *
+     * @OA\Get(
+     *     path="/back/v1/admin/subscriptions/add-ons",
+     *     tags={"Back - Admin Subscription"},
+     *     summary="List all add-ons",
+     *     operationId="adminListAddOns",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Response(response=200, description="Add-ons retrieved", @OA\JsonContent(@OA\Property(property="data", type="array", @OA\Items(ref="#/components/schemas/AddOn"))))
+     * )
+     */
     public function listAddOns(Request $request)
     {
         $addOns = AddOn::all();
         return $this->success($addOns, 'Success', 200);
     }
 
+    /**
+     * Create promo code
+     *
+     * @OA\Post(
+     *     path="/back/v1/admin/subscriptions/promo-codes",
+     *     tags={"Back - Admin Subscription"},
+     *     summary="Create a new promo code",
+     *     operationId="adminCreatePromoCode",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\RequestBody(required=true, @OA\JsonContent(
+     *         required={"code", "discount_percentage"},
+     *         @OA\Property(property="code", type="string", maxLength=50),
+     *         @OA\Property(property="discount_percentage", type="number", minimum=0, maximum=100),
+     *         @OA\Property(property="valid_from", type="string", format="date"),
+     *         @OA\Property(property="valid_until", type="string", format="date"),
+     *         @OA\Property(property="is_active", type="boolean")
+     *     )),
+     *     @OA\Response(response=201, description="Promo code created"),
+     *     @OA\Response(response=422, description="Validation error")
+     * )
+     */
     public function createPromoCode(Request $request)
     {
         $validator = Validator::make($request->all(), [

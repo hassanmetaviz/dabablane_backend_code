@@ -8,10 +8,38 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
+/**
+ * @OA\Tag(name="Back - User Profile", description="User profile management")
+ */
 class UserProfileController extends BaseController
 {
     /**
      * Update user profile
+     *
+     * @OA\Put(
+     *     path="/back/v1/profile",
+     *     tags={"Back - User Profile"},
+     *     summary="Update authenticated user profile",
+     *     operationId="backProfileUpdate",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\RequestBody(required=true, @OA\JsonContent(
+     *         @OA\Property(property="name", type="string", maxLength=255),
+     *         @OA\Property(property="email", type="string", format="email"),
+     *         @OA\Property(property="phone", type="string", maxLength=20),
+     *         @OA\Property(property="city", type="string", maxLength=255)
+     *     )),
+     *     @OA\Response(response=200, description="Profile updated successfully", @OA\JsonContent(
+     *         @OA\Property(property="status", type="boolean"),
+     *         @OA\Property(property="message", type="string"),
+     *         @OA\Property(property="data", type="object",
+     *             @OA\Property(property="user", type="object"),
+     *             @OA\Property(property="roles", type="array", @OA\Items(type="string"))
+     *         )
+     *     )),
+     *     @OA\Response(response=401, description="Unauthenticated"),
+     *     @OA\Response(response=422, description="Validation error"),
+     *     @OA\Response(response=500, description="Server error")
+     * )
      *
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
@@ -88,6 +116,17 @@ class UserProfileController extends BaseController
 
     /**
      * Delete user account
+     *
+     * @OA\Delete(
+     *     path="/back/v1/profile",
+     *     tags={"Back - User Profile"},
+     *     summary="Delete authenticated user account",
+     *     operationId="backProfileDelete",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Response(response=200, description="Account deleted successfully"),
+     *     @OA\Response(response=401, description="Unauthenticated"),
+     *     @OA\Response(response=500, description="Server error")
+     * )
      *
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse

@@ -17,10 +17,77 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Spatie\Permission\Models\Role;
 
+/**
+ * @OA\Schema(
+ *     schema="VendorLoginResponse",
+ *     type="object",
+ *     @OA\Property(property="status", type="boolean", example=true),
+ *     @OA\Property(property="code", type="integer", example=200),
+ *     @OA\Property(property="message", type="string", example="Vendor login successful!"),
+ *     @OA\Property(
+ *         property="data",
+ *         type="object",
+ *         @OA\Property(property="user_token", type="string", example="1|abc123xyz..."),
+ *         @OA\Property(property="user", ref="#/components/schemas/User"),
+ *         @OA\Property(property="roles", type="array", @OA\Items(type="string"), example={"vendor"}),
+ *         @OA\Property(property="token_type", type="string", example="Bearer")
+ *     )
+ * )
+ *
+ * @OA\Schema(
+ *     schema="VendorCheckResponse",
+ *     type="object",
+ *     @OA\Property(property="email", type="string", example="vendor@example.com"),
+ *     @OA\Property(property="vendor_id", type="integer", example=1),
+ *     @OA\Property(property="name", type="string", example="John Vendor"),
+ *     @OA\Property(property="has_firebase_uid", type="boolean", example=true),
+ *     @OA\Property(property="has_password", type="boolean", example=false),
+ *     @OA\Property(property="created_by_admin", type="boolean", example=false),
+ *     @OA\Property(property="definitely_admin_created", type="boolean", example=false),
+ *     @OA\Property(property="creation_method", type="string", enum={"admin", "mobile_signup", "unknown"}, example="mobile_signup")
+ * )
+ */
 class VendorAuthController extends BaseController
 {
     /**
      * Vendor login (supports both password and Firebase)
+     *
+     * @OA\Post(
+     *     path="/back/v1/vendor/login",
+     *     tags={"Vendor Authentication"},
+     *     summary="Vendor login",
+     *     description="Authenticate vendor with email and password or Firebase UID",
+     *     operationId="vendorLogin",
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"email"},
+     *             @OA\Property(property="email", type="string", format="email", example="vendor@example.com"),
+     *             @OA\Property(property="password", type="string", format="password", example="password123", description="Required if account has password"),
+     *             @OA\Property(property="firebase_uid", type="string", example="firebase_uid_123", description="Required if account uses Firebase")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Vendor login successful",
+     *         @OA\JsonContent(ref="#/components/schemas/VendorLoginResponse")
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Invalid credentials",
+     *         @OA\JsonContent(ref="#/components/schemas/UnauthorizedResponse")
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Vendor not found",
+     *         @OA\JsonContent(ref="#/components/schemas/NotFoundResponse")
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Validation error",
+     *         @OA\JsonContent(ref="#/components/schemas/ValidationErrorResponse")
+     *     )
+     * )
      *
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
@@ -115,6 +182,44 @@ class VendorAuthController extends BaseController
     /**
      * Vendor signup (Firebase-based)
      *
+     * @OA\Post(
+     *     path="/back/v1/vendor/signup",
+     *     tags={"Vendor Authentication"},
+     *     summary="Vendor signup",
+     *     description="Register a new vendor account using Firebase authentication",
+     *     operationId="vendorSignup",
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"name", "email", "firebase_uid", "phone", "city", "company_name"},
+     *             @OA\Property(property="name", type="string", example="John Vendor"),
+     *             @OA\Property(property="email", type="string", format="email", example="vendor@example.com"),
+     *             @OA\Property(property="firebase_uid", type="string", example="firebase_uid_123"),
+     *             @OA\Property(property="phone", type="string", example="+212612345678"),
+     *             @OA\Property(property="city", type="string", example="Casablanca"),
+     *             @OA\Property(property="company_name", type="string", example="ABC Company"),
+     *             @OA\Property(property="address", type="string", example="123 Main Street"),
+     *             @OA\Property(property="district", type="string", example="Downtown"),
+     *             @OA\Property(property="subdistrict", type="string", example="Central")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=201,
+     *         description="Vendor registered successfully",
+     *         @OA\JsonContent(ref="#/components/schemas/VendorLoginResponse")
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Validation error",
+     *         @OA\JsonContent(ref="#/components/schemas/ValidationErrorResponse")
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Server error",
+     *         @OA\JsonContent(ref="#/components/schemas/ErrorResponse")
+     *     )
+     * )
+     *
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
@@ -203,6 +308,39 @@ class VendorAuthController extends BaseController
     /**
      * Forgot password for vendor
      *
+     * @OA\Post(
+     *     path="/back/v1/vendor/forgot-password",
+     *     tags={"Vendor Authentication"},
+     *     summary="Forgot vendor password",
+     *     description="Request a password reset for vendor account",
+     *     operationId="forgotVendorPassword",
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"email"},
+     *             @OA\Property(property="email", type="string", format="email", example="vendor@example.com")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Password reset email sent",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Password reset email sent successfully.")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Account has no password set",
+     *         @OA\JsonContent(ref="#/components/schemas/ErrorResponse")
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Server error",
+     *         @OA\JsonContent(ref="#/components/schemas/ErrorResponse")
+     *     )
+     * )
+     *
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
@@ -256,6 +394,40 @@ class VendorAuthController extends BaseController
 
     /**
      * Check if vendor email was created by admin
+     *
+     * @OA\Post(
+     *     path="/back/v1/vendor/check-admin-created",
+     *     tags={"Vendor Authentication"},
+     *     summary="Check vendor creation method",
+     *     description="Check if a vendor account was created by admin or through mobile signup",
+     *     operationId="checkVendorCreatedByAdmin",
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"email"},
+     *             @OA\Property(property="email", type="string", format="email", example="vendor@example.com")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Vendor information retrieved successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Vendor information retrieved successfully"),
+     *             @OA\Property(property="data", ref="#/components/schemas/VendorCheckResponse")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Vendor not found",
+     *         @OA\JsonContent(ref="#/components/schemas/NotFoundResponse")
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Server error",
+     *         @OA\JsonContent(ref="#/components/schemas/ErrorResponse")
+     *     )
+     * )
      *
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse

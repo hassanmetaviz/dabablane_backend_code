@@ -12,8 +12,62 @@ use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 
+/**
+ * @OA\Schema(
+ *     schema="AnalyticsMetric",
+ *     type="object",
+ *     @OA\Property(property="name", type="string", example="Total Orders"),
+ *     @OA\Property(property="value", type="number", example=150),
+ *     @OA\Property(property="change", type="number", example=5.2),
+ *     @OA\Property(property="icon", type="string", example="OrdersIcon"),
+ *     @OA\Property(property="currency", type="string", example="MAD"),
+ *     @OA\Property(property="details", type="object")
+ * )
+ *
+ * @OA\Schema(
+ *     schema="BlanesStatus",
+ *     type="object",
+ *     @OA\Property(property="active", type="integer", example=100),
+ *     @OA\Property(property="inactive", type="integer", example=20),
+ *     @OA\Property(property="expired", type="integer", example=30),
+ *     @OA\Property(property="total", type="integer", example=150),
+ *     @OA\Property(property="last_updated", type="string", format="date-time")
+ * )
+ *
+ * @OA\Schema(
+ *     schema="VendorAnalytics",
+ *     type="object",
+ *     @OA\Property(property="vendor_info", type="object",
+ *         @OA\Property(property="id", type="integer"),
+ *         @OA\Property(property="name", type="string"),
+ *         @OA\Property(property="company_name", type="string"),
+ *         @OA\Property(property="email", type="string")
+ *     ),
+ *     @OA\Property(property="analytics", type="array", @OA\Items(ref="#/components/schemas/AnalyticsMetric")),
+ *     @OA\Property(property="top_performing_blanes", type="array", @OA\Items(type="object")),
+ *     @OA\Property(property="period", type="object"),
+ *     @OA\Property(property="last_updated", type="string", format="date-time")
+ * )
+ */
 class AnalyticsController extends BaseController
 {
+    /**
+     * Get overall analytics
+     *
+     * @OA\Get(
+     *     path="/back/v1/analytics",
+     *     tags={"Back - Analytics"},
+     *     summary="Get overall analytics metrics",
+     *     operationId="backAnalyticsIndex",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Response(
+     *         response=200,
+     *         description="Analytics retrieved",
+     *         @OA\JsonContent(type="array", @OA\Items(ref="#/components/schemas/AnalyticsMetric"))
+     *     ),
+     *     @OA\Response(response=401, description="Unauthenticated", @OA\JsonContent(ref="#/components/schemas/UnauthorizedResponse"))
+     * )
+     */
     public function getAnalytics()
     {
         $now = Carbon::now();
@@ -191,6 +245,23 @@ class AnalyticsController extends BaseController
         ]);
     }
 
+    /**
+     * Get blanes status summary
+     *
+     * @OA\Get(
+     *     path="/back/v1/analytics/blanes-status",
+     *     tags={"Back - Analytics"},
+     *     summary="Get blanes status counts",
+     *     operationId="backAnalyticsBlanesStatus",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Response(
+     *         response=200,
+     *         description="Blanes status retrieved",
+     *         @OA\JsonContent(ref="#/components/schemas/BlanesStatus")
+     *     ),
+     *     @OA\Response(response=401, description="Unauthenticated", @OA\JsonContent(ref="#/components/schemas/UnauthorizedResponse"))
+     * )
+     */
     public function getBlanesStatus()
     {
         $now = Carbon::now();
@@ -206,6 +277,27 @@ class AnalyticsController extends BaseController
         ]);
     }
 
+    /**
+     * Get near expiration blanes
+     *
+     * @OA\Get(
+     *     path="/back/v1/analytics/near-expiration",
+     *     tags={"Back - Analytics"},
+     *     summary="Get blanes near expiration (within 3 days)",
+     *     operationId="backAnalyticsNearExpiration",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Response(
+     *         response=200,
+     *         description="Near expiration blanes retrieved",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="count", type="integer", example=5),
+     *             @OA\Property(property="blanes", type="array", @OA\Items(ref="#/components/schemas/BackBlane")),
+     *             @OA\Property(property="threshold_date", type="string", format="date")
+     *         )
+     *     ),
+     *     @OA\Response(response=401, description="Unauthenticated", @OA\JsonContent(ref="#/components/schemas/UnauthorizedResponse"))
+     * )
+     */
     public function getNearExpiration()
     {
         $now = Carbon::now();
@@ -223,6 +315,30 @@ class AnalyticsController extends BaseController
         ]);
     }
 
+    /**
+     * Get status distribution
+     *
+     * @OA\Get(
+     *     path="/back/v1/analytics/status-distribution",
+     *     tags={"Back - Analytics"},
+     *     summary="Get blanes status distribution with percentages",
+     *     operationId="backAnalyticsStatusDistribution",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Response(
+     *         response=200,
+     *         description="Status distribution retrieved",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="distribution", type="object",
+     *                 @OA\Property(property="active", type="object", @OA\Property(property="count", type="integer"), @OA\Property(property="percentage", type="number")),
+     *                 @OA\Property(property="inactive", type="object", @OA\Property(property="count", type="integer"), @OA\Property(property="percentage", type="number")),
+     *                 @OA\Property(property="expired", type="object", @OA\Property(property="count", type="integer"), @OA\Property(property="percentage", type="number"))
+     *             ),
+     *             @OA\Property(property="total", type="integer")
+     *         )
+     *     ),
+     *     @OA\Response(response=401, description="Unauthenticated", @OA\JsonContent(ref="#/components/schemas/UnauthorizedResponse"))
+     * )
+     */
     public function getStatusDistribution()
     {
         $now = Carbon::now();
@@ -254,6 +370,29 @@ class AnalyticsController extends BaseController
 
     /**
      * Get analytics for a specific vendor
+     *
+     * @OA\Get(
+     *     path="/back/v1/analytics/vendor",
+     *     tags={"Back - Analytics"},
+     *     summary="Get vendor-specific analytics",
+     *     operationId="backAnalyticsVendor",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(name="vendor_id", in="query", description="Vendor ID (preferred)", @OA\Schema(type="integer")),
+     *     @OA\Parameter(name="company_name", in="query", description="Company name (backward compatible)", @OA\Schema(type="string")),
+     *     @OA\Parameter(name="period", in="query", @OA\Schema(type="string", enum={"week", "month", "custom"})),
+     *     @OA\Parameter(name="start_date", in="query", description="Required if period=custom", @OA\Schema(type="string", format="date")),
+     *     @OA\Parameter(name="end_date", in="query", description="Required if period=custom", @OA\Schema(type="string", format="date")),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Vendor analytics retrieved",
+     *         @OA\JsonContent(ref="#/components/schemas/VendorAnalytics")
+     *     ),
+     *     @OA\Response(response=400, description="Bad request"),
+     *     @OA\Response(response=401, description="Unauthenticated", @OA\JsonContent(ref="#/components/schemas/UnauthorizedResponse")),
+     *     @OA\Response(response=403, description="Forbidden"),
+     *     @OA\Response(response=404, description="Vendor not found"),
+     *     @OA\Response(response=422, description="Validation error")
+     * )
      *
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse

@@ -13,10 +13,40 @@ use Illuminate\Support\Facades\Log;
 use App\Models\Category;
 use App\Models\Subcategory;
 
+/**
+ * @OA\Tag(name="Back - Blane Import", description="Bulk blane import operations")
+ */
 class BlaneImportController extends BaseController
 {
     /**
      * Import blanes from a JSON file.
+     *
+     * @OA\Post(
+     *     path="/back/v1/blanes/import",
+     *     tags={"Back - Blane Import"},
+     *     summary="Import blanes from JSON data",
+     *     operationId="backBlaneImport",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\RequestBody(required=true, @OA\JsonContent(
+     *         required={"blanes"},
+     *         @OA\Property(property="blanes", type="array", @OA\Items(type="object",
+     *             required={"name"},
+     *             @OA\Property(property="name", type="string"),
+     *             @OA\Property(property="description", type="string"),
+     *             @OA\Property(property="category", type="string"),
+     *             @OA\Property(property="subcategory", type="string"),
+     *             @OA\Property(property="price_current", type="number"),
+     *             @OA\Property(property="price_old", type="number"),
+     *             @OA\Property(property="city", type="string"),
+     *             @OA\Property(property="district", type="string"),
+     *             @OA\Property(property="status", type="string", enum={"active", "inactive", "expired", "waiting"}),
+     *             @OA\Property(property="type", type="string", enum={"reservation", "order"})
+     *         ))
+     *     )),
+     *     @OA\Response(response=201, description="Blanes imported successfully"),
+     *     @OA\Response(response=422, description="Validation error or import errors"),
+     *     @OA\Response(response=500, description="Server error")
+     * )
      *
      * @param Request $request
      * @return JsonResponse

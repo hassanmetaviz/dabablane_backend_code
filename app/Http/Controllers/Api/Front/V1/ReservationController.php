@@ -19,7 +19,79 @@ use App\Services\CmiService;
 use App\Http\Traits\WebhookNotifiable;
 use Carbon\Carbon;
 
-
+/**
+ * @OA\Schema(
+ *     schema="Reservation",
+ *     type="object",
+ *     @OA\Property(property="id", type="integer", example=1),
+ *     @OA\Property(property="NUM_RES", type="string", example="RES-AB123456"),
+ *     @OA\Property(property="blane_id", type="integer", example=1),
+ *     @OA\Property(property="customers_id", type="integer", example=1),
+ *     @OA\Property(property="name", type="string", example="John Doe"),
+ *     @OA\Property(property="email", type="string", format="email", example="john@example.com"),
+ *     @OA\Property(property="phone", type="string", example="+212612345678"),
+ *     @OA\Property(property="date", type="string", format="date", example="2024-12-25"),
+ *     @OA\Property(property="time", type="string", format="time", example="14:00"),
+ *     @OA\Property(property="end_date", type="string", format="date", example="2024-12-26"),
+ *     @OA\Property(property="number_persons", type="integer", example=4),
+ *     @OA\Property(property="quantity", type="integer", example=1),
+ *     @OA\Property(property="total_price", type="number", format="float", example=500.00),
+ *     @OA\Property(property="partiel_price", type="number", format="float", example=100.00),
+ *     @OA\Property(property="payment_method", type="string", enum={"cash", "online", "partiel"}, example="cash"),
+ *     @OA\Property(property="status", type="string", enum={"pending", "confirmed", "cancelled", "failed"}, example="pending"),
+ *     @OA\Property(property="comments", type="string", example="Special requests"),
+ *     @OA\Property(property="source", type="string", enum={"web", "mobile", "agent"}, example="web"),
+ *     @OA\Property(property="city", type="string", example="Casablanca"),
+ *     @OA\Property(property="created_at", type="string", format="date-time"),
+ *     @OA\Property(property="updated_at", type="string", format="date-time")
+ * )
+ *
+ * @OA\Schema(
+ *     schema="ReservationCreateRequest",
+ *     type="object",
+ *     required={"blane_id", "name", "email", "date", "phone", "number_persons", "total_price", "payment_method"},
+ *     @OA\Property(property="blane_id", type="integer", example=1),
+ *     @OA\Property(property="name", type="string", example="John Doe"),
+ *     @OA\Property(property="email", type="string", format="email", example="john@example.com"),
+ *     @OA\Property(property="phone", type="string", example="+212612345678"),
+ *     @OA\Property(property="date", type="string", format="date", example="2024-12-25"),
+ *     @OA\Property(property="time", type="string", format="time", example="14:00", description="Required if blane type is 'time'"),
+ *     @OA\Property(property="end_date", type="string", format="date", example="2024-12-26"),
+ *     @OA\Property(property="number_persons", type="integer", example=4),
+ *     @OA\Property(property="quantity", type="integer", example=1),
+ *     @OA\Property(property="total_price", type="number", format="float", example=500.00),
+ *     @OA\Property(property="partiel_price", type="number", format="float", example=100.00, description="Required if payment_method is 'partiel'"),
+ *     @OA\Property(property="payment_method", type="string", enum={"cash", "online", "partiel"}, example="cash"),
+ *     @OA\Property(property="comments", type="string", example="Special requests"),
+ *     @OA\Property(property="city", type="string", example="Casablanca"),
+ *     @OA\Property(property="source", type="string", enum={"web", "mobile", "agent"}, example="web")
+ * )
+ *
+ * @OA\Schema(
+ *     schema="TimeSlotAvailability",
+ *     type="object",
+ *     @OA\Property(property="type", type="string", enum={"time", "date"}, example="time"),
+ *     @OA\Property(
+ *         property="slots",
+ *         type="array",
+ *         @OA\Items(
+ *             type="object",
+ *             @OA\Property(property="time", type="string", example="14:00"),
+ *             @OA\Property(property="available", type="boolean", example=true),
+ *             @OA\Property(property="currentReservations", type="integer", example=2),
+ *             @OA\Property(property="maxReservations", type="integer", example=3),
+ *             @OA\Property(property="remainingCapacity", type="integer", example=1)
+ *         )
+ *     ),
+ *     @OA\Property(
+ *         property="daily_availability",
+ *         type="object",
+ *         @OA\Property(property="remaining", type="integer", example=10),
+ *         @OA\Property(property="limit", type="integer", example=20),
+ *         @OA\Property(property="has_daily_limit", type="boolean", example=true)
+ *     )
+ * )
+ */
 class ReservationController extends BaseController
 {
     use WebhookNotifiable;
@@ -134,6 +206,62 @@ class ReservationController extends BaseController
 
     /**
      * Store a newly created Reservation in storage.
+     *
+     * @OA\Post(
+     *     path="/front/v1/reservations",
+     *     tags={"Reservations"},
+     *     summary="Create a new reservation",
+     *     description="Create a new reservation for a blane with payment options",
+     *     operationId="createReservation",
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(ref="#/components/schemas/ReservationCreateRequest")
+     *     ),
+     *     @OA\Response(
+     *         response=201,
+     *         description="Reservation created successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="boolean", example=true),
+     *             @OA\Property(property="code", type="integer", example=201),
+     *             @OA\Property(property="message", type="string", example="Reservation created successfully"),
+     *             @OA\Property(
+     *                 property="data",
+     *                 type="object",
+     *                 @OA\Property(property="reservation", ref="#/components/schemas/Reservation"),
+     *                 @OA\Property(
+     *                     property="cancellation",
+     *                     type="object",
+     *                     @OA\Property(property="id", type="string", example="RES-AB123456"),
+     *                     @OA\Property(property="timestamp", type="integer", example=1703520000),
+     *                     @OA\Property(property="token", type="string", example="abc123...")
+     *                 ),
+     *                 @OA\Property(
+     *                     property="payment_info",
+     *                     type="object",
+     *                     description="Only present for online/partiel payments",
+     *                     @OA\Property(property="payment_url", type="string", example="https://payment.cmi.co.ma"),
+     *                     @OA\Property(property="method", type="string", example="post"),
+     *                     @OA\Property(property="inputs", type="object")
+     *                 )
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Validation error or daily limit reached",
+     *         @OA\JsonContent(ref="#/components/schemas/ValidationErrorResponse")
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Blane is full",
+     *         @OA\JsonContent(ref="#/components/schemas/ErrorResponse")
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Server error",
+     *         @OA\JsonContent(ref="#/components/schemas/ErrorResponse")
+     *     )
+     * )
      *
      * @param Request $request
      * @return JsonResponse
@@ -401,6 +529,43 @@ class ReservationController extends BaseController
     /**
      * Change the status of the specified Reservation.
      *
+     * @OA\Patch(
+     *     path="/front/v1/reservations/{num_res}/status",
+     *     tags={"Reservations"},
+     *     summary="Change reservation status",
+     *     description="Update the status of a pending reservation",
+     *     operationId="changeReservationStatus",
+     *     @OA\Parameter(
+     *         name="num_res",
+     *         in="path",
+     *         required=true,
+     *         description="Reservation number (NUM_RES)",
+     *         @OA\Schema(type="string", example="RES-AB123456")
+     *     ),
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"status"},
+     *             @OA\Property(property="status", type="string", enum={"pending", "failed"}, example="failed")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Reservation status updated successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="boolean", example=true),
+     *             @OA\Property(property="code", type="integer", example=200),
+     *             @OA\Property(property="message", type="string", example="Reservation status updated successfully"),
+     *             @OA\Property(property="data", ref="#/components/schemas/Reservation")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Reservation not found",
+     *         @OA\JsonContent(ref="#/components/schemas/NotFoundResponse")
+     *     )
+     * )
+     *
      * @param int $id
      * @param Request $request
      * @return JsonResponse
@@ -512,6 +677,47 @@ class ReservationController extends BaseController
 
     /**
      * Get available time slots for a specific date and blane
+     *
+     * @OA\Get(
+     *     path="/front/v1/reservations/availability/{slug}",
+     *     tags={"Reservations"},
+     *     summary="Get available time slots",
+     *     description="Get available time slots or date availability for a specific blane and date",
+     *     operationId="getAvailableTimeSlots",
+     *     @OA\Parameter(
+     *         name="slug",
+     *         in="path",
+     *         required=true,
+     *         description="Blane slug",
+     *         @OA\Schema(type="string", example="spa-massage")
+     *     ),
+     *     @OA\Parameter(
+     *         name="date",
+     *         in="query",
+     *         required=true,
+     *         description="Date to check availability",
+     *         @OA\Schema(type="string", format="date", example="2024-12-25")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Time slots availability retrieved successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="boolean", example=true),
+     *             @OA\Property(property="code", type="integer", example=200),
+     *             @OA\Property(property="data", ref="#/components/schemas/TimeSlotAvailability")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Blane not found",
+     *         @OA\JsonContent(ref="#/components/schemas/NotFoundResponse")
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Validation error",
+     *         @OA\JsonContent(ref="#/components/schemas/ValidationErrorResponse")
+     *     )
+     * )
      *
      * @param Request $request
      * @return JsonResponse
@@ -631,6 +837,48 @@ class ReservationController extends BaseController
 
     /**
      * Cancel a reservation using a secure token.
+     *
+     * @OA\Post(
+     *     path="/front/v1/reservations/cancel",
+     *     tags={"Reservations"},
+     *     summary="Cancel reservation by token",
+     *     description="Cancel a pending reservation using a secure cancellation token",
+     *     operationId="cancelReservationByToken",
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"id", "token", "timestamp"},
+     *             @OA\Property(property="id", type="string", example="RES-AB123456", description="Reservation number"),
+     *             @OA\Property(property="token", type="string", example="abc123...", description="Cancellation token"),
+     *             @OA\Property(property="timestamp", type="integer", example=1703520000, description="Timestamp from cancellation params")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Reservation cancelled successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="boolean", example=true),
+     *             @OA\Property(property="code", type="integer", example=200),
+     *             @OA\Property(property="message", type="string", example="Reservation cancelled successfully"),
+     *             @OA\Property(property="data", ref="#/components/schemas/Reservation")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=403,
+     *         description="Invalid or expired cancellation token",
+     *         @OA\JsonContent(ref="#/components/schemas/ForbiddenResponse")
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Reservation not found",
+     *         @OA\JsonContent(ref="#/components/schemas/NotFoundResponse")
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Reservation cannot be cancelled",
+     *         @OA\JsonContent(ref="#/components/schemas/ErrorResponse")
+     *     )
+     * )
      *
      * @param Request $request
      * @return JsonResponse

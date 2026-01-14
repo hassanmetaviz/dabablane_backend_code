@@ -12,6 +12,35 @@ class MobileAuthController extends BaseController
     /**
      * Mobile user signup (Firebase-based)
      *
+     * @OA\Post(
+     *     path="/back/v1/mobile/signup",
+     *     tags={"Mobile Authentication"},
+     *     summary="Mobile user signup",
+     *     description="Register a new user account through mobile app using Firebase authentication",
+     *     operationId="mobileSignup",
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"name", "email", "firebase_uid", "phone"},
+     *             @OA\Property(property="name", type="string", maxLength=255, example="John Doe"),
+     *             @OA\Property(property="email", type="string", format="email", maxLength=255, example="john@example.com"),
+     *             @OA\Property(property="firebase_uid", type="string", example="firebase_uid_123"),
+     *             @OA\Property(property="phone", type="string", example="+212612345678"),
+     *             @OA\Property(property="city", type="string", example="Casablanca")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=201,
+     *         description="User registered successfully",
+     *         @OA\JsonContent(ref="#/components/schemas/LoginResponse")
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Validation error",
+     *         @OA\JsonContent(ref="#/components/schemas/ValidationErrorResponse")
+     *     )
+     * )
+     *
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
@@ -67,6 +96,42 @@ class MobileAuthController extends BaseController
 
     /**
      * Mobile user login (Firebase-based)
+     *
+     * @OA\Post(
+     *     path="/back/v1/mobile/login",
+     *     tags={"Mobile Authentication"},
+     *     summary="Mobile user login",
+     *     description="Authenticate a mobile user using Firebase credentials",
+     *     operationId="mobileLogin",
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"email", "firebase_uid"},
+     *             @OA\Property(property="email", type="string", format="email", example="john@example.com"),
+     *             @OA\Property(property="firebase_uid", type="string", example="firebase_uid_123")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Login successful",
+     *         @OA\JsonContent(ref="#/components/schemas/LoginResponse")
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="User not found",
+     *         @OA\JsonContent(ref="#/components/schemas/NotFoundResponse")
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Validation error",
+     *         @OA\JsonContent(ref="#/components/schemas/ValidationErrorResponse")
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Server error",
+     *         @OA\JsonContent(ref="#/components/schemas/ErrorResponse")
+     *     )
+     * )
      *
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse

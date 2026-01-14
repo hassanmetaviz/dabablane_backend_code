@@ -19,6 +19,57 @@ use Illuminate\Support\Facades\Storage;
 use Barryvdh\DomPDF\PDF;
 use App\Services\CmiService;
 
+/**
+ * @OA\Schema(
+ *     schema="Plan",
+ *     type="object",
+ *     @OA\Property(property="id", type="integer"),
+ *     @OA\Property(property="title", type="string"),
+ *     @OA\Property(property="slug", type="string"),
+ *     @OA\Property(property="price_ht", type="number", format="float"),
+ *     @OA\Property(property="original_price_ht", type="number", format="float"),
+ *     @OA\Property(property="duration_days", type="integer"),
+ *     @OA\Property(property="description", type="string"),
+ *     @OA\Property(property="is_recommended", type="boolean"),
+ *     @OA\Property(property="is_active", type="boolean")
+ * )
+ *
+ * @OA\Schema(
+ *     schema="AddOn",
+ *     type="object",
+ *     @OA\Property(property="id", type="integer"),
+ *     @OA\Property(property="title", type="string"),
+ *     @OA\Property(property="price_ht", type="number", format="float"),
+ *     @OA\Property(property="tooltip", type="string"),
+ *     @OA\Property(property="max_quantity", type="integer"),
+ *     @OA\Property(property="is_active", type="boolean")
+ * )
+ *
+ * @OA\Schema(
+ *     schema="Purchase",
+ *     type="object",
+ *     @OA\Property(property="id", type="integer"),
+ *     @OA\Property(property="user_id", type="integer"),
+ *     @OA\Property(property="plan_id", type="integer"),
+ *     @OA\Property(property="status", type="string", enum={"pending", "completed", "manual", "cancelled", "expired"}),
+ *     @OA\Property(property="payment_method", type="string", enum={"online", "manual"}),
+ *     @OA\Property(property="total_ttc", type="number", format="float"),
+ *     @OA\Property(property="start_date", type="string", format="date"),
+ *     @OA\Property(property="end_date", type="string", format="date")
+ * )
+ *
+ * @OA\Schema(
+ *     schema="SubscriptionStatus",
+ *     type="object",
+ *     @OA\Property(property="has_active_subscription", type="boolean"),
+ *     @OA\Property(property="subscription_status", type="string"),
+ *     @OA\Property(property="days_remaining", type="integer"),
+ *     @OA\Property(property="expires_soon", type="boolean"),
+ *     @OA\Property(property="active_subscription", type="object"),
+ *     @OA\Property(property="expired_subscription", type="object"),
+ *     @OA\Property(property="pending_subscription", type="object")
+ * )
+ */
 class VendorSubscriptionController extends BaseController
 {
     private $paymentService;
@@ -30,6 +81,29 @@ class VendorSubscriptionController extends BaseController
         $this->gatewayUrl = config('cmi.base_uri');
     }
 
+    /**
+     * Get available subscription plans
+     *
+     * @OA\Get(
+     *     path="/back/v1/vendor/subscriptions/plans",
+     *     tags={"Back - Vendor Subscription"},
+     *     summary="Get available subscription plans",
+     *     operationId="vendorGetPlans",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Response(
+     *         response=200,
+     *         description="Plans retrieved",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="boolean"),
+     *             @OA\Property(property="code", type="integer"),
+     *             @OA\Property(property="data", type="object",
+     *                 @OA\Property(property="plans", type="array", @OA\Items(ref="#/components/schemas/Plan")),
+     *                 @OA\Property(property="commission_pdf", type="string")
+     *             )
+     *         )
+     *     )
+     * )
+     */
     public function getPlans(Request $request)
     {
         $plans = Plan::where('is_active', true)
@@ -53,12 +127,50 @@ class VendorSubscriptionController extends BaseController
         ], 200);
     }
 
+    /**
+     * Get available add-ons
+     *
+     * @OA\Get(
+     *     path="/back/v1/vendor/subscriptions/add-ons",
+     *     tags={"Back - Vendor Subscription"},
+     *     summary="Get available add-ons",
+     *     operationId="vendorGetAddOns",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Response(
+     *         response=200,
+     *         description="Add-ons retrieved",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="boolean"),
+     *             @OA\Property(property="code", type="integer"),
+     *             @OA\Property(property="data", type="array", @OA\Items(ref="#/components/schemas/AddOn"))
+     *         )
+     *     )
+     * )
+     */
     public function getAddOns(Request $request)
     {
         $addOns = AddOn::where('is_active', true)->get();
         return response()->json(['status' => true, 'code' => 200, 'data' => $addOns], 200);
     }
 
+    /**
+     * Apply promo code
+     *
+     * @OA\Post(
+     *     path="/back/v1/vendor/subscriptions/apply-promo",
+     *     tags={"Back - Vendor Subscription"},
+     *     summary="Apply promo code to subscription",
+     *     operationId="vendorApplyPromoCode",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\RequestBody(required=true, @OA\JsonContent(
+     *         required={"code"},
+     *         @OA\Property(property="code", type="string", maxLength=50, example="SUMMER20")
+     *     )),
+     *     @OA\Response(response=200, description="Promo code applied"),
+     *     @OA\Response(response=404, description="Invalid or expired promo code"),
+     *     @OA\Response(response=422, description="Validation error")
+     * )
+     */
     public function applyPromoCode(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -88,6 +200,27 @@ class VendorSubscriptionController extends BaseController
         return response()->json(['status' => true, 'code' => 200, 'data' => $promoCode], 200);
     }
 
+    /**
+     * Create purchase/subscription
+     *
+     * @OA\Post(
+     *     path="/back/v1/vendor/subscriptions/purchase",
+     *     tags={"Back - Vendor Subscription"},
+     *     summary="Create a new subscription purchase",
+     *     operationId="vendorCreatePurchase",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\RequestBody(required=true, @OA\JsonContent(
+     *         required={"plan_id", "payment_method"},
+     *         @OA\Property(property="plan_id", type="integer", example=1),
+     *         @OA\Property(property="add_ons", type="array", @OA\Items(type="object", @OA\Property(property="id", type="integer"), @OA\Property(property="quantity", type="integer"))),
+     *         @OA\Property(property="promo_code", type="string", example="SUMMER20"),
+     *         @OA\Property(property="payment_method", type="string", enum={"online", "manual"})
+     *     )),
+     *     @OA\Response(response=200, description="Purchase created", @OA\JsonContent(@OA\Property(property="status", type="boolean"), @OA\Property(property="data", ref="#/components/schemas/Purchase"))),
+     *     @OA\Response(response=404, description="Invalid promo code"),
+     *     @OA\Response(response=422, description="Validation error")
+     * )
+     */
     public function createPurchase(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -203,6 +336,17 @@ class VendorSubscriptionController extends BaseController
         ], 200);
     }
 
+    /**
+     * Handle CMI payment callback
+     *
+     * @OA\Post(
+     *     path="/back/v1/vendor/subscriptions/cmi-callback",
+     *     tags={"Back - Vendor Subscription"},
+     *     summary="Handle CMI payment gateway callback",
+     *     operationId="vendorHandleCmiCallback",
+     *     @OA\Response(response=200, description="Callback processed")
+     * )
+     */
     public function handleCmiCallback(Request $request)
     {
         $params = $request->except('HASH');
@@ -277,6 +421,27 @@ class VendorSubscriptionController extends BaseController
         return response('ACTION=POSTAUTH', 200);
     }
 
+    /**
+     * Get subscription status
+     *
+     * @OA\Get(
+     *     path="/back/v1/vendor/subscriptions/status",
+     *     tags={"Back - Vendor Subscription"},
+     *     summary="Get current subscription status",
+     *     operationId="vendorGetSubscriptionStatus",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Response(
+     *         response=200,
+     *         description="Subscription status retrieved",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="boolean"),
+     *             @OA\Property(property="code", type="integer"),
+     *             @OA\Property(property="data", ref="#/components/schemas/SubscriptionStatus")
+     *         )
+     *     ),
+     *     @OA\Response(response=500, description="Server error")
+     * )
+     */
     public function getSubscriptionStatus(Request $request)
     {
         try {
@@ -359,6 +524,26 @@ class VendorSubscriptionController extends BaseController
         }
     }
 
+    /**
+     * Get purchase history
+     *
+     * @OA\Get(
+     *     path="/back/v1/vendor/subscriptions/history",
+     *     tags={"Back - Vendor Subscription"},
+     *     summary="Get purchase history",
+     *     operationId="vendorGetPurchaseHistory",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Response(
+     *         response=200,
+     *         description="Purchase history retrieved",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="boolean"),
+     *             @OA\Property(property="code", type="integer"),
+     *             @OA\Property(property="data", type="array", @OA\Items(ref="#/components/schemas/Purchase"))
+     *         )
+     *     )
+     * )
+     */
     public function getPurchaseHistory(Request $request)
     {
         $purchases = Purchase::where('user_id', auth()->id())
@@ -369,6 +554,21 @@ class VendorSubscriptionController extends BaseController
         return response()->json(['status' => true, 'code' => 200, 'data' => $purchases], 200);
     }
 
+    /**
+     * Download invoice
+     *
+     * @OA\Get(
+     *     path="/back/v1/vendor/subscriptions/invoices/{invoice}/download",
+     *     tags={"Back - Vendor Subscription"},
+     *     summary="Download invoice PDF",
+     *     operationId="vendorDownloadInvoice",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(name="invoice", in="path", required=true, @OA\Schema(type="integer")),
+     *     @OA\Response(response=200, description="Invoice PDF file"),
+     *     @OA\Response(response=403, description="Unauthorized"),
+     *     @OA\Response(response=404, description="Invoice not found")
+     * )
+     */
     public function downloadInvoice(Request $request, Invoice $invoice)
     {
         if ($invoice->purchase->user_id !== auth()->id()) {
@@ -471,6 +671,19 @@ class VendorSubscriptionController extends BaseController
 
     // Commission Charts for Vendors
 
+    /**
+     * Get commission charts
+     *
+     * @OA\Get(
+     *     path="/back/v1/vendor/subscriptions/commission-charts",
+     *     tags={"Back - Vendor Subscription"},
+     *     summary="Get commission charts for vendors",
+     *     operationId="vendorGetCommissionCharts",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(name="category_id", in="query", @OA\Schema(type="integer")),
+     *     @OA\Response(response=200, description="Commission charts retrieved")
+     * )
+     */
     public function getCommissionCharts(Request $request)
     {
         $query = CommissionChart::with('category')->active();
@@ -491,6 +704,22 @@ class VendorSubscriptionController extends BaseController
         ], 200);
     }
 
+    /**
+     * Download commission chart
+     *
+     * @OA\Get(
+     *     path="/back/v1/vendor/subscriptions/commissionChartVendor/{commissionChart}/download",
+     *     tags={"Back - Vendor Subscription"},
+     *     summary="Download commission chart file",
+     *     operationId="vendorDownloadCommissionChart",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(name="commissionChart", in="path", required=true, @OA\Schema(type="integer")),
+     *     @OA\Response(response=200, description="Commission chart file"),
+     *     @OA\Response(response=403, description="Chart not available"),
+     *     @OA\Response(response=404, description="File not found"),
+     *     @OA\Response(response=500, description="Server error")
+     * )
+     */
     public function downloadCommissionChart(Request $request, CommissionChart $commissionChart)
     {
         if (!$commissionChart->is_active) {

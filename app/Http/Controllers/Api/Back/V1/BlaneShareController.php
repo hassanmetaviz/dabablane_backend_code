@@ -9,10 +9,32 @@ use App\Http\Controllers\Api\BaseController;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Str;
 
+/**
+ * @OA\Tag(name="Back - Blane Share", description="Blane sharing and visibility management")
+ */
 class BlaneShareController extends BaseController
 {
     /**
      * Generate a share link for a Blane.
+     *
+     * @OA\Post(
+     *     path="/back/v1/blanes/{id}/share",
+     *     tags={"Back - Blane Share"},
+     *     summary="Generate share link for a blane",
+     *     operationId="backBlaneGenerateShareLink",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
+     *     @OA\Response(response=200, description="Share link generated", @OA\JsonContent(
+     *         @OA\Property(property="message", type="string"),
+     *         @OA\Property(property="data", type="object",
+     *             @OA\Property(property="share_token", type="string"),
+     *             @OA\Property(property="visibility", type="string"),
+     *             @OA\Property(property="share_url", type="string")
+     *         )
+     *     )),
+     *     @OA\Response(response=404, description="Blane not found"),
+     *     @OA\Response(response=500, description="Server error")
+     * )
      *
      * @param int $id
      * @return JsonResponse
@@ -46,6 +68,18 @@ class BlaneShareController extends BaseController
     /**
      * Revoke a share link for a Blane.
      *
+     * @OA\Delete(
+     *     path="/back/v1/blanes/{id}/share",
+     *     tags={"Back - Blane Share"},
+     *     summary="Revoke share link for a blane",
+     *     operationId="backBlaneRevokeShareLink",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
+     *     @OA\Response(response=200, description="Share link revoked"),
+     *     @OA\Response(response=404, description="Blane not found"),
+     *     @OA\Response(response=500, description="Server error")
+     * )
+     *
      * @param int $id
      * @return JsonResponse
      */
@@ -73,6 +107,23 @@ class BlaneShareController extends BaseController
 
     /**
      * Update visibility of a Blane.
+     *
+     * @OA\Patch(
+     *     path="/back/v1/blanes/{id}/visibility",
+     *     tags={"Back - Blane Share"},
+     *     summary="Update blane visibility",
+     *     operationId="backBlaneUpdateVisibility",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
+     *     @OA\RequestBody(required=true, @OA\JsonContent(
+     *         required={"visibility"},
+     *         @OA\Property(property="visibility", type="string", enum={"private", "public", "link"})
+     *     )),
+     *     @OA\Response(response=200, description="Visibility updated"),
+     *     @OA\Response(response=400, description="Validation error"),
+     *     @OA\Response(response=404, description="Blane not found"),
+     *     @OA\Response(response=500, description="Server error")
+     * )
      *
      * @param Request $request
      * @param int $id

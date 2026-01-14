@@ -12,6 +12,31 @@ use Carbon\Carbon;
 use Rap2hpoutre\FastExcel\FastExcel;
 use Barryvdh\DomPDF\Facade\Pdf;
 
+/**
+ * @OA\Tag(name="Back - Vendor Payments", description="Vendor payment management and reporting")
+ *
+ * @OA\Schema(
+ *     schema="VendorPayment",
+ *     type="object",
+ *     @OA\Property(property="id", type="integer"),
+ *     @OA\Property(property="vendor_id", type="integer"),
+ *     @OA\Property(property="order_id", type="integer", nullable=true),
+ *     @OA\Property(property="reservation_id", type="integer", nullable=true),
+ *     @OA\Property(property="total_amount_ttc", type="number", format="float"),
+ *     @OA\Property(property="payment_type", type="string", enum={"full","partial"}),
+ *     @OA\Property(property="commission_rate_applied", type="number", format="float"),
+ *     @OA\Property(property="commission_amount_incl_vat", type="number", format="float"),
+ *     @OA\Property(property="net_amount_ttc", type="number", format="float"),
+ *     @OA\Property(property="transfer_status", type="string", enum={"pending","processed","complete"}),
+ *     @OA\Property(property="transfer_date", type="string", format="date"),
+ *     @OA\Property(property="debit_account", type="string"),
+ *     @OA\Property(property="credit_account", type="string"),
+ *     @OA\Property(property="booking_date", type="string", format="date"),
+ *     @OA\Property(property="payment_date", type="string", format="date"),
+ *     @OA\Property(property="week_start", type="string", format="date"),
+ *     @OA\Property(property="week_end", type="string", format="date")
+ * )
+ */
 class VendorPaymentController extends BaseController
 {
     protected $paymentService;
@@ -23,6 +48,30 @@ class VendorPaymentController extends BaseController
 
     /**
      * List vendor payments with filters.
+     *
+     * @OA\Get(
+     *     path="/back/v1/vendor-payments",
+     *     tags={"Back - Vendor Payments"},
+     *     summary="List vendor payments with filters",
+     *     operationId="backVendorPaymentIndex",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(name="vendor_id", in="query", @OA\Schema(type="integer")),
+     *     @OA\Parameter(name="transfer_status", in="query", @OA\Schema(type="string", enum={"pending","processed","complete"})),
+     *     @OA\Parameter(name="payment_type", in="query", @OA\Schema(type="string", enum={"full","partial"})),
+     *     @OA\Parameter(name="category_id", in="query", @OA\Schema(type="integer")),
+     *     @OA\Parameter(name="start_date", in="query", @OA\Schema(type="string", format="date")),
+     *     @OA\Parameter(name="end_date", in="query", @OA\Schema(type="string", format="date")),
+     *     @OA\Parameter(name="week_start", in="query", @OA\Schema(type="string", format="date")),
+     *     @OA\Parameter(name="week_end", in="query", @OA\Schema(type="string", format="date")),
+     *     @OA\Parameter(name="search", in="query", @OA\Schema(type="string")),
+     *     @OA\Parameter(name="paginationSize", in="query", @OA\Schema(type="integer")),
+     *     @OA\Response(response=200, description="Payments retrieved", @OA\JsonContent(
+     *         @OA\Property(property="data", type="array", @OA\Items(ref="#/components/schemas/VendorPayment")),
+     *         @OA\Property(property="meta", type="object")
+     *     )),
+     *     @OA\Response(response=422, description="Validation error"),
+     *     @OA\Response(response=500, description="Server error")
+     * )
      */
     public function index(Request $request)
     {
@@ -94,6 +143,17 @@ class VendorPaymentController extends BaseController
 
     /**
      * Get single payment.
+     *
+     * @OA\Get(
+     *     path="/back/v1/vendor-payments/{id}",
+     *     tags={"Back - Vendor Payments"},
+     *     summary="Get single vendor payment",
+     *     operationId="backVendorPaymentShow",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
+     *     @OA\Response(response=200, description="Payment retrieved"),
+     *     @OA\Response(response=404, description="Payment not found")
+     * )
      */
     public function show($id)
     {
@@ -119,6 +179,23 @@ class VendorPaymentController extends BaseController
 
     /**
      * Mark payments as processed (bulk).
+     *
+     * @OA\Post(
+     *     path="/back/v1/vendor-payments/mark-processed",
+     *     tags={"Back - Vendor Payments"},
+     *     summary="Mark multiple payments as processed",
+     *     operationId="backVendorPaymentMarkProcessed",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\RequestBody(required=true, @OA\JsonContent(
+     *         required={"payment_ids"},
+     *         @OA\Property(property="payment_ids", type="array", @OA\Items(type="integer")),
+     *         @OA\Property(property="transfer_date", type="string", format="date"),
+     *         @OA\Property(property="note", type="string", maxLength=1000)
+     *     )),
+     *     @OA\Response(response=200, description="Payments marked as processed"),
+     *     @OA\Response(response=422, description="Validation error"),
+     *     @OA\Response(response=500, description="Server error")
+     * )
      */
     public function markAsProcessed(Request $request)
     {
@@ -167,6 +244,22 @@ class VendorPaymentController extends BaseController
 
     /**
      * Revert payment to pending.
+     *
+     * @OA\Post(
+     *     path="/back/v1/vendor-payments/{id}/revert-pending",
+     *     tags={"Back - Vendor Payments"},
+     *     summary="Revert payment to pending status",
+     *     operationId="backVendorPaymentRevertPending",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
+     *     @OA\RequestBody(required=true, @OA\JsonContent(
+     *         required={"note"},
+     *         @OA\Property(property="note", type="string", maxLength=1000)
+     *     )),
+     *     @OA\Response(response=200, description="Payment reverted to pending"),
+     *     @OA\Response(response=422, description="Validation error"),
+     *     @OA\Response(response=500, description="Server error")
+     * )
      */
     public function revertToPending(Request $request, $id)
     {
@@ -205,6 +298,23 @@ class VendorPaymentController extends BaseController
 
     /**
      * Update payment (for date corrections).
+     *
+     * @OA\Put(
+     *     path="/back/v1/vendor-payments/{id}",
+     *     tags={"Back - Vendor Payments"},
+     *     summary="Update payment dates",
+     *     operationId="backVendorPaymentUpdate",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
+     *     @OA\RequestBody(required=true, @OA\JsonContent(
+     *         @OA\Property(property="booking_date", type="string", format="date"),
+     *         @OA\Property(property="payment_date", type="string", format="date"),
+     *         @OA\Property(property="transfer_date", type="string", format="date")
+     *     )),
+     *     @OA\Response(response=200, description="Payment updated"),
+     *     @OA\Response(response=422, description="Validation error"),
+     *     @OA\Response(response=500, description="Server error")
+     * )
      */
     public function update(Request $request, $id)
     {
@@ -259,6 +369,21 @@ class VendorPaymentController extends BaseController
 
     /**
      * Export payments to Excel.
+     *
+     * @OA\Get(
+     *     path="/back/v1/vendor-payments/export/excel",
+     *     tags={"Back - Vendor Payments"},
+     *     summary="Export payments to Excel",
+     *     operationId="backVendorPaymentExportExcel",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(name="vendor_id", in="query", @OA\Schema(type="integer")),
+     *     @OA\Parameter(name="transfer_status", in="query", @OA\Schema(type="string")),
+     *     @OA\Parameter(name="payment_type", in="query", @OA\Schema(type="string")),
+     *     @OA\Parameter(name="start_date", in="query", @OA\Schema(type="string", format="date")),
+     *     @OA\Parameter(name="end_date", in="query", @OA\Schema(type="string", format="date")),
+     *     @OA\Response(response=200, description="Excel file download"),
+     *     @OA\Response(response=500, description="Server error")
+     * )
      */
     public function exportExcel(Request $request)
     {
@@ -327,6 +452,21 @@ class VendorPaymentController extends BaseController
 
     /**
      * Export payments to PDF.
+     *
+     * @OA\Get(
+     *     path="/back/v1/vendor-payments/export/pdf",
+     *     tags={"Back - Vendor Payments"},
+     *     summary="Export payments to PDF",
+     *     operationId="backVendorPaymentExportPdf",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(name="vendor_id", in="query", @OA\Schema(type="integer")),
+     *     @OA\Parameter(name="transfer_status", in="query", @OA\Schema(type="string")),
+     *     @OA\Parameter(name="payment_type", in="query", @OA\Schema(type="string")),
+     *     @OA\Parameter(name="start_date", in="query", @OA\Schema(type="string", format="date")),
+     *     @OA\Parameter(name="end_date", in="query", @OA\Schema(type="string", format="date")),
+     *     @OA\Response(response=200, description="PDF file download"),
+     *     @OA\Response(response=500, description="Server error")
+     * )
      */
     public function exportPDF(Request $request)
     {
@@ -381,6 +521,19 @@ class VendorPaymentController extends BaseController
 
     /**
      * Generate banking report.
+     *
+     * @OA\Get(
+     *     path="/back/v1/vendor-payments/banking-report",
+     *     tags={"Back - Vendor Payments"},
+     *     summary="Generate banking report for week",
+     *     operationId="backVendorPaymentBankingReport",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(name="week_start", in="query", required=true, @OA\Schema(type="string", format="date")),
+     *     @OA\Parameter(name="week_end", in="query", required=true, @OA\Schema(type="string", format="date")),
+     *     @OA\Response(response=200, description="Banking report generated"),
+     *     @OA\Response(response=422, description="Validation error"),
+     *     @OA\Response(response=500, description="Server error")
+     * )
      */
     public function bankingReport(Request $request)
     {
@@ -422,6 +575,20 @@ class VendorPaymentController extends BaseController
 
     /**
      * View audit logs.
+     *
+     * @OA\Get(
+     *     path="/back/v1/vendor-payments/logs",
+     *     tags={"Back - Vendor Payments"},
+     *     summary="View payment audit logs",
+     *     operationId="backVendorPaymentLogs",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(name="vendor_payment_id", in="query", @OA\Schema(type="integer")),
+     *     @OA\Parameter(name="admin_id", in="query", @OA\Schema(type="integer")),
+     *     @OA\Parameter(name="paginationSize", in="query", @OA\Schema(type="integer")),
+     *     @OA\Response(response=200, description="Audit logs retrieved"),
+     *     @OA\Response(response=422, description="Validation error"),
+     *     @OA\Response(response=500, description="Server error")
+     * )
      */
     public function logs(Request $request)
     {
@@ -478,6 +645,26 @@ class VendorPaymentController extends BaseController
 
     /**
      * Dashboard stats.
+     *
+     * @OA\Get(
+     *     path="/back/v1/vendor-payments/dashboard",
+     *     tags={"Back - Vendor Payments"},
+     *     summary="Get payment dashboard statistics",
+     *     operationId="backVendorPaymentDashboard",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Response(response=200, description="Dashboard stats retrieved", @OA\JsonContent(
+     *         @OA\Property(property="data", type="object",
+     *             @OA\Property(property="pending_count", type="integer"),
+     *             @OA\Property(property="processed_count", type="integer"),
+     *             @OA\Property(property="complete_count", type="integer"),
+     *             @OA\Property(property="total_pending_amount", type="number"),
+     *             @OA\Property(property="total_processed_amount", type="number"),
+     *             @OA\Property(property="total_complete_amount", type="number"),
+     *             @OA\Property(property="current_week", type="object")
+     *         )
+     *     )),
+     *     @OA\Response(response=500, description="Server error")
+     * )
      */
     public function dashboard(Request $request)
     {
@@ -529,6 +716,18 @@ class VendorPaymentController extends BaseController
 
     /**
      * Weekly summary.
+     *
+     * @OA\Get(
+     *     path="/back/v1/vendor-payments/weekly-summary",
+     *     tags={"Back - Vendor Payments"},
+     *     summary="Get weekly payment summary",
+     *     operationId="backVendorPaymentWeeklySummary",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(name="week_start", in="query", @OA\Schema(type="string", format="date")),
+     *     @OA\Response(response=200, description="Weekly summary retrieved"),
+     *     @OA\Response(response=422, description="Validation error"),
+     *     @OA\Response(response=500, description="Server error")
+     * )
      */
     public function weeklySummary(Request $request)
     {
@@ -571,6 +770,29 @@ class VendorPaymentController extends BaseController
 
     /**
      * Update payment status and save data.
+     *
+     * @OA\Patch(
+     *     path="/back/v1/vendor-payments/{id}/status",
+     *     tags={"Back - Vendor Payments"},
+     *     summary="Update payment status and details",
+     *     operationId="backVendorPaymentUpdateStatus",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
+     *     @OA\RequestBody(required=true, @OA\JsonContent(
+     *         @OA\Property(property="transfer_status", type="string", enum={"pending","processed","complete"}),
+     *         @OA\Property(property="transfer_date", type="string", format="date"),
+     *         @OA\Property(property="debit_account", type="string"),
+     *         @OA\Property(property="credit_account", type="string"),
+     *         @OA\Property(property="reason", type="string"),
+     *         @OA\Property(property="booking_date", type="string", format="date"),
+     *         @OA\Property(property="payment_date", type="string", format="date"),
+     *         @OA\Property(property="note", type="string")
+     *     )),
+     *     @OA\Response(response=200, description="Payment status updated"),
+     *     @OA\Response(response=404, description="Payment not found"),
+     *     @OA\Response(response=422, description="Validation error"),
+     *     @OA\Response(response=500, description="Server error")
+     * )
      */
     public function updateStatus(Request $request, $id)
     {

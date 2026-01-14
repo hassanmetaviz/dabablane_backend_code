@@ -9,10 +9,45 @@ use App\Http\Controllers\Api\BaseController;
 use Illuminate\Validation\ValidationException;
 use App\Http\Resources\Back\V1\MerchantResource;
 
+/**
+ * @OA\Schema(
+ *     schema="BackMerchant",
+ *     type="object",
+ *     @OA\Property(property="id", type="integer", example=1),
+ *     @OA\Property(property="name", type="string", example="ABC Store"),
+ *     @OA\Property(property="email", type="string", format="email", example="store@example.com"),
+ *     @OA\Property(property="phone", type="string", example="+212612345678"),
+ *     @OA\Property(property="address", type="string", example="123 Main St"),
+ *     @OA\Property(property="city", type="string", example="Casablanca"),
+ *     @OA\Property(property="created_at", type="string", format="date-time"),
+ *     @OA\Property(property="updated_at", type="string", format="date-time")
+ * )
+ */
 class MerchantController extends BaseController
 {
     /**
      * Display a listing of the Merchants.
+     *
+     * @OA\Get(
+     *     path="/back/v1/merchants",
+     *     tags={"Back - Merchants"},
+     *     summary="List all merchants",
+     *     operationId="backMerchantsIndex",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(name="include", in="query", description="Include relationships (merchantOffers)", @OA\Schema(type="string")),
+     *     @OA\Parameter(name="paginationSize", in="query", @OA\Schema(type="integer", default=10)),
+     *     @OA\Parameter(name="sort_by", in="query", @OA\Schema(type="string", enum={"created_at", "name"})),
+     *     @OA\Parameter(name="sort_order", in="query", @OA\Schema(type="string", enum={"asc", "desc"})),
+     *     @OA\Parameter(name="search", in="query", @OA\Schema(type="string")),
+     *     @OA\Parameter(name="city", in="query", @OA\Schema(type="string")),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Merchants retrieved",
+     *         @OA\JsonContent(@OA\Property(property="data", type="array", @OA\Items(ref="#/components/schemas/BackMerchant")), @OA\Property(property="links", ref="#/components/schemas/PaginationLinks"), @OA\Property(property="meta", ref="#/components/schemas/PaginationMeta"))
+     *     ),
+     *     @OA\Response(response=400, description="Validation error", @OA\JsonContent(ref="#/components/schemas/ValidationErrorResponse")),
+     *     @OA\Response(response=401, description="Unauthenticated", @OA\JsonContent(ref="#/components/schemas/UnauthorizedResponse"))
+     * )
      *
      * @param Request $request
      */
@@ -63,6 +98,20 @@ class MerchantController extends BaseController
     /**
      * Display the specified Merchant.
      *
+     * @OA\Get(
+     *     path="/back/v1/merchants/{id}",
+     *     tags={"Back - Merchants"},
+     *     summary="Get a specific merchant",
+     *     operationId="backMerchantsShow",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
+     *     @OA\Parameter(name="include", in="query", description="Include relationships (merchantOffers)", @OA\Schema(type="string")),
+     *     @OA\Response(response=200, description="Merchant retrieved", @OA\JsonContent(@OA\Property(property="data", ref="#/components/schemas/BackMerchant"))),
+     *     @OA\Response(response=400, description="Validation error", @OA\JsonContent(ref="#/components/schemas/ValidationErrorResponse")),
+     *     @OA\Response(response=401, description="Unauthenticated", @OA\JsonContent(ref="#/components/schemas/UnauthorizedResponse")),
+     *     @OA\Response(response=404, description="Not found", @OA\JsonContent(ref="#/components/schemas/NotFoundResponse"))
+     * )
+     *
      * @param int $id
      * @param Request $request
      */
@@ -107,6 +156,26 @@ class MerchantController extends BaseController
     /**
      * Store a newly created Merchant.
      *
+     * @OA\Post(
+     *     path="/back/v1/merchants",
+     *     tags={"Back - Merchants"},
+     *     summary="Create a new merchant",
+     *     operationId="backMerchantsStore",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\RequestBody(required=true, @OA\JsonContent(
+     *         required={"name", "email", "phone", "address", "city"},
+     *         @OA\Property(property="name", type="string", maxLength=255, example="ABC Store"),
+     *         @OA\Property(property="email", type="string", format="email", maxLength=255, example="store@example.com"),
+     *         @OA\Property(property="phone", type="string", maxLength=20, example="+212612345678"),
+     *         @OA\Property(property="address", type="string", maxLength=255, example="123 Main St"),
+     *         @OA\Property(property="city", type="string", maxLength=255, example="Casablanca")
+     *     )),
+     *     @OA\Response(response=201, description="Merchant created", @OA\JsonContent(@OA\Property(property="message", type="string"), @OA\Property(property="data", ref="#/components/schemas/BackMerchant"))),
+     *     @OA\Response(response=400, description="Validation error", @OA\JsonContent(ref="#/components/schemas/ValidationErrorResponse")),
+     *     @OA\Response(response=401, description="Unauthenticated", @OA\JsonContent(ref="#/components/schemas/UnauthorizedResponse")),
+     *     @OA\Response(response=500, description="Server error", @OA\JsonContent(ref="#/components/schemas/ErrorResponse"))
+     * )
+     *
      * @param Request $request
      * @return JsonResponse
      */
@@ -139,6 +208,28 @@ class MerchantController extends BaseController
 
     /**
      * Update the specified Merchant.
+     *
+     * @OA\Put(
+     *     path="/back/v1/merchants/{id}",
+     *     tags={"Back - Merchants"},
+     *     summary="Update a merchant",
+     *     operationId="backMerchantsUpdate",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
+     *     @OA\RequestBody(required=true, @OA\JsonContent(
+     *         required={"name", "email", "phone", "address", "city"},
+     *         @OA\Property(property="name", type="string", maxLength=255),
+     *         @OA\Property(property="email", type="string", format="email", maxLength=255),
+     *         @OA\Property(property="phone", type="string", maxLength=20),
+     *         @OA\Property(property="address", type="string", maxLength=255),
+     *         @OA\Property(property="city", type="string", maxLength=255)
+     *     )),
+     *     @OA\Response(response=200, description="Merchant updated", @OA\JsonContent(@OA\Property(property="message", type="string"), @OA\Property(property="data", ref="#/components/schemas/BackMerchant"))),
+     *     @OA\Response(response=400, description="Validation error", @OA\JsonContent(ref="#/components/schemas/ValidationErrorResponse")),
+     *     @OA\Response(response=401, description="Unauthenticated", @OA\JsonContent(ref="#/components/schemas/UnauthorizedResponse")),
+     *     @OA\Response(response=404, description="Not found", @OA\JsonContent(ref="#/components/schemas/NotFoundResponse")),
+     *     @OA\Response(response=500, description="Server error", @OA\JsonContent(ref="#/components/schemas/ErrorResponse"))
+     * )
      *
      * @param Request $request
      * @param int $id
@@ -179,6 +270,19 @@ class MerchantController extends BaseController
 
     /**
      * Remove the specified Merchant.
+     *
+     * @OA\Delete(
+     *     path="/back/v1/merchants/{id}",
+     *     tags={"Back - Merchants"},
+     *     summary="Delete a merchant",
+     *     operationId="backMerchantsDestroy",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
+     *     @OA\Response(response=204, description="Merchant deleted"),
+     *     @OA\Response(response=401, description="Unauthenticated", @OA\JsonContent(ref="#/components/schemas/UnauthorizedResponse")),
+     *     @OA\Response(response=404, description="Not found", @OA\JsonContent(ref="#/components/schemas/NotFoundResponse")),
+     *     @OA\Response(response=500, description="Server error", @OA\JsonContent(ref="#/components/schemas/ErrorResponse"))
+     * )
      *
      * @param int $id
      * @return JsonResponse

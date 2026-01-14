@@ -9,12 +9,65 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 
+/**
+ * @OA\Schema(
+ *     schema="VendorProfile",
+ *     type="object",
+ *     @OA\Property(property="id", type="integer", example=1),
+ *     @OA\Property(property="name", type="string", example="Vendor Name"),
+ *     @OA\Property(property="email", type="string", format="email", example="vendor@example.com"),
+ *     @OA\Property(property="phone", type="string", example="+212612345678"),
+ *     @OA\Property(property="company_name", type="string", example="ABC Company"),
+ *     @OA\Property(property="city", type="string", example="Casablanca"),
+ *     @OA\Property(property="district", type="string", example="Anfa"),
+ *     @OA\Property(property="address", type="string", example="123 Main St"),
+ *     @OA\Property(property="description", type="string"),
+ *     @OA\Property(property="logoUrl", type="string"),
+ *     @OA\Property(property="facebook", type="string"),
+ *     @OA\Property(property="instagram", type="string"),
+ *     @OA\Property(property="tiktok", type="string"),
+ *     @OA\Property(property="isDiamond", type="boolean", example=false),
+ *     @OA\Property(property="cover_media", type="array", @OA\Items(type="object")),
+ *     @OA\Property(property="created_at", type="string", format="date-time"),
+ *     @OA\Property(property="updated_at", type="string", format="date-time")
+ * )
+ */
 class VendorProfileController extends BaseController
 {
     private const VIDEO_EXTENSIONS = ['mp4', 'mov', 'avi', 'mkv', 'wmv', 'flv', 'webm'];
 
     /**
      * Update vendor profile (vendor updates their own profile)
+     *
+     * @OA\Put(
+     *     path="/back/v1/vendor/profile",
+     *     tags={"Back - Vendor Profile"},
+     *     summary="Update vendor profile",
+     *     operationId="backVendorProfileUpdate",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\RequestBody(required=true, @OA\JsonContent(
+     *         @OA\Property(property="name", type="string", maxLength=255),
+     *         @OA\Property(property="email", type="string", format="email", maxLength=255),
+     *         @OA\Property(property="phone", type="string", maxLength=20),
+     *         @OA\Property(property="city", type="string", maxLength=100),
+     *         @OA\Property(property="district", type="string", maxLength=100),
+     *         @OA\Property(property="company_name", type="string", maxLength=255),
+     *         @OA\Property(property="businessCategory", type="string", maxLength=100),
+     *         @OA\Property(property="description", type="string"),
+     *         @OA\Property(property="address", type="string"),
+     *         @OA\Property(property="logoUrl", type="string"),
+     *         @OA\Property(property="facebook", type="string", format="url"),
+     *         @OA\Property(property="instagram", type="string", format="url"),
+     *         @OA\Property(property="tiktok", type="string", format="url"),
+     *         @OA\Property(property="isDiamond", type="boolean"),
+     *         @OA\Property(property="cover_media_urls", type="array", @OA\Items(type="string")),
+     *         @OA\Property(property="delete_cover_media_ids", type="array", @OA\Items(type="integer")),
+     *         @OA\Property(property="replace_all_media", type="boolean")
+     *     )),
+     *     @OA\Response(response=200, description="Profile updated", @OA\JsonContent(@OA\Property(property="success", type="boolean"), @OA\Property(property="message", type="string"), @OA\Property(property="data", ref="#/components/schemas/VendorProfile"))),
+     *     @OA\Response(response=401, description="Unauthenticated", @OA\JsonContent(ref="#/components/schemas/UnauthorizedResponse")),
+     *     @OA\Response(response=422, description="Validation error")
+     * )
      *
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
@@ -125,6 +178,25 @@ class VendorProfileController extends BaseController
     /**
      * Update vendor password
      *
+     * @OA\Post(
+     *     path="/back/v1/vendor/password",
+     *     tags={"Back - Vendor Profile"},
+     *     summary="Update vendor password",
+     *     operationId="backVendorPasswordUpdate",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\RequestBody(required=true, @OA\JsonContent(
+     *         required={"current_password", "new_password", "new_password_confirmation"},
+     *         @OA\Property(property="current_password", type="string"),
+     *         @OA\Property(property="new_password", type="string", minLength=8),
+     *         @OA\Property(property="new_password_confirmation", type="string")
+     *     )),
+     *     @OA\Response(response=200, description="Password updated", @OA\JsonContent(@OA\Property(property="status", type="boolean"), @OA\Property(property="message", type="string"))),
+     *     @OA\Response(response=401, description="Unauthenticated or wrong password"),
+     *     @OA\Response(response=403, description="Unauthorized"),
+     *     @OA\Response(response=422, description="Validation error"),
+     *     @OA\Response(response=500, description="Server error")
+     * )
+     *
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
@@ -223,6 +295,25 @@ class VendorProfileController extends BaseController
 
     /**
      * Set password for vendor (for vendors who don't have password yet)
+     *
+     * @OA\Post(
+     *     path="/back/v1/vendor/set-password",
+     *     tags={"Back - Vendor Profile"},
+     *     summary="Set password for vendor (first time)",
+     *     operationId="backVendorPasswordSet",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\RequestBody(required=true, @OA\JsonContent(
+     *         required={"new_password", "new_password_confirmation"},
+     *         @OA\Property(property="new_password", type="string", minLength=8),
+     *         @OA\Property(property="new_password_confirmation", type="string")
+     *     )),
+     *     @OA\Response(response=200, description="Password set", @OA\JsonContent(@OA\Property(property="status", type="boolean"), @OA\Property(property="message", type="string"))),
+     *     @OA\Response(response=400, description="Password already set"),
+     *     @OA\Response(response=401, description="Unauthenticated"),
+     *     @OA\Response(response=403, description="Unauthorized"),
+     *     @OA\Response(response=422, description="Validation error"),
+     *     @OA\Response(response=500, description="Server error")
+     * )
      *
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
