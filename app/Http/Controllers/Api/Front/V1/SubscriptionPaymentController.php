@@ -260,7 +260,7 @@ class SubscriptionPaymentController extends BaseController
     /**
      * Handle successful payment redirect
      */
-    public function success(\Illuminate\Http\Request $request)
+    public function paymentSuccess(\Illuminate\Http\Request $request)
     {
         $oid = $request->input('oid');
         $purchaseId = str_replace('SUB-', '', $oid);
@@ -268,7 +268,7 @@ class SubscriptionPaymentController extends BaseController
         try {
             $purchase = Purchase::with(['plan', 'user'])->findOrFail($purchaseId);
 
-            return $this->success(
+            return parent::success(
                 [
                     'purchase_id' => $purchase->id,
                     'plan_title' => $purchase->plan->title,
@@ -291,7 +291,7 @@ class SubscriptionPaymentController extends BaseController
     /**
      * Handle failed payment redirect
      */
-    public function failure(\Illuminate\Http\Request $request)
+    public function paymentFailure(\Illuminate\Http\Request $request)
     {
         $oid = $request->input('oid');
         $purchaseId = str_replace('SUB-', '', $oid);
