@@ -15,8 +15,6 @@ use OpenApi\Annotations as OA;
  *     url="/api",
  *     description="API Server"
  * )
- *
- * @OA\PathItem(path="/api")
  */
 abstract class Controller
 {
