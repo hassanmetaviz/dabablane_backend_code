@@ -128,21 +128,7 @@ use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
  *     @OA\Property(property="next", type="string", example="http://api.example.com/items?page=2")
  * )
  *
- * @OA\Get(
- *     path="/health",
- *     tags={"Health"},
- *     summary="API Health Check",
- *     description="Check if the API is running",
- *     operationId="healthCheck",
- *     @OA\Response(
- *         response=200,
- *         description="API is healthy",
- *         @OA\JsonContent(
- *             @OA\Property(property="status", type="string", example="ok"),
- *             @OA\Property(property="timestamp", type="string", format="date-time")
- *         )
- *     )
- * )
+ * @OA\PathItem(path="/api")
  */
 abstract class Controller
 {

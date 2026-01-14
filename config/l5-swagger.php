@@ -96,6 +96,19 @@ return [
             'analysis' => null,
 
             /**
+             * aliases: map annotation namespaces used in docblocks.
+             *
+             * Your codebase uses `@OA\...` heavily but does not import
+             * `use OpenApi\Annotations as OA;` in each file. Without this alias,
+             * swagger-php will ignore those annotations and produce an empty spec.
+             *
+             * @see \OpenApi\scan
+             */
+            'aliases' => [
+                'OA' => 'OpenApi\\Annotations',
+            ],
+
+            /**
              * Custom query path processors classes.
              *
              * @link https://github.com/zircote/swagger-php/tree/master/Examples/processors/schema-query-parameter
