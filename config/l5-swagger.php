@@ -37,6 +37,9 @@ return [
         'scanOptions' => [
             'analyser' => null,
             'analysis' => null,
+            'aliases' => [
+                'OA' => 'OpenApi\\Annotations',
+            ],
             'processors' => [],
             'pattern' => null,
             'exclude' => [],
