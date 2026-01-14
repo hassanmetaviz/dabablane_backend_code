@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\Back\V1;
 
+use OpenApi\Annotations as OA;
 use Illuminate\Http\Request;
 use App\Models\ShippingDetail;
 use Illuminate\Http\JsonResponse;

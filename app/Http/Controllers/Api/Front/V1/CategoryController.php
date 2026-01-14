@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\Front\V1;
 
+use OpenApi\Annotations as OA;
 use App\Http\Controllers\Api\BaseController;
 use App\Http\Resources\Front\V1\CategoryResource;
 use App\Http\Resources\Front\V1\SubcategoryResource;
