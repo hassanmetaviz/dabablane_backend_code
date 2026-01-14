@@ -219,12 +219,12 @@ class PaymentCmiController extends BaseController
         return response('ACTION=POSTAUTH', 200);
     }
 
-    public function success(Request $request)
+    public function paymentSuccess(Request $request)
     {
         return redirect()->away(route('payment.result', ['oid' => $request->input('oid'), 'status' => 'success']));
     }
 
-    public function failure(Request $request)
+    public function paymentFailure(Request $request)
     {
         return redirect()->away(route('payment.result', ['oid' => $request->input('oid'), 'status' => 'failure']));
     }
