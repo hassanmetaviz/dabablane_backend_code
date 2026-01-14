@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(powershell -Command \"cd 'c:\\\\Users\\\\LAPTOP WALA\\\\Desktop\\\\dabablane_backend\\\\dabablane_backend_code'; php artisan l5-swagger:generate 2>&1\":*)",
+      "Bash(cd:*)",
+      "Bash(php -l:*)",
+      "Bash(php:*)",
+      "Bash(findstr:*)",
+      "Bash(git checkout:*)",
+      "Bash(composer require:*)"
+    ]
+  }
+}

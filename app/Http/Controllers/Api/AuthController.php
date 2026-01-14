@@ -9,6 +9,7 @@ use App\Http\Resources\Front\V1\UserResource;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Laravel\Sanctum\PersonalAccessToken;
+use OpenApi\Annotations as OA;
 
 class AuthController extends BaseController
 {
@@ -36,6 +37,29 @@ class AuthController extends BaseController
 
     /**
      * Login user
+     *
+     * @OA\Post(
+     *     path="/login",
+     *     tags={"Authentication"},
+     *     summary="Login user",
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"email", "password"},
+     *             @OA\Property(property="email", type="string", format="email", example="user@example.com"),
+     *             @OA\Property(property="password", type="string", format="password", example="password123")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Login successful",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Login successful!")
+     *         )
+     *     ),
+     *     @OA\Response(response=401, description="Invalid credentials")
+     * )
      *
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
