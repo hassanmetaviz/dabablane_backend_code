@@ -127,6 +127,8 @@ use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
  *     @OA\Property(property="prev", type="string", nullable=true),
  *     @OA\Property(property="next", type="string", example="http://api.example.com/items?page=2")
  * )
+ *
+ * @OA\PathItem(path="/api")
  */
 abstract class Controller
 {
