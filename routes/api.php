@@ -119,9 +119,9 @@ Route::post('subscriptions/cmi-callback', [VendorSubscriptionController::class, 
 
 Route::post('subscriptions/payment/initiate', [App\Http\Controllers\Api\Front\V1\SubscriptionPaymentController::class, 'initiatePayment'])->middleware('auth:sanctum');
 Route::post('subscriptions/payment/callback', [App\Http\Controllers\Api\Front\V1\SubscriptionPaymentController::class, 'handleCallback']);
-Route::get('subscriptions/payment/success', [App\Http\Controllers\Api\Front\V1\SubscriptionPaymentController::class, 'success']);
-Route::get('subscriptions/payment/failure', [App\Http\Controllers\Api\Front\V1\SubscriptionPaymentController::class, 'failure']);
-Route::get('subscriptions/payment/timeout', [App\Http\Controllers\Api\Front\V1\SubscriptionPaymentController::class, 'timeout']);
+Route::get('subscriptions/payment/success', [App\Http\Controllers\Api\Front\V1\SubscriptionPaymentController::class, 'paymentSuccess']);
+Route::get('subscriptions/payment/failure', [App\Http\Controllers\Api\Front\V1\SubscriptionPaymentController::class, 'paymentFailure']);
+Route::get('subscriptions/payment/timeout', [App\Http\Controllers\Api\Front\V1\SubscriptionPaymentController::class, 'paymentTimeout']);
 Route::post('subscriptions/payment/retry', [App\Http\Controllers\Api\Front\V1\SubscriptionPaymentController::class, 'retryPayment'])->middleware('auth:sanctum');
 
 

@@ -219,12 +219,21 @@ class PaymentCmiController extends BaseController
         return response('ACTION=POSTAUTH', 200);
     }
 
-    public function success(Request $request)
+    /**
+     * Payment gateway redirect handler (success).
+     *
+     * NOTE: Cannot be named `success()` because BaseController already defines
+     * a `success($data, $message, $code)` helper, and PHP forbids incompatible overrides.
+     */
+    public function paymentSuccess(Request $request)
     {
         return redirect()->away(route('payment.result', ['oid' => $request->input('oid'), 'status' => 'success']));
     }
 
-    public function failure(Request $request)
+    /**
+     * Payment gateway redirect handler (failure).
+     */
+    public function paymentFailure(Request $request)
     {
         return redirect()->away(route('payment.result', ['oid' => $request->input('oid'), 'status' => 'failure']));
     }

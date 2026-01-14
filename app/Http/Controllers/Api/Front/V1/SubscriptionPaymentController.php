@@ -157,7 +157,7 @@ class SubscriptionPaymentController extends BaseController
     /**
      * Handle payment timeout or cancellation
      */
-    public function timeout(\Illuminate\Http\Request $request)
+    public function paymentTimeout(\Illuminate\Http\Request $request)
     {
         $oid = $request->input('oid');
         $purchaseId = str_replace('SUB-', '', $oid);
@@ -260,7 +260,7 @@ class SubscriptionPaymentController extends BaseController
     /**
      * Handle successful payment redirect
      */
-    public function success(\Illuminate\Http\Request $request)
+    public function paymentSuccess(\Illuminate\Http\Request $request)
     {
         $oid = $request->input('oid');
         $purchaseId = str_replace('SUB-', '', $oid);
@@ -291,7 +291,7 @@ class SubscriptionPaymentController extends BaseController
     /**
      * Handle failed payment redirect
      */
-    public function failure(\Illuminate\Http\Request $request)
+    public function paymentFailure(\Illuminate\Http\Request $request)
     {
         $oid = $request->input('oid');
         $purchaseId = str_replace('SUB-', '', $oid);
