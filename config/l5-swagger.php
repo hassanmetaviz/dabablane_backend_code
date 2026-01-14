@@ -40,6 +40,9 @@ return [
                  */
                 'annotations' => [
                     base_path('app/Http/Controllers'),
+                    base_path('app/Http/Controllers/Api'),
+                    base_path('app/Http/Controllers/Api/Front/V1'),
+                    base_path('app/Http/Controllers/Api/Back/V1'),
                 ],
 
             ],
